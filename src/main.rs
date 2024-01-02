@@ -4,7 +4,7 @@ pub mod components;
 pub mod sources;
 pub mod utils;
 
-use components::list::SelectList;
+use components::source_items_list::SourceItemsList;
 use components::text;
 use components::traits::EventConsumer;
 use components::traits::Render;
@@ -14,8 +14,8 @@ use sources::Source;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::{keyboard::Keycode, pixels::Color, rect::Rect};
 use sources::apps::DesktopApplications;
+use sources::SourceItem;
 use utils::atlas::FontAtlas;
-use utils::fuzzy::basic;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -29,9 +29,9 @@ fn main() {
         .unwrap();
 
     let font_size = 20;
-    let font = ttf
-        .load_font("/usr/share/fonts/droid/DroidSansMono.ttf", font_size)
-        .unwrap();
+    let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
+    let font = ttf.load_font(font_path, font_size).unwrap();
+
     let mut canvas = window.into_canvas().build().unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
     let mut running = true;
@@ -41,69 +41,44 @@ fn main() {
         text: String::from(""),
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
-    let mut select_list = SelectList::new();
+    let mut select_list = SourceItemsList::new();
     let mut atlas = FontAtlas::new(&tc);
 
-    let sources: Vec<Box<dyn Source>> = vec![Box::new(DesktopApplications {})];
+    // Process sources and generate global items list
+    let mut sources: Vec<Box<dyn Source>> = vec![Box::new(DesktopApplications::new())];
 
-    let mut haystack: Vec<String> = Vec::new();
-
-    for source in sources {
-        for item in source.get_items().iter() {
-            haystack.push(item.title.clone());
-        }
+    for source in sources.iter_mut() {
+        source.calculate_items();
     }
 
-    while running {
-        let prompt_text = &prompt.text;
-        // If nothing is written just clear the select list items
-        if prompt_text.len() == 0 {
-            select_list.set_list(None);
-        } else {
-            select_list.set_list(match basic(prompt_text.to_string(), &haystack) {
-                Some(v) => Some(v.iter().map(|x| x.value.clone()).collect()),
-                None => None,
-            });
-        }
+    // Check how you can do this
+    // for source in sources {
+    //     for item in source.items().iter() {
+    //         items.push(item);
+    //     }
+    // }
 
-        for event in event_pump.poll_iter() {
-            // dbg!(&event);
+    while running {
+        let mut items: Vec<SourceItem> = Vec::new();
+        for item in sources[0].items().iter() {
+            items.push(item.clone());
+        }
+        let prompt_text = &prompt.text;
+        select_list.set_list_and_prompt(items.clone(), prompt_text.to_string());
+
+        // If nothing is written just clear the select list items
+        // if prompt_text.len() == -1 {
+        //     select_list.set_list(None);
+        // } else {
+        //     select_list.set_list(match basic(prompt_text.to_string(), &items) {
+        //         Some(v) => Some(v.iter().map(|x| x.value.clone()).collect()),
+        //         None => None,
+        //     });
+        // }
+
+        let cur_events: Vec<_> = event_pump.poll_iter().collect();
+        for event in cur_events.iter() {
             match event {
-                // sdl2::event::Event::TextInput { text, .. } => {
-                //     prompt += &text;
-                //     // self.insert_char(dbg!(text.to_owned()))
-                // }
-                // sdl2::event::Event::KeyDown {
-                //     keycode: Some(Keycode::Backspace),
-                //     ..
-                // } => {
-                //     prompt = prompt
-                //         .get(..cmp::max(prompt.char_indices().count() - 1, 1))
-                //         .unwrap()
-                //         .into()
-                // }
-                // sdl2::event::Event::KeyDown {
-                //     keycode: Some(Keycode::F1),
-                //     ..
-                // } => draw_debug_info = !draw_debug_info,
-                // sdl2::event::Event::KeyDown {
-                //     keycode: Some(Keycode::F2),
-                //     ..
-                // } => {
-                //     font_size += 1;
-                //     font = ttf
-                //         .load_font("/usr/share/fonts/droid/DroidSansMono.ttf", font_size)
-                //         .unwrap()
-                // }
-                // sdl2::event::Event::KeyDown {
-                //     keycode: Some(Keycode::F3),
-                //     ..
-                // } => {
-                //     font_size -= 1;
-                //     font = ttf
-                //         .load_font("/usr/share/fonts/droid/DroidSansMono.ttf", font_size)
-                //         .unwrap()
-                // }
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Q),
                     keymod: sdl2::keyboard::Mod::LCTRLMOD,

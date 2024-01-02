@@ -23,7 +23,7 @@ pub fn basic(filter: String, candidates: &[String]) -> Option<Vec<FuzzyMatch>> {
 // fn fuzzy(filter: String, candidates: [String]) -> [FuzzyMatch] {}
 #[cfg(test)]
 mod tests {
-    use crate::fuzzy::basic;
+    use crate::utils::fuzzy::basic;
     #[test]
     fn test_basic_search() {
         dbg!("hhhhhhhheeelo");

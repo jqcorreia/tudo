@@ -12,7 +12,7 @@ pub struct SelectList {
 
 impl Render for SelectList {
     fn id(&self) -> String {
-        String::from("prompt")
+        String::from("select")
     }
 
     fn render(
@@ -71,6 +71,10 @@ impl EventConsumer for SelectList {
     fn consume_event(&mut self, event: &Event) {
         match event {
             sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Return),
+                ..
+            } => (),
+            sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,
                 ..
@@ -114,5 +118,12 @@ impl SelectList {
         }
         self.items = new_list;
         self.set_selected_index(0);
+    }
+
+    pub fn get_selected_item(&mut self) -> Option<String> {
+        match &self.items {
+            None => None,
+            Some(items) => Some(items.get(self.selected_index).unwrap().to_string()),
+        }
     }
 }
