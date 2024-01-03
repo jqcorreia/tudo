@@ -21,27 +21,30 @@ impl Source for DesktopApplications {
             "/usr/share/applications",
             "/home/jqcorreia/.local/share/applications",
         ] {
-            let desktop_files = fs::read_dir(path)
-                .unwrap()
-                .filter(|entry| {
-                    entry
-                        .as_ref()
-                        .unwrap()
-                        .file_name()
-                        .into_string()
-                        .unwrap()
-                        .ends_with(".desktop")
-                })
-                .map(|entry| {
-                    entry
-                        .as_ref()
-                        .unwrap()
-                        .path()
-                        .into_os_string()
-                        .into_string()
-                        .unwrap()
-                })
-                .collect::<Vec<String>>();
+            let desktop_files = match fs::read_dir(path) {
+                Ok(entries) => entries
+                    .filter(|entry| {
+                        entry
+                            .as_ref()
+                            .unwrap()
+                            .file_name()
+                            .into_string()
+                            .unwrap()
+                            .ends_with(".desktop")
+                    })
+                    .map(|entry| {
+                        entry
+                            .as_ref()
+                            .unwrap()
+                            .path()
+                            .into_os_string()
+                            .into_string()
+                            .unwrap()
+                    })
+                    .collect::<Vec<String>>(),
+
+                Err(_) => Vec::new(),
+            };
 
             for file in desktop_files.iter() {
                 let contents = fs::read_to_string(file).expect("File not found");

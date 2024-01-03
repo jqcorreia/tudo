@@ -27,15 +27,15 @@ impl SourceItemsList {
         if new_list.len() == 0 {
             return;
         }
-        let titles_list = new_list
+        let haystack = new_list
             .iter()
             .map(|i| i.title.clone())
             .collect::<Vec<String>>();
 
         if prompt.len() == 0 {
-            self.list.set_list(titles_list);
+            self.list.set_list(haystack);
         } else {
-            let matches = basic(prompt.to_string(), &titles_list).unwrap_or(Vec::new());
+            let matches = basic(prompt.to_string(), &haystack).unwrap_or(Vec::new());
             let mut final_list = Vec::new();
 
             for m in matches {
