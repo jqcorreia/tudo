@@ -35,11 +35,14 @@ impl SourceItemsList {
         if prompt.len() == 0 {
             self.list.set_list(titles_list);
         } else {
+            let matches = basic(prompt.to_string(), &titles_list).unwrap_or(Vec::new());
+            let mut final_list = Vec::new();
+
+            for m in matches {
+                final_list.push(new_list.get(m.original_idx).unwrap());
+            }
             self.list
-                .set_list(match basic(prompt.to_string(), &titles_list) {
-                    Some(v) => v.iter().map(|x| x.value.clone()).collect(),
-                    None => Vec::new(),
-                });
+                .set_list(final_list.iter().map(|i| i.title.clone()).collect());
         }
         self.items = new_list;
     }

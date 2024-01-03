@@ -4,6 +4,8 @@ pub mod components;
 pub mod sources;
 pub mod utils;
 
+use std::fs;
+
 use components::source_items_list::SourceItemsList;
 use components::text;
 use components::traits::EventConsumer;
@@ -17,6 +19,7 @@ use sdl2::{keyboard::Keycode, pixels::Color, rect::Rect};
 use sources::apps::DesktopApplications;
 use sources::SourceItem;
 use utils::atlas::FontAtlas;
+use utils::icons::IconCache;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -45,6 +48,7 @@ fn main() {
     };
     let mut select_list = SourceItemsList::new();
     let mut atlas = FontAtlas::new(&tc);
+    let mut icons = IconCache::new(&tc);
 
     // Process sources and generate global items list
     let mut sources: Vec<Box<dyn Source>> = vec![Box::new(DesktopApplications::new())];

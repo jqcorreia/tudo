@@ -2,15 +2,18 @@
 pub struct FuzzyMatch {
     pub value: String,
     pub score: u32,
+    pub original_idx: usize,
 }
 
 pub fn basic(filter: String, candidates: &[String]) -> Option<Vec<FuzzyMatch>> {
     let result: Vec<FuzzyMatch> = candidates
         .iter()
-        .filter(|c| c.to_lowercase().starts_with(&filter.to_lowercase()))
-        .map(|c| FuzzyMatch {
+        .enumerate()
+        .filter(|(_, c)| c.to_lowercase().starts_with(&filter.to_lowercase()))
+        .map(|(i, c)| FuzzyMatch {
             value: c.to_string(),
             score: 0,
+            original_idx: i,
         })
         .collect();
 
