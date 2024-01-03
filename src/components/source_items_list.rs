@@ -11,14 +11,14 @@ use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 pub struct SourceItemsList {
-    pub list: SelectList,
+    pub list: SelectList<(String, String)>,
     pub items: Vec<SourceItem>,
 }
 
 impl SourceItemsList {
     pub fn new() -> SourceItemsList {
         SourceItemsList {
-            list: SelectList::new(),
+            list: SelectList::<(String, String)>::new(),
             items: Vec::new(),
         }
     }
@@ -27,14 +27,19 @@ impl SourceItemsList {
         if new_list.len() == 0 {
             return;
         }
-        let haystack = new_list
-            .iter()
-            .map(|i| i.title.clone())
-            .collect::<Vec<String>>();
 
         if prompt.len() == 0 {
-            self.list.set_list(haystack);
+            self.list.set_list(
+                new_list
+                    .iter()
+                    .map(|i| (i.title, "foo".to_string()))
+                    .collect::<Vec<(String, String)>>(),
+            );
         } else {
+            let haystack = new_list
+                .iter()
+                .map(|i| i.title.clone())
+                .collect::<Vec<String>>();
             let matches = basic(prompt.to_string(), &haystack).unwrap_or(Vec::new());
             let mut final_list = Vec::new();
 
@@ -50,7 +55,7 @@ impl SourceItemsList {
     fn exec(&mut self) {
         let selected_title = self.list.get_selected_item().unwrap();
         for i in self.items.iter() {
-            if i.title == selected_title {
+            if i.title == selected_title.to_string() {
                 let mut args = vec!["-c"];
 
                 for token in i.action.split(" ") {

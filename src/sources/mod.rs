@@ -1,6 +1,6 @@
 pub mod apps;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SourceItem {
     pub icon: Option<String>,
     pub title: String,

@@ -4,9 +4,7 @@ pub mod components;
 pub mod sources;
 pub mod utils;
 
-use std::fs;
-
-use components::source_items_list::SourceItemsList;
+use components::list::SelectList;
 use components::text;
 use components::traits::EventConsumer;
 use components::traits::Render;
@@ -35,6 +33,7 @@ fn main() {
 
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
+    // let font_path = "/usr/share/fonts/windows/Inkfree.ttf";
     let font = ttf.load_font(font_path, font_size).unwrap();
 
     let mut canvas = window.into_canvas().build().unwrap();
@@ -46,7 +45,7 @@ fn main() {
         text: String::from(""),
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
-    let mut select_list = SourceItemsList::new();
+    let mut select_list = SelectList::<SourceItem>::new();
     let mut atlas = FontAtlas::new(&tc);
     let mut icons = IconCache::new(&tc);
 
@@ -72,16 +71,7 @@ fn main() {
         let prompt_text = &prompt.text;
         select_list.set_list_and_prompt(items.clone(), prompt_text.to_string());
 
-        // If nothing is written just clear the select list items
-        // if prompt_text.len() == -1 {
-        //     select_list.set_list(None);
-        // } else {
-        //     select_list.set_list(match basic(prompt_text.to_string(), &items) {
-        //         Some(v) => Some(v.iter().map(|x| x.value.clone()).collect()),
-        //         None => None,
-        //     });
-        // }
-
+        // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
         for event in cur_events.iter() {
             match event {
@@ -153,10 +143,6 @@ fn main() {
         //     canvas.copy(&tex, None, *rect).unwrap();
         // }
 
-        // // Draw the FPS counter directly into the window canvas
-        // if draw_debug_info {
-        //     draw_fps(&mut canvas, &font, fps);
-        // }
         canvas.present();
     }
 }

@@ -53,6 +53,7 @@ impl Source for DesktopApplications {
                 let mut title: Option<String> = None;
                 let mut action: Option<String> = None;
                 let mut terminal: Option<String> = None;
+                let mut icon: Option<String> = None;
 
                 // Idiot parser but it works
                 for line in contents.split("\n") {
@@ -71,14 +72,15 @@ impl Source for DesktopApplications {
                             match (split.next(), split.next()) {
                                 (Some("Name"), Some(name)) => title = Some(name.to_string()),
                                 (Some("Exec"), Some(exec)) => action = Some(exec.to_string()),
-                                (Some("Terminal"), Some(terminal_bool)) => {
-                                    terminal = Some(terminal_bool.to_string())
-                                }
+                                (Some("Icon"), Some(icon_)) => icon = Some(icon_.to_string()),
                                 _ => (),
                             };
                         }
                         _ => (),
                     };
+                }
+                if icon.is_some() {
+                    println!("{}", icon.unwrap());
                 }
 
                 if title.is_some() && action.is_some() {
