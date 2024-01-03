@@ -1,3 +1,5 @@
+use std::usize;
+
 use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
@@ -5,7 +7,7 @@ use crate::components::traits::{EventConsumer, Render};
 use crate::utils::atlas::FontAtlas;
 
 pub struct SelectList {
-    pub items: Option<Vec<String>>,
+    pub items: Vec<String>,
     pub foreground_color: Color,
     pub selected_index: usize,
 }
@@ -28,40 +30,36 @@ impl Render for SelectList {
         canvas.clear();
 
         //FIXME(quadrado): drawing routines should be abstracted
-        match &self.items {
-            Some(items) => {
-                for (idx, item) in items.as_slice().iter().enumerate() {
-                    let texture =
-                        atlas.draw_string(item.clone(), canvas, font, self.foreground_color);
+        if self.items.len() == 0 {
+            let texture = atlas.draw_string(
+                "No items found".to_string(),
+                canvas,
+                font,
+                self.foreground_color,
+            );
 
-                    let query = texture.query();
-                    let (w, h) = (query.width, query.height);
-                    if idx == self.selected_index {
-                        canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-                        canvas
-                            .draw_rect(Rect::new(0, y as i32, rect.width(), h))
-                            .unwrap();
-                    }
-
-                    canvas
-                        .copy(&texture, None, Some(Rect::new(10, y as i32, w, h)))
-                        .unwrap();
-                    y += h + 1;
-                }
-            }
-            None => {
-                let texture = atlas.draw_string(
-                    "No items found".to_string(),
-                    canvas,
-                    font,
-                    self.foreground_color,
-                );
+            let query = texture.query();
+            let (w, h) = (query.width, query.height);
+            canvas
+                .copy(&texture, None, Some(Rect::new(20, y as i32, w, h)))
+                .unwrap();
+        } else {
+            for (idx, item) in self.items.as_slice().iter().enumerate() {
+                let texture = atlas.draw_string(item.clone(), canvas, font, self.foreground_color);
 
                 let query = texture.query();
                 let (w, h) = (query.width, query.height);
+                if idx == self.selected_index {
+                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
+                    canvas
+                        .draw_rect(Rect::new(0, y as i32, rect.width(), h))
+                        .unwrap();
+                }
+
                 canvas
-                    .copy(&texture, None, Some(Rect::new(20, y as i32, w, h)))
+                    .copy(&texture, None, Some(Rect::new(10, y as i32, w, h)))
                     .unwrap();
+                y += h + 1;
             }
         }
     }
@@ -92,7 +90,7 @@ impl EventConsumer for SelectList {
 impl SelectList {
     pub fn new() -> SelectList {
         SelectList {
-            items: None,
+            items: Vec::new(),
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
         }
@@ -103,7 +101,7 @@ impl SelectList {
         }
     }
     pub fn select_down(&mut self) {
-        if self.items.is_some() && self.selected_index < self.items.as_ref().unwrap().len() - 1 {
+        if self.items.len() > 0 && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
         }
     }
@@ -112,7 +110,7 @@ impl SelectList {
         self.selected_index = idx;
     }
 
-    pub fn set_list(&mut self, new_list: Option<Vec<String>>) {
+    pub fn set_list(&mut self, new_list: Vec<String>) {
         if new_list == self.items {
             return;
         }
@@ -121,9 +119,9 @@ impl SelectList {
     }
 
     pub fn get_selected_item(&mut self) -> Option<String> {
-        match &self.items {
+        match self.items.get(self.selected_index) {
             None => None,
-            Some(items) => Some(items.get(self.selected_index).unwrap().to_string()),
+            Some(item) => Some(item.to_string()),
         }
     }
 }

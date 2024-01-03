@@ -32,14 +32,13 @@ impl SourceItemsList {
             .map(|i| i.title.clone())
             .collect::<Vec<String>>();
 
-        // If nothing is written just clear the select list items
         if prompt.len() == 0 {
-            self.list.set_list(Some(titles_list));
+            self.list.set_list(titles_list);
         } else {
             self.list
                 .set_list(match basic(prompt.to_string(), &titles_list) {
-                    Some(v) => Some(v.iter().map(|x| x.value.clone()).collect()),
-                    None => None,
+                    Some(v) => v.iter().map(|x| x.value.clone()).collect(),
+                    None => Vec::new(),
                 });
         }
         self.items = new_list;
@@ -49,8 +48,12 @@ impl SourceItemsList {
         let selected_title = self.list.get_selected_item().unwrap();
         for i in self.items.iter() {
             if i.title == selected_title {
-                Command::new(i.action.clone()).spawn();
-                dbg!(i);
+                let mut args = vec!["-c"];
+
+                for token in i.action.split(" ") {
+                    args.push(token);
+                }
+                let _cmd = Command::new("sh").args(args).spawn();
             }
         }
     }

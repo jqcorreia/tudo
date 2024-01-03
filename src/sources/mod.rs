@@ -2,6 +2,7 @@ pub mod apps;
 
 #[derive(Debug, Clone)]
 pub struct SourceItem {
+    pub icon: Option<String>,
     pub title: String,
     pub action: String,
 }

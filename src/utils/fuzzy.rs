@@ -7,7 +7,7 @@ pub struct FuzzyMatch {
 pub fn basic(filter: String, candidates: &[String]) -> Option<Vec<FuzzyMatch>> {
     let result: Vec<FuzzyMatch> = candidates
         .iter()
-        .filter(|c| c.starts_with(&filter))
+        .filter(|c| c.to_lowercase().starts_with(&filter.to_lowercase()))
         .map(|c| FuzzyMatch {
             value: c.to_string(),
             score: 0,

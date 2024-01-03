@@ -1,4 +1,4 @@
-use std::{fs, os};
+use std::fs;
 
 use crate::sources::{Source, SourceItem};
 
@@ -23,6 +23,15 @@ impl Source for DesktopApplications {
         ] {
             let desktop_files = fs::read_dir(path)
                 .unwrap()
+                .filter(|entry| {
+                    entry
+                        .as_ref()
+                        .unwrap()
+                        .file_name()
+                        .into_string()
+                        .unwrap()
+                        .ends_with(".desktop")
+                })
                 .map(|entry| {
                     entry
                         .as_ref()
@@ -40,17 +49,28 @@ impl Source for DesktopApplications {
                 let mut desk_entry = false;
                 let mut title: Option<String> = None;
                 let mut action: Option<String> = None;
+                let mut terminal: Option<String> = None;
 
+                // Idiot parser but it works
                 for line in contents.split("\n") {
                     match (line, desk_entry) {
                         ("[Desktop Entry]", false) => {
                             desk_entry = true;
                         }
                         (text, true) => {
+                            // This means a section we are not interested in
+                            if text.starts_with("[") {
+                                desk_entry = false;
+                                continue;
+                            }
+
                             let mut split = text.split("=");
                             match (split.next(), split.next()) {
                                 (Some("Name"), Some(name)) => title = Some(name.to_string()),
                                 (Some("Exec"), Some(exec)) => action = Some(exec.to_string()),
+                                (Some("Terminal"), Some(terminal_bool)) => {
+                                    terminal = Some(terminal_bool.to_string())
+                                }
                                 _ => (),
                             };
                         }
@@ -60,12 +80,16 @@ impl Source for DesktopApplications {
 
                 if title.is_some() && action.is_some() {
                     res.push(SourceItem {
+                        icon: Some(
+                            "/usr/share/icons/Adwaita/16x16/devices/audio-headphones.png"
+                                .to_string(),
+                        ),
                         title: title.unwrap(),
                         action: action.unwrap(),
                     });
                 } else {
                     println!(
-                        "{} file doenst have some info. {} {}",
+                        "{} file doesnt have some info. {} {}",
                         file,
                         title.is_some(),
                         action.is_some()

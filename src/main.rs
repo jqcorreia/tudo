@@ -9,6 +9,7 @@ use components::text;
 use components::traits::EventConsumer;
 use components::traits::Render;
 
+use sdl2::image::InitFlag;
 use sources::Source;
 
 use sdl2::pixels::PixelFormatEnum;
@@ -21,6 +22,7 @@ fn main() {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
     let ttf = sdl2::ttf::init().unwrap();
+    let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
     let window = video
         .window("tudo", 1024, 768)
         .opengl()
