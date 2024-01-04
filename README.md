@@ -19,13 +19,13 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
     - SDL2 with `ttf` and `image`
 
 # TODO
-[X] Source and Source items structure  
-[X] Simple system applications source (XDG based)    
-[X] Basic UI components  
-[X] Basic search (beggining of word)  
-[X] Crappy application execution  
-[X] List with Icons (templating FTW)  
-[?] XDG ini file parsing  
-[?] Icon processing  
-[ ] More prettier  
-[ ] Basic layout management  
+- [X] Source and Source items structure  
+- [X] Simple system applications source (XDG based)    
+- [X] Basic UI components  
+- [X] Basic search (beggining of word)  
+- [X] Crappy application execution  
+- [X] List with Icons (templating FTW)  
+- [?] XDG ini file parsing  
+- [?] Icon processing  
+- [ ] More prettier  
+- [ ] Basic layout management  
