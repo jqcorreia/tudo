@@ -127,7 +127,7 @@ impl Render for SelectList<SourceItem> {
                 if item.icon.is_some() {
                     let icon_texture = tc.load_texture(&item.icon.as_ref().unwrap()).unwrap();
                     canvas
-                        .copy(&icon_texture, None, Rect::new(0, y as i32, 20, 20))
+                        .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
                         .unwrap();
                 }
 

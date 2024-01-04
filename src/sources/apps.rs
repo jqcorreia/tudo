@@ -1,6 +1,9 @@
 use std::fs;
 
-use crate::sources::{Source, SourceItem};
+use crate::{
+    sources::{Source, SourceItem},
+    utils::xdg::{self, parse_ini_file},
+};
 
 pub struct DesktopApplications {
     calculated_items: Vec<SourceItem>,
@@ -47,50 +50,22 @@ impl Source for DesktopApplications {
             };
 
             for file in desktop_files.iter() {
-                let contents = fs::read_to_string(file).expect("File not found");
+                let desk_entry = parse_ini_file(file.to_string());
 
-                let mut desk_entry = false;
-                let mut title: Option<String> = None;
-                let mut action: Option<String> = None;
-                let mut terminal: Option<String> = None;
-                let mut icon: Option<String> = None;
+                let title = desk_entry.get("Desktop Entry").unwrap().get("Name");
+                let action = desk_entry.get("Desktop Entry").unwrap().get("Exec");
+                // let icon = desk_entry.get("Desktop Entry").unwrap().get("Icon");
 
-                // Idiot parser but it works
-                for line in contents.split("\n") {
-                    match (line, desk_entry) {
-                        ("[Desktop Entry]", false) => {
-                            desk_entry = true;
-                        }
-                        (text, true) => {
-                            // This means a section we are not interested in
-                            if text.starts_with("[") {
-                                desk_entry = false;
-                                continue;
-                            }
-
-                            let mut split = text.split("=");
-                            match (split.next(), split.next()) {
-                                (Some("Name"), Some(name)) => title = Some(name.to_string()),
-                                (Some("Exec"), Some(exec)) => action = Some(exec.to_string()),
-                                (Some("Icon"), Some(icon_)) => icon = Some(icon_.to_string()),
-                                _ => (),
-                            };
-                        }
-                        _ => (),
-                    };
-                }
-                if icon.is_some() {
-                    println!("{}", icon.unwrap());
-                }
+                let icon = match desk_entry.get("Desktop Entry").unwrap().get("Icon") {
+                    Some(_icon) => dbg!(xdg::get_icon(_icon.to_string())),
+                    None => None,
+                };
 
                 if title.is_some() && action.is_some() {
                     res.push(SourceItem {
-                        icon: Some(
-                            "/usr/share/icons/Adwaita/16x16/devices/audio-headphones.png"
-                                .to_string(),
-                        ),
-                        title: title.unwrap(),
-                        action: action.unwrap(),
+                        icon: icon,
+                        title: title.unwrap().to_string(),
+                        action: action.unwrap().to_string(),
                     });
                 } else {
                     println!(

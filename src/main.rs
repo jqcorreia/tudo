@@ -80,6 +80,10 @@ fn main() {
                     keymod: sdl2::keyboard::Mod::LCTRLMOD,
                     ..
                 } => running = false,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => running = false,
                 sdl2::event::Event::Quit { .. } => running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)

@@ -34,9 +34,13 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
     res
 }
 
-pub fn get_icon(name: String) -> String {
+pub fn get_icon(name: String) -> Option<String> {
+    // First check if icon identifier is a path
+    if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
+        return Some(name);
+    }
     let base_folder = "/usr/share/icons";
-    let theme = "Adwaita";
+    let theme = "hicolor";
 
     let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
 
@@ -72,21 +76,21 @@ pub fn get_icon(name: String) -> String {
                         .unwrap()
                         == name
                     {
-                        return file
-                            .as_ref()
-                            .unwrap()
-                            .path()
-                            .into_os_string()
-                            .into_string()
-                            .unwrap();
+                        return Some(
+                            file.as_ref()
+                                .unwrap()
+                                .path()
+                                .into_os_string()
+                                .into_string()
+                                .unwrap(),
+                        );
                     }
                 }
             }
             Err(_) => (),
         }
     }
-
-    "/usr/share/icons/Adwaita/16x16/devices/audio-headphones.png".to_string()
+    None
 }
 
 #[cfg(test)]
