@@ -1,4 +1,5 @@
 pub mod atlas;
+pub mod cache;
 pub mod fuzzy;
-pub mod icons;
+pub mod image;
 pub mod xdg;

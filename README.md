@@ -27,5 +27,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [X] List with Icons (templating FTW)  
 - [?] XDG ini file parsing  
 - [?] Icon processing  
+- [ ] Select list scrolling
 - [ ] More prettier  
 - [ ] Basic layout management  
+

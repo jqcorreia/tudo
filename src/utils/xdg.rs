@@ -1,9 +1,26 @@
-use std::{collections::HashMap, fs};
+use std::{any::type_name, collections::HashMap, fs};
 
 #[derive(Debug)]
 pub struct Section {
     pub header: String,
     pub values: HashMap<String, String>,
+}
+
+pub struct IconFinder {
+    map: HashMap<String, String>,
+}
+impl IconFinder {
+    pub fn new() -> IconFinder {
+        let map = generate_map();
+        IconFinder { map: map }
+    }
+    pub fn get_icon(&self, name: String) -> Option<String> {
+        // First check if icon identifier is a path
+        if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
+            return Some(name);
+        }
+        self.map.get(&name).cloned()
+    }
 }
 
 pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> {
@@ -34,6 +51,37 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
     res
 }
 
+pub fn generate_map() -> HashMap<String, String> {
+    let mut map: HashMap<String, String> = HashMap::new();
+    let base_folder = "/usr/share/icons";
+    let theme = "hicolor";
+
+    let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+    let dirs: Vec<String> = ini
+        .get("Icon Theme")
+        .unwrap()
+        .get("Directories")
+        .unwrap()
+        .split(",")
+        .map(|x| x.to_string())
+        .collect();
+
+    for dir in dirs.iter() {
+        let d = format!("{}/{}/{}", base_folder, theme, dir);
+        match fs::read_dir(d) {
+            Ok(files) => {
+                for file in files {
+                    let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
+                    let fname = fpath.split("/").last().unwrap().split(".").next().unwrap();
+
+                    map.insert(fname.to_string(), fpath);
+                }
+            }
+            Err(_) => (),
+        }
+    }
+    map
+}
 pub fn get_icon(name: String) -> Option<String> {
     // First check if icon identifier is a path
     if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
@@ -58,13 +106,6 @@ pub fn get_icon(name: String) -> Option<String> {
         match fs::read_dir(d) {
             Ok(files) => {
                 for file in files {
-                    let file_name = file.as_ref().unwrap().file_name().into_string().unwrap();
-                    println!(
-                        "{} {} {}",
-                        file_name,
-                        file_name.split(".").next().unwrap(),
-                        name
-                    );
                     if file
                         .as_ref()
                         .unwrap()

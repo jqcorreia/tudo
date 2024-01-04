@@ -6,18 +6,18 @@ use sdl2::{
 
 use std::{collections::HashMap, fs};
 #[derive(Hash, Eq, PartialEq, Clone)]
-pub struct Key {
+pub struct ImageKey {
     pub path: String,
 }
 
-pub struct Cache<'fa> {
-    pub cache: HashMap<Key, Texture<'fa>>,
+pub struct ImageCache<'fa> {
+    pub cache: HashMap<ImageKey, Texture<'fa>>,
     tc: &'fa TextureCreator<WindowContext>,
 }
 
-impl<'fa> Cache<'fa> {
+impl<'fa> ImageCache<'fa> {
     pub fn new(tc: &'fa TextureCreator<WindowContext>) -> Self {
-        Cache {
+        ImageCache {
             cache: HashMap::new(),
             tc,
         }
@@ -27,13 +27,13 @@ impl<'fa> Cache<'fa> {
 
         let tex: Texture<'fa> = self.tc.load_texture_bytes(&buf).unwrap();
 
-        let key = Key { path };
+        let key = ImageKey { path };
         self.cache.insert(key.clone(), tex);
         self.cache.get(&key).unwrap()
     }
 
-    pub fn get_icon(&mut self, path: String) -> &Texture {
-        let key = Key { path: path.clone() };
+    pub fn get_image(&mut self, path: String) -> &Texture {
+        let key = ImageKey { path: path.clone() };
 
         let mut new = false;
         if let None = self.cache.get(&key) {

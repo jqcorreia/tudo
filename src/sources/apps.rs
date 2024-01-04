@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::{
     sources::{Source, SourceItem},
-    utils::xdg::{self, parse_ini_file},
+    utils::xdg::{self, parse_ini_file, IconFinder},
 };
 
 pub struct DesktopApplications {
@@ -20,6 +20,7 @@ impl Source for DesktopApplications {
     fn calculate_items(&mut self) {
         let mut res: Vec<SourceItem> = Vec::new();
 
+        let icon_finder = IconFinder::new();
         for path in [
             "/usr/share/applications",
             "/home/jqcorreia/.local/share/applications",
@@ -57,7 +58,7 @@ impl Source for DesktopApplications {
                 // let icon = desk_entry.get("Desktop Entry").unwrap().get("Icon");
 
                 let icon = match desk_entry.get("Desktop Entry").unwrap().get("Icon") {
-                    Some(_icon) => dbg!(xdg::get_icon(_icon.to_string())),
+                    Some(_icon) => icon_finder.get_icon(_icon.to_string()),
                     None => None,
                 };
 

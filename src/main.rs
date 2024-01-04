@@ -17,7 +17,6 @@ use sdl2::{keyboard::Keycode, pixels::Color, rect::Rect};
 use sources::apps::DesktopApplications;
 use sources::SourceItem;
 use utils::atlas::FontAtlas;
-use utils::icons::IconCache;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -47,7 +46,6 @@ fn main() {
     };
     let mut select_list = SelectList::<SourceItem>::new();
     let mut atlas = FontAtlas::new(&tc);
-    let mut icons = IconCache::new(&tc);
 
     // Process sources and generate global items list
     let mut sources: Vec<Box<dyn Source>> = vec![Box::new(DesktopApplications::new())];
@@ -56,20 +54,20 @@ fn main() {
         source.calculate_items();
     }
 
-    // Check how you can do this
-    // for source in sources {
-    //     for item in source.items().iter() {
-    //         items.push(item);
-    //     }
-    // }
-
-    while running {
-        let mut items: Vec<SourceItem> = Vec::new();
-        for item in sources[0].items().iter() {
+    let mut items: Vec<SourceItem> = Vec::new();
+    for source in sources {
+        for item in source.items().iter() {
             items.push(item.clone());
         }
+    }
+
+    let mut cur_prompt = "".to_string();
+    while running {
         let prompt_text = &prompt.text;
-        select_list.set_list_and_prompt(items.clone(), prompt_text.to_string());
+        if prompt_text != &cur_prompt {
+            select_list.set_list_and_prompt(items.clone(), prompt_text.to_string());
+            cur_prompt = prompt_text.to_string();
+        }
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();

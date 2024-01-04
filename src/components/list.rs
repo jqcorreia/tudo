@@ -56,10 +56,6 @@ impl<T: PartialEq> SelectList<T> {
 }
 impl SelectList<SourceItem> {
     pub fn set_list_and_prompt(&mut self, new_list: Vec<SourceItem>, prompt: String) {
-        if new_list.len() == 0 {
-            return;
-        }
-
         if prompt.len() == 0 {
             self.set_list(new_list);
         } else {
