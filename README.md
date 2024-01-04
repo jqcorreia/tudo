@@ -1,6 +1,6 @@
 # TUDO
-*T*UDO *U*niveral *D*esktop *O*perator*  
-*T*ransforming *U*ser-*D*evice *O*peration  
+**T**UDO **U**niveral **D**esktop **O**perator**  
+**T**ransforming **U**ser-**D**evice **O**peration  
 Everything (in Portuguese)  
 Take a pick at the meaning.  
 
@@ -15,6 +15,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Tray icons, interactable
 - TOML configuration (with sane defaults)
 - Extendable in Lua
+- Minimal list of dependencies
+    - SDL2 with `ttf` and `image`
 
 # TODO
 [X] Source and Source items structure
