@@ -2,12 +2,15 @@ use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
-use crate::utils::atlas::FontAtlas;
+use crate::utils::cache::TextureCache;
+
+use super::traits::Component;
 
 pub struct Prompt {
     pub text: String,
     pub foreground_color: Color,
 }
+impl Component for Prompt {}
 
 impl Render for Prompt {
     fn id(&self) -> String {
@@ -16,20 +19,22 @@ impl Render for Prompt {
 
     fn render(
         &mut self,
-        atlas: &mut FontAtlas,
+        cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
     ) {
         if self.text.len() == 0 {}
         let texture = match self.text.len() {
-            0 => atlas.draw_string(
+            0 => cache.font.draw_string(
                 "Write something".to_string(),
                 canvas,
                 font,
                 Color::RGBA(100, 100, 100, 255),
             ),
-            _ => atlas.draw_string(self.text.clone(), canvas, font, self.foreground_color),
+            _ => cache
+                .font
+                .draw_string(self.text.clone(), canvas, font, self.foreground_color),
         };
         let query = texture.query();
         let (w, h) = (query.width, query.height);

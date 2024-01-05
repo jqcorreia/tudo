@@ -1,20 +1,24 @@
 use std::process::Command;
 use std::usize;
 
-use sdl2::image::{self, LoadTexture};
 use sdl2::keyboard::Keycode;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
-use crate::utils::atlas::FontAtlas;
+use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic;
+
+use super::traits::Component;
 
 pub struct SelectList<T> {
     pub items: Vec<T>,
     pub foreground_color: Color,
     pub selected_index: usize,
 }
+
+impl Component for SelectList<SourceItem> {}
+impl Component for SelectList<String> {}
 
 impl<T: PartialEq> SelectList<T> {
     pub fn new() -> SelectList<T> {
@@ -91,7 +95,7 @@ impl Render for SelectList<SourceItem> {
 
     fn render(
         &mut self,
-        atlas: &mut FontAtlas,
+        cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -105,7 +109,7 @@ impl Render for SelectList<SourceItem> {
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
-            let texture = atlas.draw_string(
+            let texture = cache.font.draw_string(
                 "No items found".to_string(),
                 canvas,
                 font,
@@ -121,7 +125,9 @@ impl Render for SelectList<SourceItem> {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
                 // Draw icon
                 if item.icon.is_some() {
-                    let icon_texture = tc.load_texture(&item.icon.as_ref().unwrap()).unwrap();
+                    let icon_texture = cache
+                        .images
+                        .get_image(item.icon.as_ref().unwrap().to_string());
                     canvas
                         .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
                         .unwrap();
@@ -129,7 +135,9 @@ impl Render for SelectList<SourceItem> {
 
                 // Draw text
                 let text_texture =
-                    atlas.draw_string(item.title.clone(), canvas, font, self.foreground_color);
+                    cache
+                        .font
+                        .draw_string(item.title.clone(), canvas, font, self.foreground_color);
                 let query = text_texture.query();
                 let (w, h) = (query.width, query.height);
                 if idx == self.selected_index {
@@ -155,7 +163,7 @@ impl Render for SelectList<String> {
 
     fn render(
         &mut self,
-        atlas: &mut FontAtlas,
+        cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -167,7 +175,7 @@ impl Render for SelectList<String> {
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
-            let texture = atlas.draw_string(
+            let texture = cache.font.draw_string(
                 "No items found".to_string(),
                 canvas,
                 font,
@@ -181,7 +189,10 @@ impl Render for SelectList<String> {
                 .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
-                let texture = atlas.draw_string(item.clone(), canvas, font, self.foreground_color);
+                let texture =
+                    cache
+                        .font
+                        .draw_string(item.clone(), canvas, font, self.foreground_color);
 
                 let query = texture.query();
                 let (w, h) = (query.width, query.height);

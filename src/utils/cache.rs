@@ -3,8 +3,8 @@ use sdl2::{render::TextureCreator, video::WindowContext};
 use super::{atlas::FontAtlas, image::ImageCache};
 
 pub struct TextureCache<'a> {
-    font: FontAtlas<'a>,
-    images: ImageCache<'a>,
+    pub font: FontAtlas<'a>,
+    pub images: ImageCache<'a>,
 }
 
 impl<'a> TextureCache<'a> {

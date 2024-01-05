@@ -1,4 +1,4 @@
-use crate::utils::atlas::FontAtlas;
+use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
@@ -9,7 +9,7 @@ pub trait Render {
     fn id(&self) -> String;
     fn render(
         &mut self,
-        atlas: &mut FontAtlas,
+        tex_cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -19,3 +19,5 @@ pub trait Render {
 pub trait EventConsumer {
     fn consume_event(&mut self, event: &Event);
 }
+
+pub trait Component: Render + EventConsumer {}
