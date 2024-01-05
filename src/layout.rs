@@ -49,8 +49,8 @@ impl Layout {
                     Rect::new(
                         (x + m) as i32,
                         (y + m) as i32,
-                        (w - m) as u32,
-                        (h - m) as u32,
+                        (w - 2 * m) as u32,
+                        (h - 2 * m) as u32,
                     ),
                     node.key.clone().unwrap(),
                 ));
@@ -81,11 +81,23 @@ impl Layout {
             }
             ContainerType::VSplit => {
                 let nodes = node.nodes.as_ref().unwrap();
-                let count = nodes.len();
                 let accum_x = x;
                 let mut accum_y = y;
+                let sum_fixed_size: usize = nodes
+                    .iter()
+                    .filter(|n| matches!(n.size_type, SizeTypeEnum::Fixed))
+                    .map(|n| n.size)
+                    .sum();
+                let remaining_size = h - sum_fixed_size;
+
                 for n in nodes {
-                    let h_step = h / count;
+                    let h_step = match n.size_type {
+                        SizeTypeEnum::Fixed => n.size,
+                        SizeTypeEnum::Percent => {
+                            (remaining_size as f64 * (n.size as f64 / 100.0)) as usize
+                        }
+                    };
+                    // let h_step = h / count;
                     self.generate_recur(num + 1, vec, n, accum_x, accum_y, w, h_step);
                     accum_y += h_step;
                 }

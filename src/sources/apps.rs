@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::{
     sources::{Source, SourceItem},
-    utils::xdg::{self, parse_ini_file, IconFinder},
+    utils::xdg::{parse_ini_file, IconFinder},
 };
 
 pub struct DesktopApplications {

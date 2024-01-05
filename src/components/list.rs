@@ -102,7 +102,7 @@ impl Render for SelectList<SourceItem> {
     ) {
         let mut y: u32 = 0;
 
-        canvas.set_draw_color(Color::RGBA(50, 48, 47, 255));
+        canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         canvas.clear();
 
         let tc = canvas.texture_creator();

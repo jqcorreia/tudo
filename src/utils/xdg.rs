@@ -1,4 +1,4 @@
-use std::{any::type_name, collections::HashMap, fs};
+use std::{collections::HashMap, fs};
 
 #[derive(Debug)]
 pub struct Section {
