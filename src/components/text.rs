@@ -6,11 +6,11 @@ use crate::utils::cache::TextureCache;
 
 use super::traits::Component;
 
-#[derive(Debug)]
 pub struct Prompt {
     pub text: String,
     pub foreground_color: Color,
 }
+
 impl Component for Prompt {}
 
 impl Render for Prompt {

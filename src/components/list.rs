@@ -105,8 +105,6 @@ impl Render for SelectList<SourceItem> {
         canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         canvas.clear();
 
-        let tc = canvas.texture_creator();
-
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
             let texture = cache.font.draw_string(

@@ -5,12 +5,10 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
-use std::any::Any;
 use std::collections::HashMap;
 
 use components::list::SelectList;
 use components::text;
-use components::text::Prompt;
 use components::traits::Component;
 
 use layout::Container;
@@ -69,57 +67,62 @@ fn main() {
         text: String::from(""),
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
+
     let select_list = SelectList::<SourceItem>::new();
 
-    let mut comps: HashMap<String, Box<dyn Component>> = HashMap::new();
-    comps.insert("prompt".to_string(), Box::new(prompt));
-    comps.insert("list".to_string(), Box::new(select_list));
+    // let mut comps: HashMap<String, Box<dyn Component>> = HashMap::new();
+    // comps.insert("prompt".to_string(), Box::new(prompt));
+    // comps.insert("list".to_string(), Box::new(select_list));
 
-    let layout = Layout {
+    let mut layout = Layout {
         gap: 10,
         root: Container {
             key: Some("root".to_string()),
+            component: None,
             container_type: ContainerType::VSplit,
             size: 64,
             size_type: SizeTypeEnum::Fixed,
-            nodes: Some(Vec::from([
+            children: Some(Vec::from([
                 Container {
                     key: Some("prompt".to_string()),
+                    component: Some(Box::new(prompt)),
                     container_type: ContainerType::Leaf,
                     size: 64,
                     size_type: SizeTypeEnum::Fixed,
-                    nodes: None,
+                    children: None,
                 },
                 Container {
                     key: Some("list".to_string()),
+                    component: Some(Box::new(select_list)),
                     container_type: ContainerType::Leaf,
                     size: 100,
                     size_type: SizeTypeEnum::Percent,
-                    nodes: None,
+                    children: None,
                 },
             ])),
         },
     };
-    let mut lay = layout.generate(
+
+    let mut lay = layout.generate2(
         canvas.window().size().0 as usize,
         canvas.window().size().1 as usize,
     );
 
-    let mut cur_prompt = "a".to_string(); //FIXME this is wack, just a value to not be equal to
-                                          //initial prompt
+    // let mut cur_prompt = "a".to_string(); //FIXME this is wack, just a value to not be equal to
+    //initial prompt
     while running {
-        let p: &dyn Any = comps.get("prompt").unwrap();
-        let pr = p.downcast_ref::<Box<Prompt>>();
-        let prompt_text = pr.unwrap().text.clone();
+        // let p: &dyn Any = comps.get("prompt").unwrap();
+        // let pr = p.downcast_ref::<Box<Prompt>>();
+        // let prompt_text = pr.unwrap().text.clone();
 
-        let l: &mut dyn Any = comps.get_mut("list").unwrap();
-        let li: &mut SelectList<SourceItem> = l.downcast_mut::<SelectList<SourceItem>>().unwrap();
+        // let l: &mut dyn Any = comps.get_mut("list").unwrap();
+        // let li: &mut SelectList<SourceItem> = l.downcast_mut::<SelectList<SourceItem>>().unwrap();
 
-        // let prompt_text = &comps.get("prompt").unwrap().text;
-        if prompt_text != cur_prompt {
-            li.set_list_and_prompt(items.clone(), prompt_text.to_string());
-            cur_prompt = prompt_text.to_string();
-        }
+        // // let prompt_text = &comps.get("prompt").unwrap().text;
+        // if prompt_text != cur_prompt {
+        //     li.set_list_and_prompt(items.clone(), prompt_text.to_string());
+        //     cur_prompt = prompt_text.to_string();
+        // }
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
@@ -135,7 +138,7 @@ fn main() {
                 }
                 _ => (),
             }
-            for comp in comps.values_mut() {
+            for (rect, key, comp) in lay.iter_mut() {
                 comp.consume_event(&event);
             }
         }
@@ -144,11 +147,11 @@ fn main() {
         canvas.set_draw_color(Color::RGBA(50, 50, 50, 0));
         canvas.clear();
 
-        for (rect, key) in lay.iter_mut() {
+        for (rect, key, comp) in lay.iter_mut() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
-            let comp = comps.get_mut(key).unwrap();
+            // let comp = comps.get_mut(key).unwrap();
             canvas
                 .with_texture_canvas(&mut tex, |c| {
                     comp.render(&mut cache, &font, c, *rect);
