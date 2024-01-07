@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::rect::Rect;
@@ -21,3 +23,9 @@ pub trait EventConsumer {
 }
 
 pub trait Component: Render + EventConsumer {}
+
+impl Debug for dyn Component {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Component").field("id", &self.id()).finish()
+    }
+}

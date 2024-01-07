@@ -5,6 +5,8 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
+use std::any::Any;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
 use components::list::SelectList;
@@ -23,6 +25,8 @@ use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::SourceItem;
 use utils::cache::TextureCache;
+
+use crate::components::text::Prompt;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -70,10 +74,6 @@ fn main() {
 
     let select_list = SelectList::<SourceItem>::new();
 
-    // let mut comps: HashMap<String, Box<dyn Component>> = HashMap::new();
-    // comps.insert("prompt".to_string(), Box::new(prompt));
-    // comps.insert("list".to_string(), Box::new(select_list));
-
     let mut layout = Layout {
         gap: 10,
         root: Container {
@@ -102,16 +102,32 @@ fn main() {
             ])),
         },
     };
+    dbg!(&layout);
+
+    // let p: &dyn Any = &layout
+    //     .root
+    //     .children
+    //     .as_ref()
+    //     .unwrap()
+    //     .get(0)
+    //     .unwrap()
+    //     .component;
+
+    // p.downcast_ref::<Box<text::Prompt>>().unwrap();
 
     let mut lay = layout.generate2(
         canvas.window().size().0 as usize,
         canvas.window().size().1 as usize,
     );
 
+    // for (_, _k, p) in lay.iter_mut() {
+    //     println!("{:?}", p);
+    // }
     // let mut cur_prompt = "a".to_string(); //FIXME this is wack, just a value to not be equal to
     //initial prompt
     while running {
-        // let p: &dyn Any = comps.get("prompt").unwrap();
+        // p.type_id();
+        // dbg!(&p.1)c;
         // let pr = p.downcast_ref::<Box<Prompt>>();
         // let prompt_text = pr.unwrap().text.clone();
 
@@ -138,7 +154,7 @@ fn main() {
                 }
                 _ => (),
             }
-            for (rect, key, comp) in lay.iter_mut() {
+            for (_, _, comp) in lay.iter_mut() {
                 comp.consume_event(&event);
             }
         }
@@ -147,7 +163,7 @@ fn main() {
         canvas.set_draw_color(Color::RGBA(50, 50, 50, 0));
         canvas.clear();
 
-        for (rect, key, comp) in lay.iter_mut() {
+        for (rect, _key, comp) in lay.iter_mut() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
