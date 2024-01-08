@@ -11,7 +11,6 @@ use components::list::SelectList;
 use components::text;
 
 use components::text::Prompt;
-use components::traits::EventConsumer;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
 use layout2::LayoutItem;
@@ -44,7 +43,7 @@ fn main() {
 
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
-    // let font_path = "/usr/share/fonts/windows/Inkfree.ttf";
+
     let font = ttf.load_font(font_path, font_size).unwrap();
 
     let mut canvas = window.into_canvas().build().unwrap();
@@ -152,7 +151,6 @@ fn main() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
-            // let comp = comps.get_mut(key).unwrap();
             canvas
                 .with_texture_canvas(&mut tex, |c| {
                     comp.render(&mut cache, &font, c, *rect);
