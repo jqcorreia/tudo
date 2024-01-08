@@ -2,7 +2,6 @@ extern crate sdl2;
 
 pub mod components;
 pub mod layout;
-pub mod layout2;
 pub mod sources;
 pub mod utils;
 
@@ -13,10 +12,10 @@ use components::text;
 use components::text::Prompt;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
-use layout2::LayoutItem;
-use layout2::Leaf;
-use layout2::SizeTypeEnum;
-use layout2::Split;
+use layout::LayoutItem;
+use layout::Leaf;
+use layout::SizeTypeEnum;
+use layout::Split;
 use sdl2::image::InitFlag;
 use sdl2::pixels::PixelFormatEnum;
 use sources::Source;
@@ -26,8 +25,8 @@ use sources::apps::DesktopApplications;
 use sources::SourceItem;
 use utils::cache::TextureCache;
 
-use crate::layout2::Container;
-use crate::layout2::Layout2;
+use crate::layout::Container;
+use crate::layout::Layout2;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
