@@ -12,6 +12,8 @@ use components::text;
 
 use components::text::Prompt;
 use components::traits::EventConsumer;
+use enum_downcast::AsVariant;
+use enum_downcast::AsVariantMut;
 use layout2::LayoutItem;
 use layout2::Leaf;
 use layout2::SizeTypeEnum;
@@ -99,22 +101,18 @@ fn main() {
         canvas.window().size().1 as usize,
     );
 
-    // let mut cur_prompt = "a".to_string(); //FIXME this is wack, just a value to not be equal to
-    //initial prompt
     while running {
-        // p.type_id();
-        // dbg!(&p.1)c;
-        // let pr = p.downcast_ref::<Box<Prompt>>();
-        // let prompt_text = pr.unwrap().text.clone();
-
-        // let l: &mut dyn Any = comps.get_mut("list").unwrap();
-        // let li: &mut SelectList<SourceItem> = l.downcast_mut::<SelectList<SourceItem>>().unwrap();
-
-        // // let prompt_text = &comps.get("prompt").unwrap().text;
-        // if prompt_text != cur_prompt {
-        //     li.set_list_and_prompt(items.clone(), prompt_text.to_string());
-        //     cur_prompt = prompt_text.to_string();
-        // }
+        let ps: String;
+        // We need to do this since we cannot have multiple mutable borrows of lay
+        {
+            let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
+            ps = p.text.clone().into();
+        }
+        {
+            let l: &mut SelectList<SourceItem> =
+                &mut lay.get_mut(1).unwrap().2.as_variant_mut().unwrap();
+            l.set_list_and_prompt(items.clone(), ps)
+        }
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
@@ -135,6 +133,7 @@ fn main() {
                     Component::Prompt(prompt) => prompt,
                     Component::SelectList(list) => list,
                 };
+
                 comp.consume_event(event);
             }
         }

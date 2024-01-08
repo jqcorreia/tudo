@@ -122,6 +122,7 @@ impl Render for SelectList<SourceItem> {
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
                 // Draw icon
+                let mut icon_height: u32 = 0;
                 if item.icon.is_some() {
                     let icon_texture = cache
                         .images
@@ -129,6 +130,7 @@ impl Render for SelectList<SourceItem> {
                     canvas
                         .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
                         .unwrap();
+                    icon_height = std::cmp::min(32, icon_texture.query().height);
                 }
 
                 // Draw text
@@ -146,9 +148,9 @@ impl Render for SelectList<SourceItem> {
                 }
 
                 canvas
-                    .copy(&text_texture, None, Some(Rect::new(22, y as i32, w, h)))
+                    .copy(&text_texture, None, Some(Rect::new(34, y as i32, w, h)))
                     .unwrap();
-                y += h + 1;
+                y += std::cmp::max(h, icon_height) + 1;
             }
         }
     }
