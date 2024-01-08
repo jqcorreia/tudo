@@ -2,31 +2,31 @@ extern crate sdl2;
 
 pub mod components;
 pub mod layout;
+pub mod layout2;
 pub mod sources;
 pub mod utils;
 
-use std::any::Any;
-use std::borrow::BorrowMut;
-use std::collections::HashMap;
-
+use components::enums::Component;
 use components::list::SelectList;
 use components::text;
-use components::traits::Component;
 
-use layout::Container;
-use layout::ContainerType;
-use layout::Layout;
-use layout::SizeTypeEnum;
+use components::text::Prompt;
+use components::traits::EventConsumer;
+use layout2::LayoutItem;
+use layout2::Leaf;
+use layout2::SizeTypeEnum;
+use layout2::Split;
 use sdl2::image::InitFlag;
+use sdl2::pixels::PixelFormatEnum;
 use sources::Source;
 
-use sdl2::pixels::PixelFormatEnum;
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::SourceItem;
 use utils::cache::TextureCache;
 
-use crate::components::text::Prompt;
+use crate::layout2::Container;
+use crate::layout2::Layout2;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -74,55 +74,31 @@ fn main() {
 
     let select_list = SelectList::<SourceItem>::new();
 
-    let mut layout = Layout {
+    let mut layout2 = Layout2 {
         gap: 10,
-        root: Container {
-            key: Some("root".to_string()),
-            component: None,
-            container_type: ContainerType::VSplit,
-            size: 64,
-            size_type: SizeTypeEnum::Fixed,
-            children: Some(Vec::from([
-                Container {
-                    key: Some("prompt".to_string()),
-                    component: Some(Box::new(prompt)),
-                    container_type: ContainerType::Leaf,
-                    size: 64,
+        root: Container::VSplit(Split {
+            children: Vec::from([
+                Container::Leaf(Leaf {
+                    key: "prompt".to_string(),
                     size_type: SizeTypeEnum::Fixed,
-                    children: None,
-                },
-                Container {
-                    key: Some("list".to_string()),
-                    component: Some(Box::new(select_list)),
-                    container_type: ContainerType::Leaf,
-                    size: 100,
+                    size: 64,
+                    component: Component::Prompt(prompt),
+                }),
+                Container::Leaf(Leaf {
+                    key: "list".to_string(),
                     size_type: SizeTypeEnum::Percent,
-                    children: None,
-                },
-            ])),
-        },
+                    size: 100,
+                    component: Component::SelectList(select_list),
+                }),
+            ]),
+        }),
     };
-    dbg!(&layout);
 
-    // let p: &dyn Any = &layout
-    //     .root
-    //     .children
-    //     .as_ref()
-    //     .unwrap()
-    //     .get(0)
-    //     .unwrap()
-    //     .component;
-
-    // p.downcast_ref::<Box<text::Prompt>>().unwrap();
-
-    let mut lay = layout.generate2(
+    let mut lay = layout2.generate2(
         canvas.window().size().0 as usize,
         canvas.window().size().1 as usize,
     );
 
-    // for (_, _k, p) in lay.iter_mut() {
-    //     println!("{:?}", p);
-    // }
     // let mut cur_prompt = "a".to_string(); //FIXME this is wack, just a value to not be equal to
     //initial prompt
     while running {
@@ -154,8 +130,12 @@ fn main() {
                 }
                 _ => (),
             }
-            for (_, _, comp) in lay.iter_mut() {
-                comp.consume_event(&event);
+            for LayoutItem(_, _k, p) in lay.iter_mut() {
+                let comp: &mut dyn components::traits::Component = match p {
+                    Component::Prompt(prompt) => prompt,
+                    Component::SelectList(list) => list,
+                };
+                comp.consume_event(event);
             }
         }
 
@@ -163,7 +143,13 @@ fn main() {
         canvas.set_draw_color(Color::RGBA(50, 50, 50, 0));
         canvas.clear();
 
-        for (rect, _key, comp) in lay.iter_mut() {
+        // Render all components
+        for LayoutItem(rect, _k, p) in lay.iter_mut() {
+            let comp: &mut dyn components::traits::Component = match p {
+                Component::Prompt(prompt) => prompt,
+                Component::SelectList(list) => list,
+            };
+
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
@@ -176,7 +162,6 @@ fn main() {
 
             canvas.copy(&tex, None, *rect).unwrap();
         }
-
         canvas.present();
     }
 }
