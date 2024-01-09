@@ -1,4 +1,3 @@
-use std::process::Command;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
@@ -9,16 +8,25 @@ use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic;
 
-use super::traits::Component;
+pub struct Viewport(usize, usize);
+impl Viewport {
+    pub fn down(&mut self, amount: usize) {
+        self.0 += amount;
+        self.1 += amount;
+    }
+    pub fn up(&mut self, amount: usize) {
+        self.0 -= amount;
+        self.1 -= amount;
+    }
+}
 
 pub struct SelectList<T> {
     pub items: Vec<T>,
     pub foreground_color: Color,
     pub selected_index: usize,
+    pub viewport: Viewport,
+    pub on_select: Option<fn(&T)>,
 }
-
-impl Component for SelectList<SourceItem> {}
-impl Component for SelectList<String> {}
 
 impl<T: PartialEq> SelectList<T> {
     pub fn new() -> SelectList<T> {
@@ -26,16 +34,24 @@ impl<T: PartialEq> SelectList<T> {
             items: Vec::<T>::new(),
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
+            viewport: Viewport(0, 10),
+            on_select: None,
         }
     }
     pub fn select_up(&mut self) {
         if self.selected_index > 0 {
             self.selected_index -= 1;
+            if self.selected_index < self.viewport.0 {
+                self.viewport.up(1);
+            }
         }
     }
     pub fn select_down(&mut self) {
         if self.items.len() > 0 && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
+            if self.selected_index > self.viewport.1 {
+                self.viewport.down(1);
+            }
         }
     }
 
@@ -49,15 +65,17 @@ impl<T: PartialEq> SelectList<T> {
         }
         self.items = new_list;
         self.set_selected_index(0);
+        self.viewport = Viewport(0, 10);
     }
 
-    pub fn get_selected_item(&mut self) -> Option<&T> {
+    pub fn get_selected_item(&self) -> Option<&T> {
         match self.items.get(self.selected_index) {
             None => None,
             Some(item) => Some(item),
         }
     }
 }
+
 impl SelectList<SourceItem> {
     pub fn set_list_and_prompt(&mut self, new_list: Vec<SourceItem>, prompt: String) {
         if prompt.len() == 0 {
@@ -75,16 +93,6 @@ impl SelectList<SourceItem> {
             }
             self.set_list(final_list);
         }
-    }
-
-    fn exec(&mut self) {
-        let selected_item = self.get_selected_item().unwrap();
-        let mut args = vec!["-c"];
-
-        for token in selected_item.action.split(" ") {
-            args.push(token);
-        }
-        let _cmd = Command::new("sh").args(args).spawn();
     }
 }
 
@@ -121,8 +129,17 @@ impl Render for SelectList<SourceItem> {
                 .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
+                // Should draw or not
+                // FIXME(jqcorreia): This could be abstracted
+                if idx < self.viewport.0 || idx > self.viewport.1 {
+                    continue;
+                }
+                if y as i32 > rect.h {
+                    continue;
+                }
+
                 // Draw icon
-                let mut icon_height: u32 = 0;
+                let icon_height: u32 = 32;
                 if item.icon.is_some() {
                     let icon_texture = cache
                         .images
@@ -130,7 +147,7 @@ impl Render for SelectList<SourceItem> {
                     canvas
                         .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
                         .unwrap();
-                    icon_height = std::cmp::min(32, icon_texture.query().height);
+                    // icon_height = std::cmp::min(32, icon_texture.query().height);
                 }
 
                 // Draw text
@@ -140,17 +157,19 @@ impl Render for SelectList<SourceItem> {
                         .draw_string(item.title.clone(), canvas, font, self.foreground_color);
                 let query = text_texture.query();
                 let (w, h) = (query.width, query.height);
+                let row_height = std::cmp::max(h, icon_height);
+
                 if idx == self.selected_index {
                     canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
                     canvas
-                        .draw_rect(Rect::new(0, y as i32, rect.width(), h))
+                        .draw_rect(Rect::new(0, y as i32, rect.width(), row_height))
                         .unwrap();
                 }
 
                 canvas
                     .copy(&text_texture, None, Some(Rect::new(34, y as i32, w, h)))
                     .unwrap();
-                y += std::cmp::max(h, icon_height) + 1;
+                y += row_height + 1;
             }
         }
     }
@@ -218,7 +237,7 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
-            } => (),
+            } => (self.on_select.as_ref().unwrap())(self.get_selected_item().as_ref().unwrap()),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,

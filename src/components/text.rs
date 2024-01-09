@@ -4,14 +4,10 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 use crate::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
 
-use super::traits::Component;
-
 pub struct Prompt {
     pub text: String,
     pub foreground_color: Color,
 }
-
-impl Component for Prompt {}
 
 impl Render for Prompt {
     fn id(&self) -> String {

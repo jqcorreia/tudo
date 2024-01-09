@@ -25,9 +25,13 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [X] Basic search (beggining of word)  
 - [X] Crappy application execution  
 - [X] List with Icons (templating FTW)  
-- [?] XDG ini file parsing  
-- [?] Icon processing  
-- [ ] Select list scrolling
+- [x] XDG ini file parsing  
+- [x] Icon processing  
+- [x] Select list scrolling
+- [x] Basic layout management  
+- [ ] Better search (fuzzy)
 - [ ] More prettier  
-- [ ] Basic layout management  
+- [ ] More sources
+- [ ] Lua source?
+- [ ] UI Component state
 

@@ -5,6 +5,8 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
+use std::process::Command;
+
 use components::enums::Component;
 use components::list::SelectList;
 use components::text;
@@ -12,6 +14,7 @@ use components::text;
 use components::text::Prompt;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
+use layout::Layout;
 use layout::LayoutItem;
 use layout::Leaf;
 use layout::SizeTypeEnum;
@@ -26,7 +29,6 @@ use sources::SourceItem;
 use utils::cache::TextureCache;
 
 use crate::layout::Container;
-use crate::layout::Layout2;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -72,9 +74,18 @@ fn main() {
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
 
-    let select_list = SelectList::<SourceItem>::new();
+    let mut select_list = SelectList::<SourceItem>::new();
 
-    let mut layout2 = Layout2 {
+    select_list.on_select = Some(|item| {
+        let mut args = vec!["-c"];
+
+        for token in item.action.split(" ") {
+            args.push(token);
+        }
+        let _cmd = Command::new("sh").args(args).spawn();
+    });
+
+    let mut layout2 = Layout {
         gap: 10,
         root: Container::VSplit(Split {
             children: Vec::from([
@@ -127,7 +138,7 @@ fn main() {
                 _ => (),
             }
             for LayoutItem(_, _k, p) in lay.iter_mut() {
-                let comp: &mut dyn components::traits::Component = match p {
+                let comp: &mut dyn components::traits::EventConsumer = match p {
                     Component::Prompt(prompt) => prompt,
                     Component::SelectList(list) => list,
                 };
@@ -142,7 +153,7 @@ fn main() {
 
         // Render all components
         for LayoutItem(rect, _k, p) in lay.iter_mut() {
-            let comp: &mut dyn components::traits::Component = match p {
+            let comp: &mut dyn components::traits::Render = match p {
                 Component::Prompt(prompt) => prompt,
                 Component::SelectList(list) => list,
             };

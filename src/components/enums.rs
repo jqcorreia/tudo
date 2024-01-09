@@ -2,22 +2,13 @@ use std::fmt::Debug;
 
 use crate::sources::SourceItem;
 
-use super::{list::SelectList, text::Prompt, traits};
+use super::{list::SelectList, text::Prompt};
 use enum_downcast::EnumDowncast;
 
 #[derive(EnumDowncast)]
 pub enum Component {
     Prompt(Prompt),
     SelectList(SelectList<SourceItem>),
-}
-
-impl Component {
-    pub fn component_trait(&self) -> &dyn traits::Component {
-        match self {
-            Component::Prompt(prompt) => prompt,
-            Component::SelectList(list) => list,
-        }
-    }
 }
 
 impl Debug for Component {

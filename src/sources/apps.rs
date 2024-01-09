@@ -55,7 +55,6 @@ impl Source for DesktopApplications {
 
                 let title = desk_entry.get("Desktop Entry").unwrap().get("Name");
                 let action = desk_entry.get("Desktop Entry").unwrap().get("Exec");
-                // let icon = desk_entry.get("Desktop Entry").unwrap().get("Icon");
 
                 let icon = match desk_entry.get("Desktop Entry").unwrap().get("Icon") {
                     Some(_icon) => icon_finder.get_icon(_icon.to_string()),

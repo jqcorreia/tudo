@@ -23,6 +23,7 @@ impl<'fa> ImageCache<'fa> {
         }
     }
     pub fn generate_new_texture(&mut self, path: String) -> &Texture {
+        dbg!(&path);
         let buf = fs::read(&path).unwrap();
 
         let tex: Texture<'fa> = self.tc.load_texture_bytes(&buf).unwrap();

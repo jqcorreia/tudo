@@ -27,14 +27,14 @@ pub enum Container {
 }
 
 // #[derive(Debug)]
-pub struct Layout2 {
+pub struct Layout {
     pub gap: usize,
     pub root: Container,
 }
 
 pub struct LayoutItem<'a>(pub Rect, pub String, pub &'a mut Component);
 
-impl Layout2 {
+impl Layout {
     fn generate_recur2<'a>(
         num: usize,
         vec: &mut Vec<LayoutItem<'a>>,
@@ -90,7 +90,7 @@ impl Layout2 {
                         _ => 0,
                     };
 
-                    Layout2::generate_recur2(num + 1, vec, n, accum_x, accum_y, w_step, h);
+                    Layout::generate_recur2(num + 1, vec, n, accum_x, accum_y, w_step, h);
                     accum_x += w_step;
                 }
             }
@@ -126,7 +126,7 @@ impl Layout2 {
                         _ => 0,
                     };
 
-                    Layout2::generate_recur2(num + 1, vec, n, accum_x, accum_y, w, h_step);
+                    Layout::generate_recur2(num + 1, vec, n, accum_x, accum_y, w, h_step);
                     accum_y += h_step;
                 }
             }
@@ -135,7 +135,7 @@ impl Layout2 {
     pub fn generate2(&mut self, w: usize, h: usize) -> Vec<LayoutItem> {
         let mut vec: Vec<LayoutItem> = Vec::new();
 
-        Layout2::generate_recur2(0, &mut vec, &mut self.root, 0, 0, w, h);
+        Layout::generate_recur2(0, &mut vec, &mut self.root, 0, 0, w, h);
         vec
     }
 }

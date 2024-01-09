@@ -54,6 +54,69 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
 pub fn generate_map() -> HashMap<String, String> {
     let mut map: HashMap<String, String> = HashMap::new();
     let base_folder = "/usr/share/icons";
+    let mut theme = "default";
+    let mut themes: Vec<String> = Vec::new();
+
+    let mut ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+    loop {
+        match ini.get("Icon Theme").unwrap().get("Inherits") {
+            Some(th) => {
+                themes.push(th.to_string().clone());
+                theme = th;
+            }
+            None => break,
+        }
+        ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+    }
+
+    for theme in themes {
+        let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+        let dirs: Vec<String> = ini
+            .get("Icon Theme")
+            .unwrap()
+            .get("Directories")
+            .unwrap()
+            .split(",")
+            .map(|x| x.to_string())
+            .collect();
+
+        for dir in dirs.iter() {
+            let d = format!("{}/{}/{}", base_folder, theme, dir);
+            match fs::read_dir(d) {
+                Ok(files) => {
+                    for file in files {
+                        let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
+                        let fname_no_ext =
+                            fpath.split("/").last().unwrap().split(".").next().unwrap();
+
+                        map.insert(fname_no_ext.to_string(), fpath);
+                    }
+                }
+                Err(_) => (),
+            }
+        }
+    }
+    // Process /usr/share/pixmaps
+    match fs::read_dir("/usr/share/pixmaps/") {
+        Ok(files) => {
+            for file in files {
+                if file.as_ref().unwrap().file_type().unwrap().is_dir() {
+                    continue;
+                }
+                let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
+                let fname_no_ext = fpath.split("/").last().unwrap().split(".").next().unwrap();
+
+                map.insert(fname_no_ext.to_string(), fpath);
+            }
+        }
+        Err(_) => (),
+    }
+
+    map
+}
+pub fn generate_map2() -> HashMap<String, String> {
+    let mut map: HashMap<String, String> = HashMap::new();
+    let base_folder = "/usr/share/icons";
     let theme = "hicolor";
 
     let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
@@ -81,65 +144,4 @@ pub fn generate_map() -> HashMap<String, String> {
         }
     }
     map
-}
-pub fn get_icon(name: String) -> Option<String> {
-    // First check if icon identifier is a path
-    if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
-        return Some(name);
-    }
-    let base_folder = "/usr/share/icons";
-    let theme = "hicolor";
-
-    let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
-
-    let dirs: Vec<String> = ini
-        .get("Icon Theme")
-        .unwrap()
-        .get("Directories")
-        .unwrap()
-        .split(",")
-        .map(|x| x.to_string())
-        .collect();
-
-    for dir in dirs.iter() {
-        let d = format!("{}/{}/{}", base_folder, theme, dir);
-        match fs::read_dir(d) {
-            Ok(files) => {
-                for file in files {
-                    if file
-                        .as_ref()
-                        .unwrap()
-                        .file_name()
-                        .into_string()
-                        .unwrap()
-                        .split(".")
-                        .next()
-                        .unwrap()
-                        == name
-                    {
-                        return Some(
-                            file.as_ref()
-                                .unwrap()
-                                .path()
-                                .into_os_string()
-                                .into_string()
-                                .unwrap(),
-                        );
-                    }
-                }
-            }
-            Err(_) => (),
-        }
-    }
-    None
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::utils::xdg::get_icon;
-
-    #[test]
-    fn test_get_icon() {
-        dbg!(get_icon(String::from("computer")));
-    }
 }
