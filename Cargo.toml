@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 sdl2 = { version = "0.35.2", features = ["ttf", "image"]}
-enum_downcast = { features = ["derive"] }
+enum_downcast = { version="0.1.0", features = ["derive"] }

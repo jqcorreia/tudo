@@ -6,7 +6,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
-use crate::utils::fuzzy::basic;
+use crate::utils::fuzzy::{basic, basic_contains};
 
 pub struct Viewport(usize, usize);
 impl Viewport {
@@ -85,7 +85,7 @@ impl SelectList<SourceItem> {
                 .iter()
                 .map(|i| i.title.clone())
                 .collect::<Vec<String>>();
-            let matches = basic(prompt.to_string(), &haystack).unwrap_or(Vec::new());
+            let matches = basic_contains(prompt.to_string(), &haystack).unwrap_or(Vec::new());
             let mut final_list = Vec::new();
 
             for m in matches {
@@ -129,7 +129,7 @@ impl Render for SelectList<SourceItem> {
                 .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
-                // Should draw or not
+                // Assess if current idx is inside the viewport
                 // FIXME(jqcorreia): This could be abstracted
                 if idx < self.viewport.0 || idx > self.viewport.1 {
                     continue;
