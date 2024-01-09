@@ -29,9 +29,10 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Icon processing  
 - [x] Select list scrolling
 - [x] Basic layout management  
-- [ ] Better search (fuzzy)
+- [x] Close on exec
+- [x] Better search (contains)
 - [ ] More prettier  
 - [ ] More sources
 - [ ] Lua source?
 - [ ] UI Component state
-
+- [ ] Better search (fuzzy)
