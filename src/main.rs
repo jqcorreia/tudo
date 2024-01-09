@@ -83,6 +83,7 @@ fn main() {
             args.push(token);
         }
         let _cmd = Command::new("sh").args(args).spawn();
+        std::process::exit(0);
     });
 
     let mut layout2 = Layout {
