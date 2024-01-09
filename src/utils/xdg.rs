@@ -69,6 +69,7 @@ pub fn generate_map() -> HashMap<String, String> {
         ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
     }
 
+    themes = vec!["hicolor".to_string()];
     for theme in themes {
         let ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
         let dirs: Vec<String> = ini
