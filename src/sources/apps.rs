@@ -5,6 +5,8 @@ use crate::{
     utils::xdg::{parse_ini_file, IconFinder},
 };
 
+use super::{Action, RunAction};
+
 pub struct DesktopApplications {
     calculated_items: Vec<SourceItem>,
 }
@@ -63,9 +65,11 @@ impl Source for DesktopApplications {
 
                 if title.is_some() && action.is_some() {
                     res.push(SourceItem {
-                        icon: icon,
+                        icon,
                         title: title.unwrap().to_string(),
-                        action: action.unwrap().to_string(),
+                        action: Action::Run(RunAction {
+                            path: action.unwrap().to_string(),
+                        }),
                     });
                 } else {
                     println!(

@@ -21,15 +21,19 @@ use layout::SizeTypeEnum;
 use layout::Split;
 use sdl2::image::InitFlag;
 use sdl2::pixels::PixelFormatEnum;
+use sources::Action;
+use sources::RunAction;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::windows::WindowSource;
 use sources::SourceItem;
+use sources::WindowSwitchAction;
 use utils::cache::TextureCache;
 
 use crate::layout::Container;
+use crate::sources::windows::switch_to_window;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -80,14 +84,21 @@ fn main() {
 
     let mut select_list = SelectList::<SourceItem>::new();
 
-    select_list.on_select = Some(|item| {
-        let mut args = vec!["-c"];
+    select_list.on_select = Some(|item| match &item.action {
+        Action::Run(RunAction { path }) => {
+            let mut args = vec!["-c"];
 
-        for token in item.action.split(" ") {
-            args.push(token);
+            for token in path.split(" ") {
+                args.push(token);
+            }
+            let _cmd = Command::new("sh").args(args).spawn();
+            std::process::exit(0);
         }
-        let _cmd = Command::new("sh").args(args).spawn();
-        std::process::exit(0);
+        Action::WindowSwitch(WindowSwitchAction { window }) => {
+            let (conn, _) = xcb::Connection::connect(None).unwrap();
+            switch_to_window(&conn, window);
+            dbg!(window);
+        }
     });
 
     let mut layout2 = Layout {

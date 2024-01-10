@@ -1,4 +1,4 @@
-use crate::sources::Source;
+use crate::sources::{Action, Source, WindowSwitchAction};
 use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
 use xcb::Connection;
 
@@ -48,6 +48,7 @@ pub fn get_window_image(conn: &Connection, window: &Window) -> Result<Vec<u8>, x
     }
     Ok(data)
 }
+
 pub fn switch_to_window(conn: &Connection, window: &Window) -> Result<(), xcb::Error> {
     let wm_protocols_atom = get_atom(&conn, "WM_PROTOCOLS");
     conn.send_request(&x::MapWindow { window: *window });
@@ -121,7 +122,7 @@ impl Source for WindowSource {
             let mut split = buf.split(|item| item == &(0 as u8));
             let wname = String::from_utf8(split.nth(1).unwrap().to_vec()).unwrap();
             res.push(SourceItem {
-                action: "foo".to_string(),
+                action: Action::WindowSwitch(WindowSwitchAction { window: *w }),
                 icon: None,
                 title: format!("W {}", wname),
             });
