@@ -1,0 +1,131 @@
+use crate::sources::Source;
+use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
+use xcb::Connection;
+
+use super::SourceItem;
+
+pub struct WindowSource {
+    items: Vec<SourceItem>,
+}
+
+fn get_atom(conn: &Connection, name: &str) -> Atom {
+    let cookie = conn.send_request(&x::InternAtom {
+        only_if_exists: false,
+        name: name.as_bytes(),
+    });
+    let reply = conn.wait_for_reply(cookie).unwrap();
+    reply.atom()
+}
+
+pub fn get_window_image(conn: &Connection, window: &Window) -> Result<Vec<u8>, xcb::Error> {
+    let cookie = conn.send_request(&x::GetGeometry {
+        drawable: x::Drawable::Window(*window),
+    });
+    let geom = conn.wait_for_reply(cookie)?;
+
+    let width = geom.width();
+    let height = geom.height();
+
+    let cookie = conn.send_request(&x::GetImage {
+        format: x::ImageFormat::ZPixmap,
+        drawable: x::Drawable::Window(*window),
+        x: 0,
+        y: 0,
+        width,
+        height,
+        plane_mask: u32::MAX,
+    });
+
+    let reply = conn.wait_for_reply(cookie)?;
+    let src = reply.data();
+    let mut data = vec![0; width as usize * height as usize * 3];
+    for (src, dest) in src.chunks(4).zip(data.chunks_mut(3)) {
+        // Captured image stores orders pixels as BGR, so we need to
+        // reorder them.
+        dest[0] = src[2];
+        dest[1] = src[1];
+        dest[2] = src[0];
+    }
+    Ok(data)
+}
+pub fn switch_to_window(conn: &Connection, window: &Window) -> Result<(), xcb::Error> {
+    let wm_protocols_atom = get_atom(&conn, "WM_PROTOCOLS");
+    conn.send_request(&x::MapWindow { window: *window });
+    conn.send_request(&x::ConfigureWindow {
+        window: *window,
+        value_list: &[ConfigWindow::StackMode(x::StackMode::Above)],
+    });
+    conn.send_request(&x::SendEvent {
+        destination: SendEventDest::Window(*window),
+        event: &x::ClientMessageEvent::new(
+            *window,
+            wm_protocols_atom,
+            x::ClientMessageData::Data32([333, 0, 0, 0, 0]),
+        ),
+        propagate: false,
+        event_mask: x::EventMask::STRUCTURE_NOTIFY,
+    });
+
+    conn.send_request(&x::SetInputFocus {
+        focus: *window,
+        time: 0,
+        revert_to: x::InputFocus::None,
+    });
+    Ok(())
+}
+
+impl WindowSource {
+    pub fn new() -> Self {
+        WindowSource { items: Vec::new() }
+    }
+}
+
+impl Source for WindowSource {
+    fn items(&self) -> &Vec<SourceItem> {
+        &self.items
+    }
+    fn calculate_items(&mut self) {
+        let mut res: Vec<SourceItem> = Vec::new();
+
+        // Connect to the X server.
+        let (conn, screen_num) = xcb::Connection::connect(None).unwrap();
+        let setup = conn.get_setup();
+        let screen = setup.roots().nth(screen_num as usize).unwrap();
+
+        let net_client_list_atom = get_atom(&conn, "_NET_CLIENT_LIST");
+
+        let c = conn.send_request(&xcb::x::GetProperty {
+            delete: false,
+            window: screen.root(),
+            long_offset: 0,
+            long_length: 99,
+            property: net_client_list_atom,
+            r#type: x::ATOM_WINDOW,
+        });
+
+        let r = conn.wait_for_reply(c).unwrap();
+        dbg!(&r);
+
+        for w in r.value() {
+            let c = conn.send_request(&xcb::x::GetProperty {
+                delete: false,
+                window: *w,
+                long_offset: 0,
+                long_length: 100,
+                property: x::ATOM_WM_CLASS,
+                r#type: x::ATOM_STRING,
+            });
+
+            let r = conn.wait_for_reply(c).unwrap();
+            let buf: Vec<u8> = r.value().to_vec();
+            let mut split = buf.split(|item| item == &(0 as u8));
+            let wname = String::from_utf8(split.nth(1).unwrap().to_vec()).unwrap();
+            res.push(SourceItem {
+                action: "foo".to_string(),
+                icon: None,
+                title: format!("W {}", wname),
+            });
+        }
+        self.items = res;
+    }
+}

@@ -25,6 +25,7 @@ use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
+use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
 
@@ -56,7 +57,10 @@ fn main() {
     let mut cache = TextureCache::new(&tc);
 
     // Process sources and generate global items list
-    let mut sources: Vec<Box<dyn Source>> = vec![Box::new(DesktopApplications::new())];
+    let mut sources: Vec<Box<dyn Source>> = vec![
+        Box::new(DesktopApplications::new()),
+        Box::new(WindowSource::new()),
+    ];
 
     for source in sources.iter_mut() {
         source.calculate_items();
