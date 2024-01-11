@@ -1,12 +1,15 @@
+use std::rc::Rc;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
+use sdl2::Sdl;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
+use crate::AppContext;
 
 pub struct Viewport(pub usize, pub usize);
 impl Viewport {
@@ -25,17 +28,19 @@ pub struct SelectList<T> {
     pub foreground_color: Color,
     pub selected_index: usize,
     pub viewport: Viewport,
-    pub on_select: fn(&T),
+    pub on_select: fn(&T, Sdl),
+    pub ctx: Rc<AppContext>,
 }
 
 impl<T: PartialEq> SelectList<T> {
-    pub fn new() -> SelectList<T> {
+    pub fn new(ctx: Rc<AppContext>) -> SelectList<T> {
         SelectList {
             items: Vec::<T>::new(),
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
             viewport: Viewport(0, 10),
-            on_select: |_| (),
+            on_select: |_, _| (),
+            ctx,
         }
     }
     pub fn select_up(&mut self) {
@@ -236,7 +241,10 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
-            } => (self.on_select)(self.get_selected_item().as_ref().unwrap()),
+            } => (self.on_select)(
+                self.get_selected_item().as_ref().unwrap(),
+                self.ctx.sdl.clone(),
+            ),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,

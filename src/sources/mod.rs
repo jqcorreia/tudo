@@ -1,12 +1,14 @@
 use xcb::x::Window;
 
 pub mod apps;
+pub mod secrets;
 pub mod windows;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RunAction {
     pub path: String,
     pub exit_after: bool,
+    pub clip_output: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

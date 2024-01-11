@@ -1,6 +1,7 @@
 extern crate sdl2;
 
 pub mod components;
+pub mod execute;
 pub mod layout;
 pub mod sources;
 pub mod utils;
@@ -15,6 +16,7 @@ use components::text;
 use components::text::Prompt;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
+use execute::execute;
 use layout::Layout;
 use layout::LayoutItem;
 use layout::Leaf;
@@ -22,12 +24,14 @@ use layout::SizeTypeEnum;
 use layout::Split;
 use sdl2::image::InitFlag;
 use sdl2::pixels::PixelFormatEnum;
+use sdl2::Sdl;
 use sources::Action;
 use sources::RunAction;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
+use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use sources::WindowSwitchAction;
@@ -35,6 +39,11 @@ use utils::cache::TextureCache;
 
 use crate::layout::Container;
 use crate::sources::windows::switch_to_window;
+
+// Struct that contains "global" pointers such as sdl2
+pub struct AppContext {
+    pub sdl: Sdl,
+}
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -47,6 +56,8 @@ fn main() {
         .position_centered()
         .build()
         .unwrap();
+
+    let ctx = AppContext { sdl: sdl.clone() };
 
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
@@ -65,6 +76,7 @@ fn main() {
     let mut sources: Vec<Box<dyn Source>> = vec![
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
+        Box::new(Secrets::new()),
     ];
 
     for source in sources.iter_mut() {
@@ -83,32 +95,10 @@ fn main() {
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
 
-    let mut select_list = SelectList::<SourceItem>::new();
+    let mut select_list = SelectList::<SourceItem>::new(ctx.into());
     select_list.viewport = Viewport(0, 20);
 
-    select_list.on_select = |item| match &item.action {
-        Action::Run(RunAction { path, exit_after }) => {
-            let mut args = vec!["-c"];
-
-            for token in path.split(" ") {
-                args.push(token);
-            }
-            let _cmd = Command::new("sh").args(args).spawn();
-
-            if *exit_after {
-                std::process::exit(0);
-            }
-        }
-        Action::WindowSwitch(WindowSwitchAction { window, exit_after }) => {
-            let (conn, _) = xcb::Connection::connect(None).unwrap();
-            let root = conn.get_setup().roots().nth(0).unwrap().root();
-            let _ = switch_to_window(&conn, window, &root);
-
-            if *exit_after {
-                std::process::exit(0);
-            }
-        }
-    };
+    select_list.on_select = execute;
 
     let mut layout2 = Layout {
         gap: 10,

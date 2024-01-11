@@ -70,6 +70,7 @@ impl Source for DesktopApplications {
                         action: Action::Run(RunAction {
                             path: action.unwrap().to_string(),
                             exit_after: true,
+                            clip_output: false,
                         }),
                     });
                 } else {

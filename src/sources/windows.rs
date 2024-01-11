@@ -1,5 +1,5 @@
 use crate::sources::{Action, Source, WindowSwitchAction};
-use xcb::x::{self, Atom, ConfigWindow, PropMode, SendEventDest, Window};
+use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
 use xcb::Connection;
 
 use super::SourceItem;
@@ -55,7 +55,6 @@ pub fn switch_to_window(
     root: &Window,
 ) -> Result<(), xcb::Error> {
     println!("SWITCH");
-    // let wm_protocols_atom = get_atom(&conn, "WM_PROTOCOLS");
     let net_active_window_atom = get_atom(&conn, "_NET_ACTIVE_WINDOW");
     let net_wm_desktop_atom = get_atom(&conn, "_NET_WM_DESKTOP");
     let net_current_desktop_atom = get_atom(&conn, "_NET_CURRENT_DESKTOP");
@@ -74,15 +73,8 @@ pub fn switch_to_window(
 
     let window_desktop: u32 = reply.value::<u32>()[0];
     println!("Window is in desktop {:?}", window_desktop);
-    // let x = conn.send_request(&x::ChangeProperty {
-    //     window: *window,
-    //     property: net_current_desktop_atom,
-    //     r#type: x::ATOM_CARDINAL,
-    //     mode: PropMode::Replace,
-    //     data: &[window_desktop],
-    // });
 
-    let x = conn.send_request_checked(&x::SendEvent {
+    conn.send_and_check_request(&x::SendEvent {
         destination: SendEventDest::Window(*window),
         event: &x::ClientMessageEvent::new(
             *window,
@@ -91,22 +83,19 @@ pub fn switch_to_window(
         ),
         propagate: false,
         event_mask: x::EventMask::STRUCTURE_NOTIFY,
-    });
-    dbg!(conn.check_request(x)?);
+    })?;
 
     // Map Window
-    let x = conn.send_request_checked(&x::MapWindow { window: *window });
-    dbg!(conn.check_request(x)?);
+    conn.send_and_check_request(&x::MapWindow { window: *window })?;
 
     // Configure Window
-    let x = conn.send_request_checked(&x::ConfigureWindow {
+    conn.send_and_check_request(&x::ConfigureWindow {
         window: *window,
         value_list: &[ConfigWindow::StackMode(x::StackMode::Above)],
-    });
+    })?;
 
     // Send Event _NET_ACTIVE_WINDOW
-    dbg!(conn.check_request(x)?);
-    let x = conn.send_request_checked(&x::SendEvent {
+    conn.send_and_check_request(&x::SendEvent {
         destination: SendEventDest::Window(*window),
         event: &x::ClientMessageEvent::new(
             *window,
@@ -116,8 +105,7 @@ pub fn switch_to_window(
         ),
         propagate: false,
         event_mask: x::EventMask::STRUCTURE_NOTIFY,
-    });
-    dbg!(conn.check_request(x)?);
+    })?;
 
     // // set input focus
     // let x = conn.send_request_checked(&x::SetInputFocus {
