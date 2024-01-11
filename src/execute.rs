@@ -20,7 +20,8 @@ pub fn execute(item: &SourceItem, sdl: Sdl) {
             }
             if *clip_output {
                 let video = sdl.video().unwrap();
-                let output = Command::new("sh").args(vec!["-c", "ls"]).output();
+                dbg!(&args);
+                let output = Command::new("sh").args(args).output();
                 let ot = String::from_utf8(output.unwrap().stdout).unwrap();
                 dbg!(&ot);
                 // let r = video.clipboard().set_clipboard_text(&ot);
