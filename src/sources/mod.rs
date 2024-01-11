@@ -6,11 +6,13 @@ pub mod windows;
 #[derive(Debug, Clone, PartialEq)]
 pub struct RunAction {
     pub path: String,
+    pub exit_after: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct WindowSwitchAction {
     pub window: Window,
+    pub exit_after: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]

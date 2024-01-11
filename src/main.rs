@@ -9,6 +9,7 @@ use std::process::Command;
 
 use components::enums::Component;
 use components::list::SelectList;
+use components::list::Viewport;
 use components::text;
 
 use components::text::Prompt;
@@ -83,23 +84,31 @@ fn main() {
     };
 
     let mut select_list = SelectList::<SourceItem>::new();
+    select_list.viewport = Viewport(0, 20);
 
-    select_list.on_select = Some(|item| match &item.action {
-        Action::Run(RunAction { path }) => {
+    select_list.on_select = |item| match &item.action {
+        Action::Run(RunAction { path, exit_after }) => {
             let mut args = vec!["-c"];
 
             for token in path.split(" ") {
                 args.push(token);
             }
             let _cmd = Command::new("sh").args(args).spawn();
-            std::process::exit(0);
+
+            if *exit_after {
+                std::process::exit(0);
+            }
         }
-        Action::WindowSwitch(WindowSwitchAction { window }) => {
+        Action::WindowSwitch(WindowSwitchAction { window, exit_after }) => {
             let (conn, _) = xcb::Connection::connect(None).unwrap();
-            switch_to_window(&conn, window);
-            dbg!(window);
+            let root = conn.get_setup().roots().nth(0).unwrap().root();
+            let _ = switch_to_window(&conn, window, &root);
+
+            if *exit_after {
+                std::process::exit(0);
+            }
         }
-    });
+    };
 
     let mut layout2 = Layout {
         gap: 10,

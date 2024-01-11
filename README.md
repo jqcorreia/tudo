@@ -31,6 +31,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Basic layout management  
 - [x] Close on exec
 - [x] Better search (contains)
+- [x] EWMH windows source and :window actions
 - [ ] More prettier  
 - [ ] More sources
 - [ ] Lua source?

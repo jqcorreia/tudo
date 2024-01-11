@@ -8,7 +8,7 @@ use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
 
-pub struct Viewport(usize, usize);
+pub struct Viewport(pub usize, pub usize);
 impl Viewport {
     pub fn down(&mut self, amount: usize) {
         self.0 += amount;
@@ -25,7 +25,7 @@ pub struct SelectList<T> {
     pub foreground_color: Color,
     pub selected_index: usize,
     pub viewport: Viewport,
-    pub on_select: Option<fn(&T)>,
+    pub on_select: fn(&T),
 }
 
 impl<T: PartialEq> SelectList<T> {
@@ -35,7 +35,7 @@ impl<T: PartialEq> SelectList<T> {
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
             viewport: Viewport(0, 10),
-            on_select: None,
+            on_select: |_| (),
         }
     }
     pub fn select_up(&mut self) {
@@ -147,7 +147,6 @@ impl Render for SelectList<SourceItem> {
                     canvas
                         .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
                         .unwrap();
-                    // icon_height = std::cmp::min(32, icon_texture.query().height);
                 }
 
                 // Draw text
@@ -237,7 +236,7 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
-            } => (self.on_select.as_ref().unwrap())(self.get_selected_item().as_ref().unwrap()),
+            } => (self.on_select)(self.get_selected_item().as_ref().unwrap()),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,

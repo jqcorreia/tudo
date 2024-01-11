@@ -1,5 +1,5 @@
 use crate::sources::{Action, Source, WindowSwitchAction};
-use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
+use xcb::x::{self, Atom, ConfigWindow, PropMode, SendEventDest, Window};
 use xcb::Connection;
 
 use super::SourceItem;
@@ -49,29 +49,83 @@ pub fn get_window_image(conn: &Connection, window: &Window) -> Result<Vec<u8>, x
     Ok(data)
 }
 
-pub fn switch_to_window(conn: &Connection, window: &Window) -> Result<(), xcb::Error> {
-    let wm_protocols_atom = get_atom(&conn, "WM_PROTOCOLS");
-    conn.send_request(&x::MapWindow { window: *window });
-    conn.send_request(&x::ConfigureWindow {
+pub fn switch_to_window(
+    conn: &Connection,
+    window: &Window,
+    root: &Window,
+) -> Result<(), xcb::Error> {
+    println!("SWITCH");
+    // let wm_protocols_atom = get_atom(&conn, "WM_PROTOCOLS");
+    let net_active_window_atom = get_atom(&conn, "_NET_ACTIVE_WINDOW");
+    let net_wm_desktop_atom = get_atom(&conn, "_NET_WM_DESKTOP");
+    let net_current_desktop_atom = get_atom(&conn, "_NET_CURRENT_DESKTOP");
+
+    //  Get window current desktop
+    let x = conn.send_request(&x::GetProperty {
         window: *window,
-        value_list: &[ConfigWindow::StackMode(x::StackMode::Above)],
+        delete: false,
+        long_offset: 0,
+        long_length: 100,
+        property: net_wm_desktop_atom,
+        r#type: x::ATOM_CARDINAL,
     });
-    conn.send_request(&x::SendEvent {
+
+    let reply = conn.wait_for_reply(x)?;
+
+    let window_desktop: u32 = reply.value::<u32>()[0];
+    println!("Window is in desktop {:?}", window_desktop);
+    // let x = conn.send_request(&x::ChangeProperty {
+    //     window: *window,
+    //     property: net_current_desktop_atom,
+    //     r#type: x::ATOM_CARDINAL,
+    //     mode: PropMode::Replace,
+    //     data: &[window_desktop],
+    // });
+
+    let x = conn.send_request_checked(&x::SendEvent {
         destination: SendEventDest::Window(*window),
         event: &x::ClientMessageEvent::new(
             *window,
-            wm_protocols_atom,
-            x::ClientMessageData::Data32([333, 0, 0, 0, 0]),
+            net_current_desktop_atom,
+            x::ClientMessageData::Data32([window_desktop, 0, 0, 0, 0]),
         ),
         propagate: false,
         event_mask: x::EventMask::STRUCTURE_NOTIFY,
     });
+    dbg!(conn.check_request(x)?);
 
-    conn.send_request(&x::SetInputFocus {
-        focus: *window,
-        time: 0,
-        revert_to: x::InputFocus::None,
+    // Map Window
+    let x = conn.send_request_checked(&x::MapWindow { window: *window });
+    dbg!(conn.check_request(x)?);
+
+    // Configure Window
+    let x = conn.send_request_checked(&x::ConfigureWindow {
+        window: *window,
+        value_list: &[ConfigWindow::StackMode(x::StackMode::Above)],
     });
+
+    // Send Event _NET_ACTIVE_WINDOW
+    dbg!(conn.check_request(x)?);
+    let x = conn.send_request_checked(&x::SendEvent {
+        destination: SendEventDest::Window(*window),
+        event: &x::ClientMessageEvent::new(
+            *window,
+            // wm_protocols_atom,
+            net_active_window_atom,
+            x::ClientMessageData::Data32([1, 1, 0, 0, 0]),
+        ),
+        propagate: false,
+        event_mask: x::EventMask::STRUCTURE_NOTIFY,
+    });
+    dbg!(conn.check_request(x)?);
+
+    // // set input focus
+    // let x = conn.send_request_checked(&x::SetInputFocus {
+    //     focus: *window,
+    //     time: 0,
+    //     revert_to: x::InputFocus::None,
+    // });
+    // dbg!(conn.check_request(x));
     Ok(())
 }
 
@@ -122,7 +176,10 @@ impl Source for WindowSource {
             let mut split = buf.split(|item| item == &(0 as u8));
             let wname = String::from_utf8(split.nth(1).unwrap().to_vec()).unwrap();
             res.push(SourceItem {
-                action: Action::WindowSwitch(WindowSwitchAction { window: *w }),
+                action: Action::WindowSwitch(WindowSwitchAction {
+                    window: *w,
+                    exit_after: true,
+                }),
                 icon: None,
                 title: format!("W {}", wname),
             });

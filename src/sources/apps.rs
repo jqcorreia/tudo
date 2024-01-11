@@ -69,6 +69,7 @@ impl Source for DesktopApplications {
                         title: title.unwrap().to_string(),
                         action: Action::Run(RunAction {
                             path: action.unwrap().to_string(),
+                            exit_after: true,
                         }),
                     });
                 } else {
