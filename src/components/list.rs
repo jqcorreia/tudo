@@ -3,7 +3,6 @@ use std::rc::Rc;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
-use sdl2::Sdl;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
@@ -116,8 +115,8 @@ impl Render for SelectList<SourceItem> {
     ) {
         let mut y: u32 = 0;
 
-        canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
-        canvas.clear();
+        // canvas.set_draw_color(Color::RGBA(0, 0, 100, 255));
+        // canvas.clear();
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {

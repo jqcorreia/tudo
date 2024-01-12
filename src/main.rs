@@ -9,6 +9,7 @@ pub mod utils;
 use std::cell::RefCell;
 use std::process::Command;
 use std::rc::Rc;
+use std::sync::atomic::AtomicBool;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -39,6 +40,8 @@ use sources::SourceItem;
 use utils::cache::TextureCache;
 
 use crate::layout::Container;
+
+static mut BLEND: bool = true;
 
 // Struct that contains "global" pointers such as sdl2
 #[derive(Clone)]
@@ -154,6 +157,10 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => ctx.borrow_mut().running = false,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F1),
+                    ..
+                } => unsafe { BLEND = !BLEND },
                 sdl2::event::Event::Quit { .. } => ctx.borrow_mut().running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)

@@ -7,6 +7,8 @@ use sdl2::{
 };
 
 use std::collections::HashMap;
+
+use crate::BLEND;
 #[derive(Hash, Eq, PartialEq, Clone)]
 pub struct TextureInfo {
     pub font_name: String,
@@ -45,11 +47,7 @@ impl<'fa> FontAtlas<'fa> {
             font_size: font.height(),
         };
 
-        let mut new = false;
-        if let None = self.atlas.get(&te) {
-            new = true
-        }
-        if new {
+        if self.atlas.get(&te).is_none() {
             self.generate_new_texture(font, te)
         } else {
             self.atlas.get(&te).unwrap()
@@ -57,6 +55,18 @@ impl<'fa> FontAtlas<'fa> {
     }
 
     pub fn draw_string(
+        &mut self,
+        s: String,
+        _canvas: &mut Canvas<Window>,
+        font: &Font,
+        fg: Color,
+    ) -> Texture {
+        let surf = font.render(&s).blended(fg).unwrap();
+        let final_tex = self.tc.create_texture_from_surface(surf).unwrap();
+        return final_tex;
+    }
+
+    pub fn draw_string_atlas(
         &mut self,
         s: String,
         canvas: &mut Canvas<Window>,
@@ -84,6 +94,10 @@ impl<'fa> FontAtlas<'fa> {
 
         canvas
             .with_texture_canvas(&mut final_tex, |texture_canvas| {
+                // if blend {
+                //     texture_canvas.set_draw_color(Color::RGBA(255, 0, 0, 0));
+                //     texture_canvas.clear();
+                // }
                 for c in s.chars() {
                     let ch = c as char;
                     let t = self.draw_char(font, ch, fg);
@@ -96,8 +110,6 @@ impl<'fa> FontAtlas<'fa> {
             })
             .unwrap();
 
-        // final_tex.set_alpha_mod(255);
-        final_tex.set_blend_mode(BlendMode::Blend);
         final_tex
     }
 }
