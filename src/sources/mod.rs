@@ -5,6 +5,11 @@ pub mod secrets;
 pub mod windows;
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct PassSecretAction {
+    pub secret_name: String,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct RunAction {
     pub path: String,
     pub exit_after: bool,
@@ -21,6 +26,7 @@ pub struct WindowSwitchAction {
 pub enum Action {
     Run(RunAction),
     WindowSwitch(WindowSwitchAction),
+    PassSecret(PassSecretAction),
 }
 
 #[derive(Debug, Clone, PartialEq)]

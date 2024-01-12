@@ -147,7 +147,6 @@ impl Source for WindowSource {
         });
 
         let r = conn.wait_for_reply(c).unwrap();
-        dbg!(&r);
 
         for w in r.value() {
             let c = conn.send_request(&xcb::x::GetProperty {

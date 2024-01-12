@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::rc::Rc;
 use std::usize;
 
@@ -28,12 +29,12 @@ pub struct SelectList<T> {
     pub foreground_color: Color,
     pub selected_index: usize,
     pub viewport: Viewport,
-    pub on_select: fn(&T, Sdl),
-    pub ctx: Rc<AppContext>,
+    pub on_select: fn(&T, Rc<RefCell<AppContext>>),
+    pub ctx: Rc<RefCell<AppContext>>,
 }
 
 impl<T: PartialEq> SelectList<T> {
-    pub fn new(ctx: Rc<AppContext>) -> SelectList<T> {
+    pub fn new(ctx: Rc<RefCell<AppContext>>) -> SelectList<T> {
         SelectList {
             items: Vec::<T>::new(),
             selected_index: 0,
@@ -243,7 +244,7 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
                 ..
             } => (self.on_select)(
                 self.get_selected_item().as_ref().unwrap(),
-                self.ctx.sdl.clone(),
+                Rc::clone(&self.ctx),
             ),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),

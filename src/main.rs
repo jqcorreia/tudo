@@ -6,7 +6,9 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
+use std::cell::RefCell;
 use std::process::Command;
+use std::rc::Rc;
 
 use components::enums::Component;
 use components::list::SelectList;
@@ -25,8 +27,6 @@ use layout::Split;
 use sdl2::image::InitFlag;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::Sdl;
-use sources::Action;
-use sources::RunAction;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
@@ -34,15 +34,16 @@ use sources::apps::DesktopApplications;
 use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
-use sources::WindowSwitchAction;
 use utils::cache::TextureCache;
 
 use crate::layout::Container;
-use crate::sources::windows::switch_to_window;
 
 // Struct that contains "global" pointers such as sdl2
+#[derive(Clone)]
 pub struct AppContext {
     pub sdl: Sdl,
+    pub running: bool,
+    pub clipboard: Option<String>,
 }
 
 fn main() {
@@ -57,7 +58,13 @@ fn main() {
         .build()
         .unwrap();
 
-    let ctx = AppContext { sdl: sdl.clone() };
+    let running = true;
+
+    let ctx = Rc::new(RefCell::new(AppContext {
+        sdl: sdl.clone(),
+        running,
+        clipboard: None,
+    }));
 
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
@@ -66,7 +73,6 @@ fn main() {
 
     let mut canvas = window.into_canvas().build().unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
-    let mut running = true;
 
     let tc = canvas.texture_creator();
 
@@ -95,7 +101,7 @@ fn main() {
         foreground_color: Color::RGBA(255, 255, 255, 255),
     };
 
-    let mut select_list = SelectList::<SourceItem>::new(ctx.into());
+    let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&ctx));
     select_list.viewport = Viewport(0, 20);
 
     select_list.on_select = execute;
@@ -125,7 +131,7 @@ fn main() {
         canvas.window().size().1 as usize,
     );
 
-    while running {
+    while ctx.borrow().running {
         let ps: String;
         // We need to do this since we cannot have multiple mutable borrows of lay
         {
@@ -145,8 +151,8 @@ fn main() {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => running = false,
-                sdl2::event::Event::Quit { .. } => running = false,
+                } => ctx.borrow_mut().running = false,
+                sdl2::event::Event::Quit { .. } => ctx.borrow_mut().running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)
                 }
@@ -185,5 +191,16 @@ fn main() {
             canvas.copy(&tex, None, *rect).unwrap();
         }
         canvas.present();
+    }
+    if ctx.borrow().clipboard.is_some() {
+        let _out = Command::new("sh")
+            .arg("-c")
+            .arg(format!(
+                r"echo -n {} | xsel --clipboard --input",
+                ctx.borrow().clipboard.clone().unwrap().replace("\n", "")
+            ))
+            .output()
+            .unwrap()
+            .stdout;
     }
 }
