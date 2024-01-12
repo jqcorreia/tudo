@@ -9,6 +9,8 @@ pub mod utils;
 use std::cell::RefCell;
 use std::process::Command;
 use std::rc::Rc;
+use std::thread::sleep;
+use std::time::Duration;
 
 use components::enums::Component;
 use components::list::SelectList;
@@ -191,6 +193,9 @@ fn main() {
             canvas.copy(&tex, None, *rect).unwrap();
         }
         canvas.present();
+
+        // lock it as 60 frames per second
+        sleep(Duration::new(0, (1000 / 60) * 1_000_000));
     }
     if ctx.borrow().clipboard.is_some() {
         let _out = Command::new("sh")

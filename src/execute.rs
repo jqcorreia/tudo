@@ -64,7 +64,6 @@ pub fn execute(item: &SourceItem, ctx: Rc<RefCell<AppContext>>) {
                 let otp_output = Command::new("sh").args(pass_otp_args.clone()).output();
                 let oot = String::from_utf8(otp_output.unwrap().stdout).unwrap();
                 _ctx.clipboard = Some(oot.clone());
-                println!("{}", oot);
             } else {
                 dbg!("normal");
                 _ctx.clipboard = Some(ot);
