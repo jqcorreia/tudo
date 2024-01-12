@@ -32,10 +32,10 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Close on exec
 - [x] Better search (contains)
 - [x] EWMH windows source 
+- [x] Early WIP Lua source
 - [ ] action tags and search for action (:run, :window, :secret, etc)
 - [ ] More prettier  
 - [ ] More sources
-- [ ] Lua source?
 - [ ] UI Component state
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf

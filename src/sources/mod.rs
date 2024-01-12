@@ -1,6 +1,7 @@
 use xcb::x::Window;
 
 pub mod apps;
+pub mod lua;
 pub mod secrets;
 pub mod windows;
 
