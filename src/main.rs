@@ -59,6 +59,7 @@ fn main() {
     let window = video
         .window("tudo", 1024, 768)
         .opengl()
+        .borderless()
         .position_centered()
         .build()
         .unwrap();
