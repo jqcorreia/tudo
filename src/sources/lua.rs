@@ -1,14 +1,20 @@
-use rlua::Lua;
+use rlua::{Lua, Table};
 
-use super::{Source, SourceItem};
+use crate::sources::Action;
+
+use super::{RunAction, Source, SourceItem};
 
 pub struct LuaSource {
     pub items: Vec<SourceItem>,
+    pub source: String,
 }
 
 impl LuaSource {
-    fn new() -> LuaSource {
-        LuaSource { items: Vec::new() }
+    pub fn new(source: String) -> LuaSource {
+        LuaSource {
+            items: Vec::new(),
+            source,
+        }
     }
 }
 impl Source for LuaSource {
@@ -17,20 +23,35 @@ impl Source for LuaSource {
     }
 
     fn calculate_items(&mut self) {
+        let mut items = Vec::<SourceItem>::new();
         let lua = Lua::new();
 
         lua.context(|ctx| {
-            let globals = ctx.globals();
+            let script = std::fs::read(&self.source).unwrap();
+            let res: Vec<Table> = ctx.load(&script).set_name("teste").unwrap().eval().unwrap();
 
-            globals.set("foo", "bar");
+            for v in res.iter() {
+                let title: String = v.get("title".to_string()).unwrap();
+                let icon: Option<String> = v.get("icon").unwrap();
+                let action: Table = v.get("action").unwrap();
+                let action_type: String = action.get("type").unwrap();
 
-            let s = r#"
-            print("from lua " .. foo)
-            return 1000
-            "#;
-            let res: u32 = ctx.load(s).set_name("teste").unwrap().eval().unwrap();
-            println!("from rust {:?}", res);
-        })
+                match action_type.as_str() {
+                    "run" => items.push(SourceItem {
+                        title: title.clone(),
+                        icon: icon.clone(),
+                        action: Action::Run(RunAction {
+                            path: action.get("path").unwrap(),
+                            clip_output: false,
+                            exit_after: true,
+                        }),
+                    }),
+                    _ => (),
+                };
+                dbg!(&title, &icon, action);
+            }
+        });
+        self.items = items;
     }
 }
 
@@ -41,7 +62,7 @@ mod tests {
     use super::LuaSource;
     #[test]
     fn test_basic_lua() {
-        let mut source = LuaSource::new();
+        let mut source = LuaSource::new("plugins/pass.lua".to_string());
         source.calculate_items();
     }
 }
