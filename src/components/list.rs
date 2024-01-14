@@ -112,6 +112,7 @@ impl Render for SelectList<SourceItem> {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
+        elapsed: u128,
     ) {
         let mut y: u32 = 0;
 
@@ -190,6 +191,7 @@ impl Render for SelectList<String> {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
+        elapsed: u128,
     ) {
         let mut y: u32 = 0;
 
@@ -241,10 +243,14 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
-            } => (self.on_select)(
-                self.get_selected_item().as_ref().unwrap(),
-                Rc::clone(&self.ctx),
-            ),
+            } => {
+                if self.get_selected_item().as_ref().is_some() {
+                    (self.on_select)(
+                        self.get_selected_item().as_ref().unwrap(),
+                        Rc::clone(&self.ctx),
+                    )
+                }
+            }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::P),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,

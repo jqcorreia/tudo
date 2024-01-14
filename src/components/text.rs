@@ -20,8 +20,10 @@ impl Render for Prompt {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
+        elapsed: u128,
     ) {
-        if self.text.len() == 0 {}
+        let draw_cursor = self.text.len() > 0;
+
         let texture = match self.text.len() {
             0 => cache.font.draw_string(
                 "Write something".to_string(),
@@ -34,13 +36,21 @@ impl Render for Prompt {
                 .draw_string(self.text.clone(), canvas, font, self.foreground_color),
         };
         let query = texture.query();
-        let (w, h) = (query.width, query.height);
+        let (w, h) = (query.width as i32, query.height as i32);
+
+        // let alpha = (((elapsed as f32).sin() + 1.0) / 2.0) * 255.0;
+        // canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
+
+        // canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
+        if draw_cursor {
+            canvas.fill_rect(Rect::new(w + 10, 0, 5, rect.h as u32));
+        }
         canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
         canvas
             .draw_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2))
             .unwrap();
         canvas
-            .copy(&texture, None, Some(Rect::new(10, 10, w, h)))
+            .copy(&texture, None, Some(Rect::new(10, 10, w as u32, h as u32)))
             .unwrap();
     }
 }

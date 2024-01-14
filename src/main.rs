@@ -12,6 +12,7 @@ use std::rc::Rc;
 use std::sync::atomic::AtomicBool;
 use std::thread::sleep;
 use std::time::Duration;
+use std::time::Instant;
 
 use components::enums::Component;
 use components::list::SelectList;
@@ -139,7 +140,9 @@ fn main() {
         canvas.window().size().1 as usize,
     );
 
+    let initial_instant = Instant::now();
     while ctx.borrow().running {
+        let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
         // We need to do this since we cannot have multiple mutable borrows of lay
         {
@@ -196,7 +199,7 @@ fn main() {
                 .unwrap();
             canvas
                 .with_texture_canvas(&mut tex, |c| {
-                    comp.render(&mut cache, &font, c, *rect);
+                    comp.render(&mut cache, &font, c, *rect, elapsed);
                 })
                 .unwrap();
 

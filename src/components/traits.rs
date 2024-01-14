@@ -13,6 +13,7 @@ pub trait Render {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
+        elapsed: u128,
     );
 }
 
