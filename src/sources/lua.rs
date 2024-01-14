@@ -1,6 +1,6 @@
 use rlua::{Lua, Table};
 
-use crate::sources::Action;
+use crate::sources::{Action, PassSecretAction};
 
 use super::{RunAction, Source, SourceItem};
 
@@ -28,26 +28,38 @@ impl Source for LuaSource {
 
         lua.context(|ctx| {
             let script = std::fs::read(&self.source).unwrap();
-            let res: Vec<Table> = ctx.load(&script).set_name("teste").unwrap().eval().unwrap();
+            let res: Vec<Table>;
+
+            res = match ctx.load(&script).set_name("teste").unwrap().eval() {
+                Ok(r) => r,
+                Err(err) => {
+                    // println!("{}", err);
+                    panic!("{}", err)
+                }
+            };
 
             for v in res.iter() {
                 let title: String = v.get("title".to_string()).unwrap();
                 let icon: Option<String> = v.get("icon").unwrap();
-                let action: Table = v.get("action").unwrap();
-                let action_type: String = action.get("type").unwrap();
+                let action_table: Table = v.get("action").unwrap();
+                let action_type: String = action_table.get("type").unwrap();
 
-                match action_type.as_str() {
-                    "run" => items.push(SourceItem {
-                        title: title.clone(),
-                        icon: icon.clone(),
-                        action: Action::Run(RunAction {
-                            path: action.get("path").unwrap(),
-                            clip_output: false,
-                            exit_after: true,
-                        }),
+                let action = match action_type.as_str() {
+                    "run" => Action::Run(RunAction {
+                        path: action_table.get("path").unwrap(),
+                        clip_output: false,
+                        exit_after: true,
                     }),
-                    _ => (),
+                    "secret" => Action::PassSecret(PassSecretAction {
+                        secret_name: action_table.get("secret_name").unwrap(),
+                    }),
+                    _ => panic!("Unsupported lua action type"),
                 };
+                items.push(SourceItem {
+                    title: title.clone(),
+                    icon: icon.clone(),
+                    action: action.clone(),
+                });
                 dbg!(&title, &icon, action);
             }
         });

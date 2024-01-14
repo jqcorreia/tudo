@@ -19,6 +19,7 @@ impl Source for Secrets {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let home_path = format!("{}/.password-store", env::var("HOME").unwrap());
+
         match std::fs::read_dir(home_path) {
             Ok(dir) => {
                 for file in dir {
@@ -41,6 +42,7 @@ impl Source for Secrets {
         };
         self.calculated_items = res;
     }
+
     fn items(&self) -> &Vec<SourceItem> {
         return &self.calculated_items;
     }

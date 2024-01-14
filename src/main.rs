@@ -89,7 +89,7 @@ fn main() {
     let mut sources: Vec<Box<dyn Source>> = vec![
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
-        Box::new(Secrets::new()),
+        // Box::new(Secrets::new()),
         Box::new(LuaSource::new("plugins/pass.lua".to_string())),
     ];
 
