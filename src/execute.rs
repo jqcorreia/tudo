@@ -22,12 +22,9 @@ pub fn execute(item: &SourceItem, ctx: Rc<RefCell<AppContext>>) {
             let args = vec!["-c", path];
 
             if *clip_output {
-                // let video = sdl.video().unwrap();
-                dbg!(&args);
                 let output = Command::new("sh").args(args).output();
                 let ot = String::from_utf8(output.unwrap().stdout).unwrap();
-                dbg!(&ot);
-                // let r = video.clipboard().set_clipboard_text(&ot);
+                _ctx.clipboard = Some(ot);
             } else {
                 let _cmd = Command::new("sh").args(args).spawn();
             }
@@ -60,12 +57,10 @@ pub fn execute(item: &SourceItem, ctx: Rc<RefCell<AppContext>>) {
             let ot = String::from_utf8(output.unwrap().stdout).unwrap();
 
             if ot.starts_with("otpauth://") {
-                dbg!("otp");
                 let otp_output = Command::new("sh").args(pass_otp_args.clone()).output();
                 let oot = String::from_utf8(otp_output.unwrap().stdout).unwrap();
                 _ctx.clipboard = Some(oot.clone());
             } else {
-                dbg!("normal");
                 _ctx.clipboard = Some(ot);
             }
             _ctx.running = false;

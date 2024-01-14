@@ -27,11 +27,7 @@ end
 local res = {}
 for i, file in ipairs(get_dir_contents(os.getenv("HOME") .. "/.password-store")) do
 	local title = string_split(file, ".gpg")[1]
-	print(title)
-
 	res[i] = { title = title, icon = nil, action = { type = "secret", secret_name = title } }
-
-	print(file)
 end
 
 return res

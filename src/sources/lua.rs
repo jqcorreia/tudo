@@ -60,7 +60,6 @@ impl Source for LuaSource {
                     icon: icon.clone(),
                     action: action.clone(),
                 });
-                dbg!(&title, &icon, action);
             }
         });
         self.items = items;

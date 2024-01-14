@@ -112,7 +112,7 @@ impl Render for SelectList<SourceItem> {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
-        elapsed: u128,
+        _elapsed: u128,
     ) {
         let mut y: u32 = 0;
 
@@ -191,7 +191,7 @@ impl Render for SelectList<String> {
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
-        elapsed: u128,
+        _elapsed: u128,
     ) {
         let mut y: u32 = 0;
 

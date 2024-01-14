@@ -1,14 +1,13 @@
 use sdl2::{
     pixels::{Color, PixelFormatEnum},
     rect::Rect,
-    render::{BlendMode, Canvas, Texture, TextureCreator},
+    render::{Canvas, Texture, TextureCreator},
     ttf::Font,
     video::{Window, WindowContext},
 };
 
 use std::collections::HashMap;
 
-use crate::BLEND;
 #[derive(Hash, Eq, PartialEq, Clone)]
 pub struct TextureInfo {
     pub font_name: String,

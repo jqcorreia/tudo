@@ -52,7 +52,7 @@ pub fn get_window_image(conn: &Connection, window: &Window) -> Result<Vec<u8>, x
 pub fn switch_to_window(
     conn: &Connection,
     window: &Window,
-    root: &Window,
+    _root: &Window,
 ) -> Result<(), xcb::Error> {
     println!("SWITCH");
     let net_active_window_atom = get_atom(&conn, "_NET_ACTIVE_WINDOW");
