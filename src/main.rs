@@ -41,8 +41,6 @@ use utils::cache::TextureCache;
 
 use crate::layout::Container;
 
-static mut BLEND: bool = true;
-
 // Struct that contains "global" pointers such as sdl2
 #[derive(Clone)]
 pub struct AppContext {
@@ -161,10 +159,10 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => ctx.borrow_mut().running = false,
-                sdl2::event::Event::KeyDown {
-                    keycode: Some(Keycode::F1),
-                    ..
-                } => unsafe { BLEND = !BLEND },
+                // sdl2::event::Event::KeyDown {
+                //     keycode: Some(Keycode::F1),
+                //     ..
+                // } => unsafe { BLEND = !BLEND },
                 sdl2::event::Event::Quit { .. } => ctx.borrow_mut().running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)
