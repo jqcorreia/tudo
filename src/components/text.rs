@@ -35,23 +35,29 @@ impl Render for Prompt {
                 .font
                 .draw_string(self.text.clone(), canvas, font, self.foreground_color),
         };
+
         let query = texture.query();
         let (w, h) = (query.width as i32, query.height as i32);
+        let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
 
-        // let alpha = (((elapsed as f32).sin() + 1.0) / 2.0) * 255.0;
-        // canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
-
-        // canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
         if draw_cursor {
-            canvas.fill_rect(Rect::new(w + 10, 0, 5, rect.h as u32));
+            let cursor_rect = Rect::new(w + 10, (rect.h - h) / 2, 5, h as u32);
+            let alpha = ((((elapsed as f32 / 100.0) as f32).sin() + 1.0) / 2.0) * 255.0;
+
+            canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
+
+            canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
+            if draw_cursor {
+                canvas.fill_rect(cursor_rect).unwrap();
+            }
+            canvas.set_blend_mode(sdl2::render::BlendMode::None);
         }
+
         canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
         canvas
             .draw_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2))
             .unwrap();
-        canvas
-            .copy(&texture, None, Some(Rect::new(10, 10, w as u32, h as u32)))
-            .unwrap();
+        canvas.copy(&texture, None, Some(text_rect)).unwrap();
     }
 }
 
