@@ -101,10 +101,7 @@ fn main() {
         }
     }
 
-    let prompt = text::Prompt {
-        text: String::from(""),
-        foreground_color: Color::RGBA(255, 255, 255, 255),
-    };
+    let prompt = text::Prompt::new();
 
     let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&ctx));
     select_list.viewport = Viewport(0, 20);
