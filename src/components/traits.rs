@@ -1,15 +1,16 @@
 use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::rect::Rect;
-use sdl2::render::Canvas;
+use sdl2::render::{Canvas, TextureCreator};
 use sdl2::ttf::Font;
-use sdl2::video::Window;
+use sdl2::video::{Window, WindowContext};
 
 pub trait Render {
     fn id(&self) -> String;
     fn render(
         &mut self,
-        tex_cache: &mut TextureCache,
+        texture_creator: &TextureCreator<WindowContext>,
+        cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,

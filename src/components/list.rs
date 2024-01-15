@@ -3,15 +3,32 @@ use std::rc::Rc;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::render::{Texture, TextureCreator};
+use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
-use crate::sources::SourceItem;
+use crate::sources::{Source, SourceItem};
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
 use crate::AppContext;
 
+trait RenderItem<T> {
+    fn render_row<'a>(
+        &'a self,
+        item: &'a T,
+        texture_creator: &'a TextureCreator<WindowContext>,
+        tex_cache: &mut TextureCache,
+        font: &Font,
+        canvas: &mut Canvas<Window>,
+        rect: Rect,
+        elapsed: u128,
+    ) -> Texture;
+}
+
 pub struct Viewport(pub usize, pub usize);
+
 impl Viewport {
     pub fn down(&mut self, amount: usize) {
         self.0 += amount;
@@ -108,11 +125,12 @@ impl Render for SelectList<SourceItem> {
 
     fn render(
         &mut self,
+        texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
-        _elapsed: u128,
+        elapsed: u128,
     ) {
         let mut y: u32 = 0;
 
@@ -135,7 +153,6 @@ impl Render for SelectList<SourceItem> {
                 .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
-                // Assess if current idx is inside the viewport
                 // FIXME(jqcorreia): This could be abstracted
                 if idx < self.viewport.0 || idx > self.viewport.1 {
                     continue;
@@ -144,26 +161,23 @@ impl Render for SelectList<SourceItem> {
                     continue;
                 }
 
-                // Draw icon
-                let icon_height: u32 = 32;
-                if item.icon.is_some() {
-                    let icon_texture = cache
-                        .images
-                        .get_image(item.icon.as_ref().unwrap().to_string());
-                    canvas
-                        .copy(&icon_texture, None, Rect::new(0, y as i32, 32, 32))
-                        .unwrap();
-                }
-
-                // Draw text
-                let text_texture =
-                    cache
-                        .font
-                        .draw_string(item.title.clone(), canvas, font, self.foreground_color);
-                let query = text_texture.query();
-                let (w, h) = (query.width, query.height);
-                let row_height = std::cmp::max(h, icon_height);
-
+                let row_height: u32 = 34;
+                let row_texture = self.render_row(
+                    item,
+                    texture_creator,
+                    cache,
+                    font,
+                    canvas,
+                    Rect::new(0, 0, rect.w as u32, row_height as u32),
+                    elapsed,
+                );
+                canvas
+                    .copy(
+                        &row_texture,
+                        None,
+                        Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
+                    )
+                    .unwrap();
                 if idx == self.selected_index {
                     canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
                     canvas
@@ -171,9 +185,6 @@ impl Render for SelectList<SourceItem> {
                         .unwrap();
                 }
 
-                canvas
-                    .copy(&text_texture, None, Some(Rect::new(34, y as i32, w, h)))
-                    .unwrap();
                 y += row_height + 1;
             }
         }
@@ -187,16 +198,17 @@ impl Render for SelectList<String> {
 
     fn render(
         &mut self,
+        texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
-        _elapsed: u128,
+        elapsed: u128,
     ) {
         let mut y: u32 = 0;
 
-        canvas.set_draw_color(Color::RGBA(50, 48, 47, 255));
-        canvas.clear();
+        // canvas.set_draw_color(Color::RGBA(0, 0, 100, 255));
+        // canvas.clear();
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
@@ -214,6 +226,61 @@ impl Render for SelectList<String> {
                 .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
+                // FIXME(jqcorreia): This could be abstracted
+                if idx < self.viewport.0 || idx > self.viewport.1 {
+                    continue;
+                }
+                if y as i32 > rect.h {
+                    continue;
+                }
+
+                let row_height: u32 = 34;
+                let row_texture = self.render_row(
+                    item,
+                    texture_creator,
+                    cache,
+                    font,
+                    canvas,
+                    Rect::new(0, 0, rect.w as u32, row_height as u32),
+                    elapsed,
+                );
+                canvas
+                    .copy(
+                        &row_texture,
+                        None,
+                        Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
+                    )
+                    .unwrap();
+                if idx == self.selected_index {
+                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
+                    canvas
+                        .draw_rect(Rect::new(0, y as i32, rect.width(), row_height))
+                        .unwrap();
+                }
+
+                y += row_height + 1;
+            }
+        }
+    }
+}
+
+impl RenderItem<String> for SelectList<String> {
+    fn render_row<'a>(
+        &'a self,
+        item: &String,
+        texture_creator: &'a TextureCreator<WindowContext>,
+        cache: &mut TextureCache,
+        font: &Font,
+        canvas: &mut Canvas<Window>,
+        rect: Rect,
+        _elapsed: u128,
+    ) -> Texture {
+        let mut tex = texture_creator
+            .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
+            .unwrap();
+
+        canvas
+            .with_texture_canvas(&mut tex, |canvas| {
                 let texture =
                     cache
                         .font
@@ -221,22 +288,65 @@ impl Render for SelectList<String> {
 
                 let query = texture.query();
                 let (w, h) = (query.width, query.height);
-                if idx == self.selected_index {
-                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-                    canvas
-                        .draw_rect(Rect::new(0, y as i32, rect.width(), h))
-                        .unwrap();
-                }
 
                 canvas
-                    .copy(&texture, None, Some(Rect::new(10, y as i32, w, h)))
+                    .copy(&texture, None, Some(Rect::new(0, 0, w, h)))
                     .unwrap();
-                y += h + 1;
-            }
-        }
+            })
+            .unwrap();
+        tex
     }
 }
 
+impl RenderItem<SourceItem> for SelectList<SourceItem> {
+    fn render_row<'a>(
+        &'a self,
+        item: &SourceItem,
+        texture_creator: &'a TextureCreator<WindowContext>,
+        cache: &mut TextureCache,
+        font: &Font,
+        canvas: &mut Canvas<Window>,
+        rect: Rect,
+        _elapsed: u128,
+    ) -> Texture {
+        let mut tex = texture_creator
+            .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
+            .unwrap();
+
+        canvas
+            .with_texture_canvas(&mut tex, |canvas| {
+                // Assess if current idx is inside the viewport
+                // Draw icon
+                let icon_height: u32 = 32;
+                if item.icon.is_some() {
+                    let icon_texture = cache
+                        .images
+                        .get_image(item.icon.as_ref().unwrap().to_string());
+                    canvas
+                        .copy(
+                            &icon_texture,
+                            None,
+                            Rect::new(0, 0, icon_height, icon_height),
+                        )
+                        .unwrap();
+                }
+
+                // Draw text
+                let text_texture =
+                    cache
+                        .font
+                        .draw_string(item.title.clone(), canvas, font, self.foreground_color);
+                let query = text_texture.query();
+                let (w, h) = (query.width, query.height);
+
+                canvas
+                    .copy(&text_texture, None, Some(Rect::new(34, 0, w, h)))
+                    .unwrap();
+            })
+            .unwrap();
+        tex
+    }
+}
 impl<T: PartialEq> EventConsumer for SelectList<T> {
     fn consume_event(&mut self, event: &Event) {
         match event {

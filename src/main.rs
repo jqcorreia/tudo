@@ -195,7 +195,7 @@ fn main() {
                 .unwrap();
             canvas
                 .with_texture_canvas(&mut tex, |c| {
-                    comp.render(&mut cache, &font, c, *rect, elapsed);
+                    comp.render(&tc, &mut cache, &font, c, *rect, elapsed);
                 })
                 .unwrap();
 
