@@ -35,6 +35,7 @@ use sources::Source;
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::lua::LuaSource;
+use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
@@ -86,8 +87,8 @@ fn main() {
     let mut sources: Vec<Box<dyn Source>> = vec![
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
-        // Box::new(Secrets::new()),
-        Box::new(LuaSource::new("plugins/pass.lua".to_string())),
+        Box::new(Secrets::new()),
+        // Box::new(LuaSource::new("plugins/pass.lua".to_string())),
     ];
 
     for source in sources.iter_mut() {
