@@ -13,6 +13,10 @@ pub enum Action {
     PassSecret(PassSecretAction),
 }
 
+pub trait ActionTrait {
+    fn execute2(&self, ctx: &mut AppContext);
+}
+
 impl Action {
     pub fn execute(&self, ctx: &mut AppContext) {
         match self {

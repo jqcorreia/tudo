@@ -42,7 +42,7 @@ impl Render for Prompt {
 
     fn render(
         &mut self,
-        texture_creator: &TextureCreator<WindowContext>,
+        _texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
