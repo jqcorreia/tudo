@@ -34,9 +34,11 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] EWMH windows source 
 - [x] Early WIP Lua source
 - [x] Really primitive animations (blinking cursor)
+- [ ] Fix numlock event matching
 - [ ] action tags and search for action (:run, :window, :secret, etc)
+- [ ] Prompt window available to actions
 - [ ] More prettier  
-- [ ] More sources
 - [ ] UI Component state
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
+- [ ] More sources

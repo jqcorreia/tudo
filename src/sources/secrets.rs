@@ -1,6 +1,6 @@
 use std::env;
 
-use super::{Action, PassSecretAction, Source, SourceItem};
+use super::{actions::PassSecretAction, Action, Source, SourceItem};
 
 pub struct Secrets {
     calculated_items: Vec<SourceItem>,

@@ -5,7 +5,7 @@ use crate::{
     utils::xdg::{parse_ini_file, IconFinder},
 };
 
-use super::{Action, RunAction};
+use super::{actions::RunAction, Action};
 
 pub struct DesktopApplications {
     calculated_items: Vec<SourceItem>,

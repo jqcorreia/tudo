@@ -1,7 +1,8 @@
-use crate::sources::{Action, Source, WindowSwitchAction};
+use crate::sources::{Action, Source};
 use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
 use xcb::Connection;
 
+use super::actions::WindowSwitchAction;
 use super::SourceItem;
 
 pub struct WindowSource {

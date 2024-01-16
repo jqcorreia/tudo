@@ -1,8 +1,8 @@
 use rlua::{Lua, Table};
 
-use crate::sources::{Action, PassSecretAction};
+use crate::sources::Action;
 
-use super::{RunAction, Source, SourceItem};
+use super::{actions::PassSecretAction, actions::RunAction, Source, SourceItem};
 
 pub struct LuaSource {
     pub items: Vec<SourceItem>,
@@ -33,7 +33,6 @@ impl Source for LuaSource {
             res = match ctx.load(&script).set_name("teste").unwrap().eval() {
                 Ok(r) => r,
                 Err(err) => {
-                    // println!("{}", err);
                     panic!("{}", err)
                 }
             };

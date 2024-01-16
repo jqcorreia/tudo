@@ -51,6 +51,8 @@ pub struct AppContext {
 }
 
 fn main() {
+    let initial_instant = Instant::now();
+    let mut first_render = true;
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
     let ttf = sdl2::ttf::init().unwrap();
@@ -134,7 +136,6 @@ fn main() {
         canvas.window().size().1 as usize,
     );
 
-    let initial_instant = Instant::now();
     while ctx.borrow().running {
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
@@ -200,6 +201,14 @@ fn main() {
             canvas.copy(&tex, None, *rect).unwrap();
         }
         canvas.present();
+
+        if first_render {
+            first_render = false;
+            println!(
+                "Time to first render: {}ms",
+                initial_instant.elapsed().as_millis()
+            )
+        }
 
         // lock it as 60 frames per second
         sleep(Duration::new(0, (1000 / 60) * 1_000_000));
