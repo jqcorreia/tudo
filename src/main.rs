@@ -258,7 +258,10 @@ fn main() {
                 initial_instant.elapsed().as_millis()
             )
         } else {
-            if frame_lock {
+            let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
+
+            // Make sure we are not overflowing the substraction
+            if frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
                 spin_sleep::sleep(
                     Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
                 );
