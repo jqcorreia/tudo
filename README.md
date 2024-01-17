@@ -34,7 +34,10 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] EWMH windows source 
 - [x] Early WIP Lua source
 - [x] Really primitive animations (blinking cursor)
+- [x] Fix list viewport
+- [x] List scroll
 - [ ] Fix numlock event matching
+- [ ] Mouse coords translation to local component coords and list item click
 - [ ] action tags and search for action (:run, :window, :secret, etc)
 - [ ] Prompt window available to actions
 - [ ] More prettier  

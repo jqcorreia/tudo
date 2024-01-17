@@ -71,7 +71,7 @@ impl<T: PartialEq> SelectList<T> {
     pub fn select_down(&mut self) {
         if self.items.len() > 0 && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
-            if self.selected_index > self.viewport.1 {
+            if self.selected_index >= self.viewport.1 {
                 self.viewport.down(1);
             }
         }
@@ -94,6 +94,27 @@ impl<T: PartialEq> SelectList<T> {
         match self.items.get(self.selected_index) {
             None => None,
             Some(item) => Some(item),
+        }
+    }
+
+    pub fn move_viewport_up(&mut self) {
+        if self.viewport.0 > 0 {
+            self.viewport.0 -= 1;
+            // Do this to simulate an adjustment to viewport bottom without
+            // the need for row height
+            self.viewport.1 -= 1;
+            if self.viewport.1 < self.selected_index {
+                self.selected_index = self.viewport.1
+            }
+        }
+    }
+
+    pub fn move_viewport_down(&mut self) {
+        if self.viewport.1 < self.items.len() {
+            self.viewport.0 += 1;
+            if self.viewport.0 > self.selected_index {
+                self.selected_index = self.viewport.0
+            }
         }
     }
 }
@@ -134,10 +155,6 @@ impl Render for SelectList<SourceItem> {
     ) {
         let mut y: u32 = 0;
 
-        // canvas.set_draw_color(Color::RGBA(0, 0, 100, 255));
-        // canvas.clear();
-
-        //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
             let texture = cache.font.draw_string(
                 "No items found".to_string(),
@@ -152,8 +169,12 @@ impl Render for SelectList<SourceItem> {
                 .copy(&texture, None, Some(Rect::new(20, y as i32, w, h)))
                 .unwrap();
         } else {
+            let row_height: u32 = 34;
+
+            // Setting the bottom of viewport is either janky or we don't need viewport bottom at
+            // all
+            self.viewport.1 = self.viewport.0 + (rect.h / row_height as i32 - 2) as usize;
             for (idx, item) in self.items.as_slice().iter().enumerate() {
-                // FIXME(jqcorreia): This could be abstracted
                 if idx < self.viewport.0 || idx > self.viewport.1 {
                     continue;
                 }
@@ -161,7 +182,6 @@ impl Render for SelectList<SourceItem> {
                     continue;
                 }
 
-                let row_height: u32 = 34;
                 let row_texture = self.render_row(
                     item,
                     texture_creator,
@@ -371,6 +391,13 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,
                 ..
             } => self.select_down(),
+            sdl2::event::Event::MouseWheel { y, .. } => {
+                if *y == 1 {
+                    self.move_viewport_up();
+                } else {
+                    self.move_viewport_down();
+                }
+            }
             _ => (),
         }
     }
