@@ -71,7 +71,7 @@ impl<T: PartialEq> SelectList<T> {
     pub fn select_down(&mut self) {
         if self.items.len() > 0 && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
-            if self.selected_index >= self.viewport.1 {
+            if self.selected_index > self.viewport.1 {
                 self.viewport.down(1);
             }
         }
@@ -389,6 +389,14 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::N),
                 keymod: sdl2::keyboard::Mod::LCTRLMOD,
+                ..
+            } => self.select_down(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Up),
+                ..
+            } => self.select_up(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Down),
                 ..
             } => self.select_down(),
             sdl2::event::Event::MouseWheel { y, .. } => {
