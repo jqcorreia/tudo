@@ -28,6 +28,7 @@ use layout::Leaf;
 use layout::SizeTypeEnum;
 use layout::Split;
 use sdl2::image::InitFlag;
+use sdl2::keyboard::Mod;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::Sdl;
 use sources::Source;
@@ -153,15 +154,38 @@ fn main() {
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
         for event in cur_events.iter() {
-            match event {
+            // Do this in order to ignore NumLock
+            let _event = match event {
+                sdl2::event::Event::KeyDown {
+                    timestamp,
+                    window_id,
+                    keycode,
+                    scancode,
+                    keymod,
+                    repeat,
+                    ..
+                } => {
+                    let km = *keymod - Mod::NUMMOD;
+                    sdl2::event::Event::KeyDown {
+                        timestamp: *timestamp,
+                        window_id: *window_id,
+                        keycode: *keycode,
+                        scancode: *scancode,
+                        keymod: km,
+                        repeat: *repeat,
+                    }
+                }
+
+                _ => event.clone(),
+            };
+
+            // Deal with main loop events
+            // Things like app quit and global window mouse events
+            match _event {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => ctx.borrow_mut().running = false,
-                // sdl2::event::Event::KeyDown {
-                //     keycode: Some(Keycode::F1),
-                //     ..
-                // } => unsafe { BLEND = !BLEND },
                 sdl2::event::Event::Quit { .. } => ctx.borrow_mut().running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)
@@ -174,7 +198,7 @@ fn main() {
                     Component::SelectList(list) => list,
                 };
 
-                comp.consume_event(event);
+                comp.consume_event(&_event);
             }
         }
 
