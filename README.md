@@ -17,18 +17,18 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Extendable in Lua
 - Minimal list of dependencies
 
-# Dependencies
+## Dependencies
 - SDL2 with `ttf` and `image`
 
-# Features
-- XDG Application sources
+## Features
+- Application launcher (XDG only)
 - XCB and EWMH based window switching (supports: i3, awesome, xfce, etc.)
 - `pass` secrets integration
 - (Really) Minimal UI lib with a couple of components and a layout manager
 - Primitive Lua sources support (no function exporting yet)
 - Texture cache (fonts, icons and generic image files)
 
-# TODO
+## TODO
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] action tags and search for action (:run, :window, :secret, etc)
 - [ ] Prompt window available to actions
@@ -37,4 +37,5 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
 - [ ] More sources
+- [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 

@@ -10,3 +10,4 @@ sdl2 = { version = "0.35.2", features = ["ttf", "image"]}
 enum_downcast = { version="0.1.0", features = ["derive"] }
 xcb =  { version = "1.3.0", features = ["debug_atom_names" ] }
 rlua = "0.19.7"
+spin_sleep = "1.2.0"

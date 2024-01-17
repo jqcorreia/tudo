@@ -9,7 +9,7 @@ use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
 use crate::components::traits::{EventConsumer, Render};
-use crate::sources::{Source, SourceItem};
+use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
 use crate::AppContext;

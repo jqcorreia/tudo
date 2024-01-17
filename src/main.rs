@@ -9,7 +9,6 @@ pub mod utils;
 use std::cell::RefCell;
 use std::process::Command;
 use std::rc::Rc;
-use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -28,18 +27,18 @@ use layout::Leaf;
 use layout::SizeTypeEnum;
 use layout::Split;
 use sdl2::image::InitFlag;
-use sdl2::keyboard::Mod;
 use sdl2::pixels::PixelFormatEnum;
+use sdl2::rect::Rect;
 use sdl2::Sdl;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
-use sources::lua::LuaSource;
 use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
+use utils::misc;
 
 use crate::layout::Container;
 
@@ -137,7 +136,19 @@ fn main() {
         canvas.window().size().1 as usize,
     );
 
+    let mut tick_time = Instant::now();
+    let mut draw_fps = false;
+    let mut fps = 0;
+    let mut frame_lock = true;
+    let frame_lock_value = 60;
+
     while ctx.borrow().running {
+        // Sometime elapsed time is 0 and we need to account for that
+        if tick_time.elapsed().as_millis() > 0 {
+            fps = 1000 / tick_time.elapsed().as_millis();
+            tick_time = Instant::now();
+        }
+
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
         // We need to do this since we cannot have multiple mutable borrows of lay
@@ -154,34 +165,20 @@ fn main() {
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
         for event in cur_events.iter() {
-            // Do this in order to ignore NumLock
-            let _event = match event {
-                sdl2::event::Event::KeyDown {
-                    timestamp,
-                    window_id,
-                    keycode,
-                    scancode,
-                    keymod,
-                    repeat,
-                    ..
-                } => {
-                    let km = *keymod - Mod::NUMMOD;
-                    sdl2::event::Event::KeyDown {
-                        timestamp: *timestamp,
-                        window_id: *window_id,
-                        keycode: *keycode,
-                        scancode: *scancode,
-                        keymod: km,
-                        repeat: *repeat,
-                    }
-                }
-
-                _ => event.clone(),
-            };
+            // Ignore NumLock
+            let _event = misc::ignore_numlock(&event);
 
             // Deal with main loop events
             // Things like app quit and global window mouse events
             match _event {
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F1),
+                    ..
+                } => draw_fps = !draw_fps,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F2),
+                    ..
+                } => frame_lock = !frame_lock,
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
@@ -192,6 +189,8 @@ fn main() {
                 }
                 _ => (),
             }
+
+            // Pass the event to every component
             for LayoutItem(_, _k, p) in lay.iter_mut() {
                 let comp: &mut dyn components::traits::EventConsumer = match p {
                     Component::Prompt(prompt) => prompt,
@@ -224,6 +223,32 @@ fn main() {
 
             canvas.copy(&tex, None, *rect).unwrap();
         }
+
+        // Draw info
+        if draw_fps {
+            let info_tex = tc
+                .create_texture_from_surface(
+                    &font
+                        .render(&format!("{}", fps).to_string())
+                        .blended(Color::RGBA(0, 120, 0, 128))
+                        .unwrap(),
+                )
+                .unwrap();
+            let info_tex_query = info_tex.query();
+            canvas
+                .copy(
+                    &info_tex,
+                    None,
+                    Rect::new(
+                        (canvas.window().size().0 - 200) as i32,
+                        (canvas.window().size().1 - 100) as i32,
+                        info_tex_query.width,
+                        info_tex_query.height,
+                    ),
+                )
+                .unwrap();
+        }
+
         canvas.present();
 
         if first_render {
@@ -232,10 +257,13 @@ fn main() {
                 "Time to first render: {}ms",
                 initial_instant.elapsed().as_millis()
             )
+        } else {
+            if frame_lock {
+                spin_sleep::sleep(
+                    Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
+                );
+            }
         }
-
-        // lock it as 60 frames per second
-        sleep(Duration::new(0, (1000 / 60) * 1_000_000));
     }
     if ctx.borrow().clipboard.is_some() {
         let _out = Command::new("sh")
