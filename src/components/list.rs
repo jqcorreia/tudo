@@ -87,7 +87,7 @@ impl<T: PartialEq> SelectList<T> {
         }
         self.items = new_list;
         self.set_selected_index(0);
-        self.viewport = Viewport(0, 10);
+        self.viewport = Viewport(0, 10); // The bottom setting dynamic, this 10 is irrelevant
     }
 
     pub fn get_selected_item(&self) -> Option<&T> {

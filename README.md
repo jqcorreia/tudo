@@ -9,34 +9,26 @@ Semi-serious learning project.
 Meant to be used as a wristwatch. You want it there but you don't need to look at it all the time.  
 Maybe just replace the concept of a top/bottom bar with the clock and stuff  
 
-## Nice-to-haves
+## Nice-to-haves and objectives
 - As low latency as possible both in launching and in using
 - Fast indexing
 - Tray icons, interactable
 - TOML configuration (with sane defaults)
 - Extendable in Lua
 - Minimal list of dependencies
-    - SDL2 with `ttf` and `image`
+
+# Dependencies
+- SDL2 with `ttf` and `image`
+
+# Features
+- XDG Application sources
+- XCB and EWMH based window switching (supports: i3, awesome, xfce, etc.)
+- `pass` secrets integration
+- (Really) Minimal UI lib with a couple of components and a layout manager
+- Primitive Lua sources support (no function exporting yet)
+- Texture cache (fonts, icons and generic image files)
 
 # TODO
-- [X] Source and Source items structure  
-- [X] Simple system applications source (XDG based)    
-- [X] Basic UI components  
-- [X] Basic search (beggining of word)  
-- [X] Crappy application execution  
-- [X] List with Icons (templating FTW)  
-- [x] XDG ini file parsing  
-- [x] Icon processing  
-- [x] Select list scrolling
-- [x] Basic layout management  
-- [x] Close on exec
-- [x] Better search (contains)
-- [x] EWMH windows source 
-- [x] Early WIP Lua source
-- [x] Really primitive animations (blinking cursor)
-- [x] Fix list viewport
-- [x] List scroll
-- [x] Fix numlock event matching
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] action tags and search for action (:run, :window, :secret, etc)
 - [ ] Prompt window available to actions
