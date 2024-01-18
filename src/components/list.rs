@@ -397,16 +397,37 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .unwrap();
                 }
 
-                // Draw text
-                let text_texture =
-                    cache
-                        .font
-                        .draw_string(item.title.clone(), canvas, font, self.foreground_color);
-                let query = text_texture.query();
+                {
+                    // Draw text
+                    let text_texture = cache.font.draw_string(
+                        item.title.clone(),
+                        canvas,
+                        font,
+                        self.foreground_color,
+                    );
+                    let query = text_texture.query();
+                    let (w, h) = (query.width, query.height);
+                    canvas
+                        .copy(&text_texture, None, Some(Rect::new(34, 0, w, h)))
+                        .unwrap();
+                }
+
+                // Draw tag
+                let tag_texture = cache.font.draw_string(
+                    format!(":{}", item.action.tags().get(0).unwrap().clone()),
+                    canvas,
+                    font,
+                    Color::RGBA(128, 128, 128, 128),
+                );
+                let query = tag_texture.query();
                 let (w, h) = (query.width, query.height);
 
                 canvas
-                    .copy(&text_texture, None, Some(Rect::new(34, 0, w, h)))
+                    .copy(
+                        &tag_texture,
+                        None,
+                        Some(Rect::new((rect.width() - w - 5) as i32, 0, w, h)),
+                    )
                     .unwrap();
             })
             .unwrap();

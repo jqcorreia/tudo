@@ -29,8 +29,9 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Texture cache (fonts, icons and generic image files)
 
 ## TODO
+- [x] action tags and search for action (:run, :window, :secret, etc)
+- [ ] Various font sizes and faces.
 - [ ] Mouse coords translation to local component coords and list item click
-- [ ] action tags and search for action (:run, :window, :secret, etc)
 - [ ] Prompt window available to actions
 - [ ] More prettier  
 - [ ] UI Component state
