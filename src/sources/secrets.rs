@@ -27,6 +27,11 @@ impl Source for Secrets {
                     // Use it as the item title
                     let filename = file.unwrap().file_name().into_string().unwrap();
 
+                    // Ignore hidden files and .gpg-id
+                    if filename.starts_with(".") {
+                        continue;
+                    }
+
                     let secret_name = filename.split(".gpg").next().unwrap();
 
                     res.push(SourceItem {

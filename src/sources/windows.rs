@@ -169,7 +169,7 @@ impl Source for WindowSource {
                     exit_after: true,
                 }),
                 icon: None,
-                title: format!("W {}", wname),
+                title: format!("{}", wname),
             });
         }
         self.items = res;

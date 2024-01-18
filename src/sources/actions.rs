@@ -13,16 +13,19 @@ pub enum Action {
     PassSecret(PassSecretAction),
 }
 
-pub trait ActionTrait {
-    fn execute2(&self, ctx: &mut AppContext);
-}
-
 impl Action {
     pub fn execute(&self, ctx: &mut AppContext) {
         match self {
             Action::Run(action) => action.execute(ctx),
             Action::PassSecret(action) => action.execute(ctx),
             Action::WindowSwitch(action) => action.execute(ctx),
+        }
+    }
+    pub fn tags(&self) -> Vec<String> {
+        match self {
+            Action::Run(_) => vec!["run".to_string()],
+            Action::PassSecret(_) => vec!["secret".to_string()],
+            Action::WindowSwitch(_) => vec!["window".to_string()],
         }
     }
 }

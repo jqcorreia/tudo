@@ -121,21 +121,67 @@ impl<T: PartialEq> SelectList<T> {
 
 impl SelectList<SourceItem> {
     pub fn set_list_and_prompt(&mut self, new_list: Vec<SourceItem>, prompt: String) {
+        //FIXME(quadrado) this whole function is whack
+        // Refactor this ASAP
+        // Rewriting the fuzzy search in a generic way that returns clones is possibility
+        // in order to not have to manage original list indices
         if prompt.len() == 0 {
             self.set_list(new_list);
+            return;
+        }
+
+        let haystack: Vec<String>;
+        let mut matches;
+        let mut final_list = Vec::new();
+
+        // Tag and value search
+        if prompt.starts_with(":") {
+            let clean_prompt = prompt.replace(":", "");
+            let (tag, filter) = clean_prompt.split_once(" ").unwrap_or((&clean_prompt, ""));
+
+            // action type searching
+            haystack = new_list
+                .iter()
+                .map(|i| i.action.tags().get(0).unwrap().clone())
+                .collect::<Vec<String>>();
+            matches = basic_contains(tag.to_string(), &haystack).unwrap_or(Vec::new());
+
+            // if filter present, further filter the list with another haystack
+            if filter != "".to_string() {
+                let mut list2 = Vec::new();
+                for m in matches.iter() {
+                    list2.push(new_list.get(m.original_idx).unwrap().clone());
+                }
+
+                let haystack2 = list2
+                    .iter()
+                    .map(|i| i.title.clone())
+                    .collect::<Vec<String>>();
+                matches = basic_contains(filter.to_string(), &haystack2).unwrap_or(Vec::new());
+
+                // We cant to the final list computation on the outside since we are getting values
+                // from different lists based on
+                for m in matches.iter() {
+                    final_list.push(list2.get(m.original_idx).unwrap().clone());
+                }
+            } else {
+                for m in matches.iter() {
+                    final_list.push(new_list.get(m.original_idx).unwrap().clone());
+                }
+            }
         } else {
-            let haystack = new_list
+            // Simple title search
+            haystack = new_list
                 .iter()
                 .map(|i| i.title.clone())
                 .collect::<Vec<String>>();
-            let matches = basic_contains(prompt.to_string(), &haystack).unwrap_or(Vec::new());
-            let mut final_list = Vec::new();
+            matches = basic_contains(prompt.to_string(), &haystack).unwrap_or(Vec::new());
 
-            for m in matches {
+            for m in matches.iter() {
                 final_list.push(new_list.get(m.original_idx).unwrap().clone());
             }
-            self.set_list(final_list);
         }
+        self.set_list(final_list);
     }
 }
 
