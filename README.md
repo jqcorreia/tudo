@@ -30,8 +30,9 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 
 ## TODO
 - [x] action tags and search for action (:run, :window, :secret, etc)
-- [ ] Icon files may not exist even if referenced by XDG icon files format
+- [ ] Get system default font, maybe
 - [ ] Various font sizes and faces.
+- [ ] Icon files may not exist even if referenced by XDG icon files format
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Prompt window available to actions
 - [ ] More prettier  
