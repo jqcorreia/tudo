@@ -74,6 +74,7 @@ fn main() {
     }));
 
     let font_size = 20;
+    // let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
     let font = ttf.load_font(font_path, font_size).unwrap();

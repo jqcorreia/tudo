@@ -30,6 +30,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 
 ## TODO
 - [x] action tags and search for action (:run, :window, :secret, etc)
+- [ ] Icon files may not exist even if referenced by XDG icon files format
 - [ ] Various font sizes and faces.
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Prompt window available to actions
@@ -37,6 +38,5 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] UI Component state
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
-- [ ] More sources
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 
