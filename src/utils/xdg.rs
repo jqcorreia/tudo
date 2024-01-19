@@ -12,14 +12,27 @@ pub struct IconFinder {
 impl IconFinder {
     pub fn new() -> IconFinder {
         let map = generate_map();
-        IconFinder { map: map }
+        IconFinder { map }
     }
     pub fn get_icon(&self, name: String) -> Option<String> {
+        let candidate: String;
+
         // First check if icon identifier is a path
         if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
-            return Some(name);
+            candidate = name.clone();
+        } else {
+            let opt = self.map.get(&name);
+            if opt.is_none() {
+                return None;
+            }
+            candidate = self.map.get(&name).unwrap().to_string();
         }
-        self.map.get(&name).cloned()
+
+        // Check if candidate is indeed a file
+        match std::fs::read(&candidate) {
+            Ok(_) => Some(candidate),
+            Err(_) => None,
+        }
     }
 }
 
