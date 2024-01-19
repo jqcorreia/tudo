@@ -38,6 +38,7 @@ use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
+use utils::font::FontManager;
 use utils::misc;
 
 use crate::layout::Container;
@@ -73,11 +74,12 @@ fn main() {
         clipboard: None,
     }));
 
-    let font_size = 20;
+    let mut fm = FontManager::new(&ttf);
     // let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+    let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
-    let font = ttf.load_font(font_path, font_size).unwrap();
+    let font = fm.load_font(font_path.to_string(), font_size);
 
     let mut canvas = window.into_canvas().build().unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
