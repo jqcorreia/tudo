@@ -58,6 +58,7 @@ fn main() {
     let video = sdl.video().unwrap();
     let ttf = sdl2::ttf::init().unwrap();
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
+
     let window = video
         .window("tudo", 1024, 768)
         .opengl()
@@ -93,7 +94,6 @@ fn main() {
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
         Box::new(Secrets::new()),
-        // Box::new(LuaSource::new("plugins/pass.lua".to_string())),
     ];
 
     for source in sources.iter_mut() {
@@ -115,7 +115,7 @@ fn main() {
     select_list.on_select = execute;
 
     let mut layout2 = Layout {
-        gap: 10,
+        gap: 2,
         root: Container::VSplit(Split {
             children: Vec::from([
                 Container::Leaf(Leaf {
@@ -205,7 +205,7 @@ fn main() {
         }
 
         // Set draw color and clear
-        canvas.set_draw_color(Color::RGBA(50, 50, 50, 0));
+        canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
         canvas.clear();
 
         // Render all components

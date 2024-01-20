@@ -221,7 +221,7 @@ impl Render for SelectList<SourceItem> {
             let row_height: u32 = 34;
 
             // Setting the bottom of viewport is either janky or we don't need viewport bottom at
-            // all
+            // all. Veredict is still ongoing
             self.viewport.1 = self.viewport.0 + (rect.h / row_height as i32 - 2) as usize;
             for (idx, item) in self.items.as_slice().iter().enumerate() {
                 if idx < self.viewport.0 || idx > self.viewport.1 {
@@ -254,7 +254,7 @@ impl Render for SelectList<SourceItem> {
                         .unwrap();
                 }
 
-                y += row_height + 1;
+                y += row_height;
             }
         }
     }
@@ -275,9 +275,6 @@ impl Render for SelectList<String> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-
-        // canvas.set_draw_color(Color::RGBA(0, 0, 100, 255));
-        // canvas.clear();
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
@@ -386,6 +383,9 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
             .with_texture_canvas(&mut tex, |canvas| {
                 // Assess if current idx is inside the viewport
                 // Draw icon
+                // canvas.set_draw_color(Color::RGBA(30, 44, 66, 255));
+                canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+                canvas.clear();
                 let icon_height: u32 = 32;
                 if item.icon.is_some() {
                     let icon_texture = cache

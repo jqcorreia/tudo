@@ -36,6 +36,7 @@ pub struct LayoutItem<'a>(pub Rect, pub String, pub &'a mut Component);
 
 impl Layout {
     fn generate_recur2<'a>(
+        gap: usize,
         num: usize,
         vec: &mut Vec<LayoutItem<'a>>,
         node: &'a mut Container,
@@ -46,7 +47,7 @@ impl Layout {
     ) {
         match node {
             Container::Leaf(leaf) => {
-                let m = 10;
+                let m = gap;
                 vec.push(LayoutItem(
                     Rect::new(
                         (x + m) as i32,
@@ -90,7 +91,7 @@ impl Layout {
                         _ => 0,
                     };
 
-                    Layout::generate_recur2(num + 1, vec, n, accum_x, accum_y, w_step, h);
+                    Layout::generate_recur2(gap, num + 1, vec, n, accum_x, accum_y, w_step, h);
                     accum_x += w_step;
                 }
             }
@@ -126,7 +127,7 @@ impl Layout {
                         _ => 0,
                     };
 
-                    Layout::generate_recur2(num + 1, vec, n, accum_x, accum_y, w, h_step);
+                    Layout::generate_recur2(gap, num + 1, vec, n, accum_x, accum_y, w, h_step);
                     accum_y += h_step;
                 }
             }
@@ -135,7 +136,7 @@ impl Layout {
     pub fn generate2(&mut self, w: usize, h: usize) -> Vec<LayoutItem> {
         let mut vec: Vec<LayoutItem> = Vec::new();
 
-        Layout::generate_recur2(0, &mut vec, &mut self.root, 0, 0, w, h);
+        Layout::generate_recur2(self.gap.clone(), 0, &mut vec, &mut self.root, 0, 0, w, h);
         vec
     }
 }
