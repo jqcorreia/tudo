@@ -1,6 +1,7 @@
 extern crate sdl2;
 
 pub mod components;
+pub mod context;
 pub mod execute;
 pub mod layout;
 pub mod sources;
@@ -75,12 +76,13 @@ fn main() {
         clipboard: None,
     }));
 
-    let mut fm = FontManager::new(&ttf);
+    let fm = FontManager::new(&ttf);
     // let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
     let font = fm.load_font(font_path.to_string(), font_size);
+    let font2 = fm.load_font(font_path.to_string(), font_size);
 
     let mut canvas = window.into_canvas().build().unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
