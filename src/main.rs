@@ -1,5 +1,6 @@
 extern crate sdl2;
 
+pub mod app;
 pub mod components;
 pub mod context;
 pub mod execute;
@@ -13,6 +14,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::time::Instant;
 
+use app::App;
 use components::enums::Component;
 use components::list::SelectList;
 use components::list::Viewport;
@@ -30,7 +32,6 @@ use layout::Split;
 use sdl2::image::InitFlag;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::rect::Rect;
-use sdl2::Sdl;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
@@ -44,48 +45,35 @@ use utils::misc;
 
 use crate::layout::Container;
 
-// Struct that contains "global" pointers such as sdl2
-#[derive(Clone)]
-pub struct AppContext {
-    pub sdl: Sdl,
-    pub running: bool,
-    pub clipboard: Option<String>,
+fn init() -> Rc<RefCell<App>> {
+    let sdl = sdl2::init().unwrap();
+    let video = sdl.video().unwrap();
+
+    Rc::new(RefCell::new(App {
+        sdl,
+        running: true,
+        clipboard: None,
+        video,
+    }))
 }
 
 fn main() {
     let initial_instant = Instant::now();
     let mut first_render = true;
-    let sdl = sdl2::init().unwrap();
-    let video = sdl.video().unwrap();
     let ttf = sdl2::ttf::init().unwrap();
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
-    let window = video
-        .window("tudo", 1024, 768)
-        .opengl()
-        .borderless()
-        .position_centered()
-        .build()
-        .unwrap();
-
-    let running = true;
-
-    let ctx = Rc::new(RefCell::new(AppContext {
-        sdl: sdl.clone(),
-        running,
-        clipboard: None,
-    }));
+    let app = init();
+    let window = app.borrow().create_window();
 
     let fm = FontManager::new(&ttf);
-    // let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
     let font = fm.load_font(font_path.to_string(), font_size);
-    let font2 = fm.load_font(font_path.to_string(), font_size);
 
     let mut canvas = window.into_canvas().build().unwrap();
-    let mut event_pump = sdl.event_pump().unwrap();
+    let mut event_pump = app.borrow().sdl.event_pump().unwrap();
 
     let tc = canvas.texture_creator();
 
@@ -111,7 +99,7 @@ fn main() {
 
     let prompt = text::Prompt::new();
 
-    let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&ctx));
+    let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&app));
     select_list.viewport = Viewport(0, 20);
 
     select_list.on_select = execute;
@@ -147,7 +135,7 @@ fn main() {
     let mut frame_lock = true;
     let frame_lock_value = 60;
 
-    while ctx.borrow().running {
+    while app.borrow().running {
         // Sometime elapsed time is 0 and we need to account for that
         if tick_time.elapsed().as_millis() > 0 {
             fps = 1000 / tick_time.elapsed().as_millis();
@@ -187,8 +175,8 @@ fn main() {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => ctx.borrow_mut().running = false,
-                sdl2::event::Event::Quit { .. } => ctx.borrow_mut().running = false,
+                } => app.borrow_mut().running = false,
+                sdl2::event::Event::Quit { .. } => app.borrow_mut().running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)
                 }
@@ -273,12 +261,12 @@ fn main() {
             }
         }
     }
-    if ctx.borrow().clipboard.is_some() {
+    if app.borrow().clipboard.is_some() {
         let _out = Command::new("sh")
             .arg("-c")
             .arg(format!(
                 r"echo -n {} | xsel --clipboard --input",
-                ctx.borrow().clipboard.clone().unwrap().replace("\n", "")
+                app.borrow().clipboard.clone().unwrap().replace("\n", "")
             ))
             .output()
             .unwrap()

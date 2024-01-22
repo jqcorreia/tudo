@@ -12,7 +12,7 @@ use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
-use crate::AppContext;
+use crate::App;
 
 trait RenderItem<T> {
     fn render_row<'a>(
@@ -45,12 +45,12 @@ pub struct SelectList<T> {
     pub foreground_color: Color,
     pub selected_index: usize,
     pub viewport: Viewport,
-    pub on_select: fn(&T, Rc<RefCell<AppContext>>),
-    pub ctx: Rc<RefCell<AppContext>>,
+    pub on_select: fn(&T, Rc<RefCell<App>>),
+    pub ctx: Rc<RefCell<App>>,
 }
 
 impl<T: PartialEq> SelectList<T> {
-    pub fn new(ctx: Rc<RefCell<AppContext>>) -> SelectList<T> {
+    pub fn new(ctx: Rc<RefCell<App>>) -> SelectList<T> {
         SelectList {
             items: Vec::<T>::new(),
             selected_index: 0,

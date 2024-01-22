@@ -2,7 +2,7 @@ use std::process::Command;
 
 use xcb::x::Window;
 
-use crate::AppContext;
+use crate::App;
 
 use super::windows::switch_to_window;
 
@@ -14,7 +14,7 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn execute(&self, ctx: &mut AppContext) {
+    pub fn execute(&self, ctx: &mut App) {
         match self {
             Action::Run(action) => action.execute(ctx),
             Action::PassSecret(action) => action.execute(ctx),
@@ -36,7 +36,7 @@ pub struct PassSecretAction {
 }
 
 impl PassSecretAction {
-    pub fn execute(&self, ctx: &mut AppContext) {
+    pub fn execute(&self, ctx: &mut App) {
         let pass_args = vec![
             "-c".to_string(),
             format!("pass {}", self.secret_name.to_string()),
@@ -68,7 +68,7 @@ pub struct RunAction {
 }
 
 impl RunAction {
-    pub fn execute(&self, ctx: &mut AppContext) {
+    pub fn execute(&self, ctx: &mut App) {
         let args = vec!["-c", &self.path];
 
         if self.clip_output {
@@ -92,7 +92,7 @@ pub struct WindowSwitchAction {
 }
 
 impl WindowSwitchAction {
-    pub fn execute(&self, ctx: &mut AppContext) {
+    pub fn execute(&self, ctx: &mut App) {
         let (conn, _) = xcb::Connection::connect(None).unwrap();
         let root = conn.get_setup().roots().nth(0).unwrap().root();
         let _ = switch_to_window(&conn, &self.window, &root);
