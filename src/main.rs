@@ -18,7 +18,6 @@ use std::time::Instant;
 use app::App;
 use components::enums::Component;
 use components::list::SelectList;
-use components::list::Viewport;
 use components::text;
 
 use components::text::Prompt;
@@ -105,7 +104,7 @@ fn main() {
 
     let prompt = text::Prompt::new();
 
-    let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&app));
+    let mut select_list = SelectList::<SourceItem>::new();
     // select_list.viewport = Viewport(0, 20);
     select_list.on_select = execute;
 

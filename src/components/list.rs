@@ -49,7 +49,7 @@ pub struct SelectList<T> {
 }
 
 impl<T: PartialEq> SelectList<T> {
-    pub fn new(ctx: Rc<RefCell<App>>) -> SelectList<T> {
+    pub fn new() -> SelectList<T> {
         SelectList {
             items: Vec::<T>::new(),
             selected_index: 0,
