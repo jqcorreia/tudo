@@ -46,7 +46,6 @@ pub struct SelectList<T> {
     pub selected_index: usize,
     pub viewport: Viewport,
     pub on_select: fn(&T, Rc<RefCell<App>>),
-    pub ctx: Rc<RefCell<App>>,
 }
 
 impl<T: PartialEq> SelectList<T> {
@@ -57,7 +56,6 @@ impl<T: PartialEq> SelectList<T> {
             foreground_color: Color::RGBA(255, 255, 255, 255),
             viewport: Viewport(0, 10),
             on_select: |_, _| (),
-            ctx,
         }
     }
     pub fn select_up(&mut self) {
@@ -438,17 +436,14 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
     }
 }
 impl<T: PartialEq> EventConsumer for SelectList<T> {
-    fn consume_event(&mut self, event: &Event) {
+    fn consume_event(&mut self, event: &Event, app: Rc<RefCell<App>>) {
         match event {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
             } => {
                 if self.get_selected_item().as_ref().is_some() {
-                    (self.on_select)(
-                        self.get_selected_item().as_ref().unwrap(),
-                        Rc::clone(&self.ctx),
-                    )
+                    (self.on_select)(self.get_selected_item().as_ref().unwrap(), Rc::clone(&app))
                 }
             }
             sdl2::event::Event::KeyDown {

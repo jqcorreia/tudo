@@ -9,6 +9,7 @@ pub mod sources;
 pub mod utils;
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::process::Command;
 use std::rc::Rc;
 use std::time::Duration;
@@ -40,12 +41,13 @@ use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
+use utils::font::FontConfig;
 use utils::font::FontManager;
 use utils::misc;
 
 use crate::layout::Container;
 
-fn init() -> Rc<RefCell<App>> {
+fn init<'a>() -> Rc<RefCell<App<'a>>> {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
@@ -54,6 +56,7 @@ fn init() -> Rc<RefCell<App>> {
         running: true,
         clipboard: None,
         video,
+        fonts: HashMap::new(),
     }))
 }
 
@@ -66,16 +69,19 @@ fn main() {
     let app = init();
     let window = app.borrow().create_window();
 
-    let fm = FontManager::new(&ttf);
+    let mut fm = FontManager::new(&ttf);
     let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
-    let font = fm.load_font(font_path.to_string(), font_size);
+    let font = fm.add_font(FontConfig {
+        path: font_path.to_string(),
+        point_size: 20,
+    });
 
-    let mut canvas = window.into_canvas().build().unwrap();
+    let mut main_canvas = window.into_canvas().build().unwrap();
     let mut event_pump = app.borrow().sdl.event_pump().unwrap();
 
-    let tc = canvas.texture_creator();
+    let tc = main_canvas.texture_creator();
 
     let mut cache = TextureCache::new(&tc);
 
@@ -100,8 +106,7 @@ fn main() {
     let prompt = text::Prompt::new();
 
     let mut select_list = SelectList::<SourceItem>::new(Rc::clone(&app));
-    select_list.viewport = Viewport(0, 20);
-
+    // select_list.viewport = Viewport(0, 20);
     select_list.on_select = execute;
 
     let mut layout2 = Layout {
@@ -125,8 +130,8 @@ fn main() {
     };
 
     let mut lay = layout2.generate2(
-        canvas.window().size().0 as usize,
-        canvas.window().size().1 as usize,
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
     );
 
     let mut tick_time = Instant::now();
@@ -190,13 +195,13 @@ fn main() {
                     Component::SelectList(list) => list,
                 };
 
-                comp.consume_event(&_event);
+                comp.consume_event(&_event, app.clone());
             }
         }
 
         // Set draw color and clear
-        canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
-        canvas.clear();
+        main_canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
+        main_canvas.clear();
 
         // Render all components
         for LayoutItem(rect, _k, p) in lay.iter_mut() {
@@ -208,13 +213,13 @@ fn main() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
-            canvas
+            main_canvas
                 .with_texture_canvas(&mut tex, |c| {
                     comp.render(&tc, &mut cache, &font, c, *rect, elapsed);
                 })
                 .unwrap();
 
-            canvas.copy(&tex, None, *rect).unwrap();
+            main_canvas.copy(&tex, None, *rect).unwrap();
         }
 
         // Draw info
@@ -228,13 +233,13 @@ fn main() {
                 )
                 .unwrap();
             let info_tex_query = info_tex.query();
-            canvas
+            main_canvas
                 .copy(
                     &info_tex,
                     None,
                     Rect::new(
-                        (canvas.window().size().0 - 200) as i32,
-                        (canvas.window().size().1 - 100) as i32,
+                        (main_canvas.window().size().0 - 200) as i32,
+                        (main_canvas.window().size().1 - 100) as i32,
                         info_tex_query.width,
                         info_tex_query.height,
                     ),
@@ -242,7 +247,7 @@ fn main() {
                 .unwrap();
         }
 
-        canvas.present();
+        main_canvas.present();
 
         if first_render {
             first_render = false;
