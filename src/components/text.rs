@@ -97,7 +97,7 @@ impl Render for Prompt {
 }
 
 impl EventConsumer for Prompt {
-    fn consume_event(&mut self, event: &Event, app: Rc<RefCell<App>>) {
+    fn consume_event(&mut self, event: &Event, app: &mut App) {
         match event {
             sdl2::event::Event::TextInput { text, .. } => {
                 self.text += &text;

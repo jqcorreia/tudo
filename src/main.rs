@@ -46,17 +46,17 @@ use utils::misc;
 
 use crate::layout::Container;
 
-fn init<'a>() -> Rc<RefCell<App<'a>>> {
+fn init<'a>() -> App<'a> {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
-    Rc::new(RefCell::new(App {
+    App {
         sdl,
         running: true,
         clipboard: None,
         video,
         fonts: HashMap::new(),
-    }))
+    }
 }
 
 fn main() {
@@ -65,11 +65,10 @@ fn main() {
     let ttf = sdl2::ttf::init().unwrap();
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
-    let app = init();
-    let window = app.borrow().create_window();
+    let mut app = init();
+    let window = app.create_window();
 
     let mut fm = FontManager::new(&ttf);
-    let font_size = 20;
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
     let font = fm.add_font(FontConfig {
@@ -78,7 +77,7 @@ fn main() {
     });
 
     let mut main_canvas = window.into_canvas().build().unwrap();
-    let mut event_pump = app.borrow().sdl.event_pump().unwrap();
+    let mut event_pump = app.sdl.event_pump().unwrap();
 
     let tc = main_canvas.texture_creator();
 
@@ -139,7 +138,7 @@ fn main() {
     let mut frame_lock = true;
     let frame_lock_value = 60;
 
-    while app.borrow().running {
+    while app.running {
         // Sometime elapsed time is 0 and we need to account for that
         if tick_time.elapsed().as_millis() > 0 {
             fps = 1000 / tick_time.elapsed().as_millis();
@@ -179,8 +178,8 @@ fn main() {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => app.borrow_mut().running = false,
-                sdl2::event::Event::Quit { .. } => app.borrow_mut().running = false,
+                } => app.running = false,
+                sdl2::event::Event::Quit { .. } => app.running = false,
                 sdl2::event::Event::MouseButtonDown { x, y, .. } => {
                     println!("{} {}", x, y)
                 }
@@ -194,7 +193,7 @@ fn main() {
                     Component::SelectList(list) => list,
                 };
 
-                comp.consume_event(&_event, app.clone());
+                comp.consume_event(&_event, &mut app);
             }
         }
 
@@ -265,12 +264,12 @@ fn main() {
             }
         }
     }
-    if app.borrow().clipboard.is_some() {
+    if app.clipboard.is_some() {
         let _out = Command::new("sh")
             .arg("-c")
             .arg(format!(
                 r"echo -n {} | xsel --clipboard --input",
-                app.borrow().clipboard.clone().unwrap().replace("\n", "")
+                app.clipboard.clone().unwrap().replace("\n", "")
             ))
             .output()
             .unwrap()
