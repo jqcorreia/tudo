@@ -201,7 +201,10 @@ fn main() {
         if draw_fps {
             let info_tex = tc
                 .create_texture_from_surface(
-                    &app.font
+                    &app.fonts
+                        .values()
+                        .next()
+                        .unwrap()
                         .render(&format!("{}", fps).to_string())
                         .blended(Color::RGBA(0, 120, 0, 128))
                         .unwrap(),

@@ -17,7 +17,6 @@ pub struct App<'a> {
     pub video: VideoSubsystem,
     pub fonts: HashMap<String, Font<'a, 'a>>,
     pub ttf: &'a Sdl2TtfContext,
-    pub font: Font<'a, 'a>,
 }
 
 impl<'a> App<'a> {
@@ -37,9 +36,6 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> App<'a> {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
-    let font = ttf
-        .load_font("/usr/share/fonts/noto/NotoSans-Regular.ttf", 20)
-        .unwrap();
     let font2 = ttf
         .load_font("/usr/share/fonts/noto/NotoSans-Regular.ttf", 20)
         .unwrap();
@@ -56,6 +52,5 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> App<'a> {
         video,
         fonts: hm,
         ttf,
-        font,
     }
 }

@@ -201,7 +201,7 @@ impl Render for SelectList<SourceItem> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = &app.font;
+        let font = &app.fonts.values().next().unwrap();
 
         if self.items.len() == 0 {
             let texture = cache.font.draw_string(
@@ -274,7 +274,7 @@ impl Render for SelectList<String> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = &app.font;
+        let font = &app.fonts.values().next().unwrap();
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
