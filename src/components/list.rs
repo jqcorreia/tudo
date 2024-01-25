@@ -411,8 +411,9 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                     );
                     let query = text_texture.query();
                     let (w, h) = (query.width, query.height);
+                    let hpad = (rect.height() - h) / 2;
                     canvas
-                        .copy(&text_texture, None, Some(Rect::new(34, 0, w, h)))
+                        .copy(&text_texture, None, Some(Rect::new(34, hpad as i32, w, h)))
                         .unwrap();
                 }
 
@@ -425,12 +426,12 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                 );
                 let query = tag_texture.query();
                 let (w, h) = (query.width, query.height);
-
+                let hpad = (rect.height() - h) / 2;
                 canvas
                     .copy(
                         &tag_texture,
                         None,
-                        Some(Rect::new((rect.width() - w - 5) as i32, 0, w, h)),
+                        Some(Rect::new((rect.width() - w - 5) as i32, hpad as i32, w, h)),
                     )
                     .unwrap();
             })
