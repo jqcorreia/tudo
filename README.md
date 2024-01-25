@@ -35,7 +35,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Get system default font, maybe
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Prompt window available to actions
-- [-] More prettier  
+- [ ] More prettier  
 - [ ] UI Component state
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
