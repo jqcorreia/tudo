@@ -53,17 +53,18 @@ fn main() {
     let ttf = sdl2::ttf::init().unwrap();
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
-    let mut app = init();
+    let mut app = init(&ttf);
     // let window = app.create_window();
 
-    let mut fm = FontManager::new(&ttf);
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
+    let mut fm = FontManager::new(&ttf);
     let font = fm.add_font(FontConfig {
         path: font_path.to_string(),
         point_size: 20,
     });
 
+    // let font = app.fonts.get(font_path).unwrap();
     let mut event_pump = app.sdl.event_pump().unwrap();
 
     let tc = app.canvas.texture_creator();
@@ -200,7 +201,7 @@ fn main() {
                 .unwrap();
             app.canvas
                 .with_texture_canvas(&mut tex, |c| {
-                    comp.render(&tc, &mut cache, &font, c, *rect, elapsed);
+                    comp.render(&tc, &mut cache, font, c, *rect, elapsed);
                 })
                 .unwrap();
 
@@ -208,29 +209,29 @@ fn main() {
         }
 
         // Draw info
-        if draw_fps {
-            let info_tex = tc
-                .create_texture_from_surface(
-                    &font
-                        .render(&format!("{}", fps).to_string())
-                        .blended(Color::RGBA(0, 120, 0, 128))
-                        .unwrap(),
-                )
-                .unwrap();
-            let info_tex_query = info_tex.query();
-            app.canvas
-                .copy(
-                    &info_tex,
-                    None,
-                    Rect::new(
-                        (app.canvas.window().size().0 - 200) as i32,
-                        (app.canvas.window().size().1 - 100) as i32,
-                        info_tex_query.width,
-                        info_tex_query.height,
-                    ),
-                )
-                .unwrap();
-        }
+        // if draw_fps {
+        //     let info_tex = tc
+        //         .create_texture_from_surface(
+        //             &app.font
+        //                 .render(&format!("{}", fps).to_string())
+        //                 .blended(Color::RGBA(0, 120, 0, 128))
+        //                 .unwrap(),
+        //         )
+        //         .unwrap();
+        //     let info_tex_query = info_tex.query();
+        //     app.canvas
+        //         .copy(
+        //             &info_tex,
+        //             None,
+        //             Rect::new(
+        //                 (app.canvas.window().size().0 - 200) as i32,
+        //                 (app.canvas.window().size().1 - 100) as i32,
+        //                 info_tex_query.width,
+        //                 info_tex_query.height,
+        //             ),
+        //         )
+        //         .unwrap();
+        // }
 
         app.canvas.present();
 
