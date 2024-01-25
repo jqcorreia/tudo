@@ -15,6 +15,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::time::Instant;
 
+use app::init;
 use app::App;
 use components::enums::Component;
 use components::list::SelectList;
@@ -46,19 +47,6 @@ use utils::misc;
 
 use crate::layout::Container;
 
-fn init<'a>() -> App<'a> {
-    let sdl = sdl2::init().unwrap();
-    let video = sdl.video().unwrap();
-
-    App {
-        sdl,
-        running: true,
-        clipboard: None,
-        video,
-        fonts: HashMap::new(),
-    }
-}
-
 fn main() {
     let initial_instant = Instant::now();
     let mut first_render = true;
@@ -66,7 +54,7 @@ fn main() {
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
     let mut app = init();
-    let window = app.create_window();
+    // let window = app.create_window();
 
     let mut fm = FontManager::new(&ttf);
     let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
@@ -76,10 +64,9 @@ fn main() {
         point_size: 20,
     });
 
-    let mut main_canvas = window.into_canvas().build().unwrap();
     let mut event_pump = app.sdl.event_pump().unwrap();
 
-    let tc = main_canvas.texture_creator();
+    let tc = app.canvas.texture_creator();
 
     let mut cache = TextureCache::new(&tc);
 
@@ -128,8 +115,8 @@ fn main() {
     };
 
     let mut lay = layout2.generate2(
-        main_canvas.window().size().0 as usize,
-        main_canvas.window().size().1 as usize,
+        app.canvas.window().size().0 as usize,
+        app.canvas.window().size().1 as usize,
     );
 
     let mut tick_time = Instant::now();
@@ -198,8 +185,8 @@ fn main() {
         }
 
         // Set draw color and clear
-        main_canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
-        main_canvas.clear();
+        app.canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
+        app.canvas.clear();
 
         // Render all components
         for LayoutItem(rect, _k, p) in lay.iter_mut() {
@@ -211,13 +198,13 @@ fn main() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
-            main_canvas
+            app.canvas
                 .with_texture_canvas(&mut tex, |c| {
                     comp.render(&tc, &mut cache, &font, c, *rect, elapsed);
                 })
                 .unwrap();
 
-            main_canvas.copy(&tex, None, *rect).unwrap();
+            app.canvas.copy(&tex, None, *rect).unwrap();
         }
 
         // Draw info
@@ -231,13 +218,13 @@ fn main() {
                 )
                 .unwrap();
             let info_tex_query = info_tex.query();
-            main_canvas
+            app.canvas
                 .copy(
                     &info_tex,
                     None,
                     Rect::new(
-                        (main_canvas.window().size().0 - 200) as i32,
-                        (main_canvas.window().size().1 - 100) as i32,
+                        (app.canvas.window().size().0 - 200) as i32,
+                        (app.canvas.window().size().1 - 100) as i32,
                         info_tex_query.width,
                         info_tex_query.height,
                     ),
@@ -245,7 +232,7 @@ fn main() {
                 .unwrap();
         }
 
-        main_canvas.present();
+        app.canvas.present();
 
         if first_render {
             first_render = false;
