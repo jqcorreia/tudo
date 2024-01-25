@@ -16,7 +16,6 @@ pub struct App<'a> {
     pub clipboard: Option<String>,
     pub video: VideoSubsystem,
     pub fonts: HashMap<String, Font<'a, 'a>>,
-    pub canvas: Canvas<Window>,
     pub ttf: &'a Sdl2TtfContext,
     pub font: Font<'a, 'a>,
 }
@@ -38,14 +37,6 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> App<'a> {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
-    let window = video
-        .window("tudo", 1024, 768)
-        .opengl()
-        .borderless()
-        .position_centered()
-        .build()
-        .unwrap();
-    let canvas = window.into_canvas().build().unwrap();
     let font = ttf
         .load_font("/usr/share/fonts/noto/NotoSans-Regular.ttf", 20)
         .unwrap();
@@ -65,7 +56,6 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> App<'a> {
         video,
         fonts: hm,
         ttf,
-        canvas,
         font,
     }
 }

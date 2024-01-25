@@ -15,7 +15,7 @@ pub trait Render {
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
-        font: &Font,
+        app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,

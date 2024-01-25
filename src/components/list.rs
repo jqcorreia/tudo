@@ -195,12 +195,13 @@ impl Render for SelectList<SourceItem> {
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
-        font: &Font,
+        app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
+        let font = &app.font;
 
         if self.items.len() == 0 {
             let texture = cache.font.draw_string(
@@ -267,12 +268,13 @@ impl Render for SelectList<String> {
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
-        font: &Font,
+        app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
+        let font = &app.font;
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {

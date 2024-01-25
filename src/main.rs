@@ -41,8 +41,6 @@ use sources::secrets::Secrets;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
-use utils::font::FontConfig;
-use utils::font::FontManager;
 use utils::misc;
 
 use crate::layout::Container;
@@ -54,20 +52,11 @@ fn main() {
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
     let mut app = init(&ttf);
-    // let window = app.create_window();
+    let window = app.create_window();
 
-    let font_path = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
-
-    let mut fm = FontManager::new(&ttf);
-    let font = fm.add_font(FontConfig {
-        path: font_path.to_string(),
-        point_size: 20,
-    });
-
-    // let font = app.fonts.get(font_path).unwrap();
+    let mut main_canvas = window.into_canvas().build().unwrap();
     let mut event_pump = app.sdl.event_pump().unwrap();
-
-    let tc = app.canvas.texture_creator();
+    let tc = main_canvas.texture_creator();
 
     let mut cache = TextureCache::new(&tc);
 
@@ -116,8 +105,8 @@ fn main() {
     };
 
     let mut lay = layout2.generate2(
-        app.canvas.window().size().0 as usize,
-        app.canvas.window().size().1 as usize,
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
     );
 
     let mut tick_time = Instant::now();
@@ -186,8 +175,8 @@ fn main() {
         }
 
         // Set draw color and clear
-        app.canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
-        app.canvas.clear();
+        main_canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
+        main_canvas.clear();
 
         // Render all components
         for LayoutItem(rect, _k, p) in lay.iter_mut() {
@@ -199,41 +188,41 @@ fn main() {
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
                 .unwrap();
-            app.canvas
+            main_canvas
                 .with_texture_canvas(&mut tex, |c| {
-                    comp.render(&tc, &mut cache, font, c, *rect, elapsed);
+                    comp.render(&tc, &mut cache, &app, c, *rect, elapsed);
                 })
                 .unwrap();
 
-            app.canvas.copy(&tex, None, *rect).unwrap();
+            main_canvas.copy(&tex, None, *rect).unwrap();
         }
 
         // Draw info
-        // if draw_fps {
-        //     let info_tex = tc
-        //         .create_texture_from_surface(
-        //             &app.font
-        //                 .render(&format!("{}", fps).to_string())
-        //                 .blended(Color::RGBA(0, 120, 0, 128))
-        //                 .unwrap(),
-        //         )
-        //         .unwrap();
-        //     let info_tex_query = info_tex.query();
-        //     app.canvas
-        //         .copy(
-        //             &info_tex,
-        //             None,
-        //             Rect::new(
-        //                 (app.canvas.window().size().0 - 200) as i32,
-        //                 (app.canvas.window().size().1 - 100) as i32,
-        //                 info_tex_query.width,
-        //                 info_tex_query.height,
-        //             ),
-        //         )
-        //         .unwrap();
-        // }
+        if draw_fps {
+            let info_tex = tc
+                .create_texture_from_surface(
+                    &app.font
+                        .render(&format!("{}", fps).to_string())
+                        .blended(Color::RGBA(0, 120, 0, 128))
+                        .unwrap(),
+                )
+                .unwrap();
+            let info_tex_query = info_tex.query();
+            main_canvas
+                .copy(
+                    &info_tex,
+                    None,
+                    Rect::new(
+                        (main_canvas.window().size().0 - 200) as i32,
+                        (main_canvas.window().size().1 - 100) as i32,
+                        info_tex_query.width,
+                        info_tex_query.height,
+                    ),
+                )
+                .unwrap();
+        }
 
-        app.canvas.present();
+        main_canvas.present();
 
         if first_render {
             first_render = false;

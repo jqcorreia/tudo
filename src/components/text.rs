@@ -48,11 +48,16 @@ impl Render for Prompt {
         &mut self,
         _texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
-        font: &Font,
+        app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
     ) {
+        let font = &app
+            .fonts
+            .get("/usr/share/fonts/noto/NotoSans-Regular.ttf")
+            .unwrap();
+
         let draw_cursor = self.text.len() > 0;
 
         let texture = match self.text.len() {
