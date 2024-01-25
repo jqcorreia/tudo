@@ -53,10 +53,7 @@ impl Render for Prompt {
         rect: Rect,
         elapsed: u128,
     ) {
-        let font = &app
-            .fonts
-            .get("/usr/share/fonts/noto/NotoSans-Regular.ttf")
-            .unwrap();
+        let font = app.get_font("normal-20");
 
         let draw_cursor = self.text.len() > 0;
 

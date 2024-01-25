@@ -201,7 +201,8 @@ impl Render for SelectList<SourceItem> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = &app.fonts.values().next().unwrap();
+        let font = app.get_font("normal-20");
+        let font2 = app.get_font("normal-16");
 
         if self.items.len() == 0 {
             let texture = cache.font.draw_string(
@@ -234,7 +235,7 @@ impl Render for SelectList<SourceItem> {
                     item,
                     texture_creator,
                     cache,
-                    font,
+                    font2,
                     canvas,
                     Rect::new(0, 0, rect.w as u32, row_height as u32),
                     elapsed,
@@ -274,7 +275,7 @@ impl Render for SelectList<String> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = &app.fonts.values().next().unwrap();
+        let font = &app.get_font("normal-20");
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {

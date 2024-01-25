@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::Path;
 
 use sdl2::render::Canvas;
 use sdl2::ttf::Font;
@@ -15,7 +16,7 @@ pub struct App<'a> {
     pub running: bool,
     pub clipboard: Option<String>,
     pub video: VideoSubsystem,
-    pub fonts: HashMap<String, Font<'a, 'a>>,
+    fonts: HashMap<String, Font<'a, 'a>>,
     pub ttf: &'a Sdl2TtfContext,
 }
 
@@ -31,26 +32,42 @@ impl<'a> App<'a> {
             .unwrap();
         window
     }
+
+    pub fn load_font(&mut self, font_id: String, path: String, point_size: u16) {
+        let font = self.ttf.load_font(&path, point_size).unwrap();
+
+        self.fonts.insert(font_id, font);
+    }
+
+    pub fn get_font(&'a self, font_id: &'a str) -> &'a Font<'a, 'a> {
+        self.fonts.get(font_id).unwrap()
+    }
 }
-pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> App<'a> {
+pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
-    let font2 = ttf
-        .load_font("/usr/share/fonts/noto/NotoSans-Regular.ttf", 20)
+    let window = video
+        .window("tudo", 1024, 768)
+        .opengl()
+        .borderless()
+        .position_centered()
+        .build()
         .unwrap();
-    let mut hm = HashMap::new();
-    hm.insert(
-        "/usr/share/fonts/noto/NotoSans-Regular.ttf".to_string(),
-        font2,
-    );
 
-    App {
-        sdl,
-        running: true,
-        clipboard: None,
-        video,
-        fonts: hm,
-        ttf,
-    }
+    let canvas = window.into_canvas().build().unwrap();
+    // let tc = canvas.texture_creator();
+    // let texture_cache = TextureCache::new(&tc);
+
+    (
+        App {
+            sdl,
+            running: true,
+            clipboard: None,
+            video,
+            fonts: HashMap::new(),
+            ttf,
+        },
+        canvas,
+    )
 }

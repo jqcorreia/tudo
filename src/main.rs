@@ -8,10 +8,7 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
-use std::cell::RefCell;
-use std::collections::HashMap;
 use std::process::Command;
-use std::rc::Rc;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -45,22 +42,32 @@ use utils::misc;
 
 use crate::layout::Container;
 
+const FONT_PATH: &str = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
+
 fn main() {
+    // First measurement and initial state
     let initial_instant = Instant::now();
     let mut first_render = true;
+
+    // Instantiate ttf since this needs to be passed around as ref
     let ttf = sdl2::ttf::init().unwrap();
+
+    //NOTE(quadrado) The image context just needs to exist. Weird. Use other lib?
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
-    let mut app = init(&ttf);
-    let window = app.create_window();
+    // Create app context and main window canvas
+    let (mut app, mut main_canvas) = init(&ttf);
 
-    let mut main_canvas = window.into_canvas().build().unwrap();
+    app.load_font("normal-20".to_string(), FONT_PATH.to_string(), 20);
+    app.load_font("normal-16".to_string(), FONT_PATH.to_string(), 16);
+
+    // Event pump, for now just sits in the main loop
     let mut event_pump = app.sdl.event_pump().unwrap();
     let tc = main_canvas.texture_creator();
 
     let mut cache = TextureCache::new(&tc);
 
-    // Process sources and generate global items list
+    // Process sources and pre-calculate global items list
     let mut sources: Vec<Box<dyn Source>> = vec![
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
@@ -71,6 +78,7 @@ fn main() {
         source.calculate_items();
     }
 
+    // Generate items list from all sources
     let mut items: Vec<SourceItem> = Vec::new();
     for source in sources {
         for item in source.items().iter() {
@@ -78,12 +86,12 @@ fn main() {
         }
     }
 
+    // Create main UI components
     let prompt = text::Prompt::new();
-
     let mut select_list = SelectList::<SourceItem>::new();
-    // select_list.viewport = Viewport(0, 20);
     select_list.on_select = execute;
 
+    // Define layout
     let mut layout2 = Layout {
         gap: 2,
         root: Container::VSplit(Split {
@@ -104,11 +112,13 @@ fn main() {
         }),
     };
 
+    // Generate layout rects
     let mut lay = layout2.generate2(
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
     );
 
+    // misc main loop setup
     let mut tick_time = Instant::now();
     let mut draw_fps = false;
     let mut fps = 0;
@@ -125,6 +135,7 @@ fn main() {
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
         // We need to do this since we cannot have multiple mutable borrows of lay
+        // NOTE(quadrado): must revisit this
         {
             let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
             ps = p.text.clone().into();
@@ -201,10 +212,7 @@ fn main() {
         if draw_fps {
             let info_tex = tc
                 .create_texture_from_surface(
-                    &app.fonts
-                        .values()
-                        .next()
-                        .unwrap()
+                    &app.get_font("normal-20")
                         .render(&format!("{}", fps).to_string())
                         .blended(Color::RGBA(0, 120, 0, 128))
                         .unwrap(),
