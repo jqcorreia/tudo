@@ -1,5 +1,6 @@
 extern crate sdl2;
 
+pub mod animation;
 pub mod app;
 pub mod components;
 pub mod context;
@@ -12,6 +13,7 @@ use std::process::Command;
 use std::time::Duration;
 use std::time::Instant;
 
+use animation::Animation;
 use app::init;
 use app::App;
 use components::enums::Component;
@@ -125,6 +127,10 @@ fn main() {
     let mut frame_lock = true;
     let frame_lock_value = 60;
 
+    let (ww, mut wh) = main_canvas.window().size();
+
+    let mut anim = Animation::new(&mut wh, 0);
+
     while app.running {
         // Sometime elapsed time is 0 and we need to account for that
         if tick_time.elapsed().as_millis() > 0 {
@@ -139,6 +145,11 @@ fn main() {
         {
             let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
             ps = p.text.clone().into();
+            if ps.len() == 0 {
+                anim.set_target(lay.get(0).unwrap().0.height() + 3, Some(elapsed));
+            } else {
+                anim.set_target(768, Some(elapsed));
+            }
         }
         {
             let l: &mut SelectList<SourceItem> =
@@ -184,6 +195,9 @@ fn main() {
                 comp.consume_event(&_event, &mut app);
             }
         }
+        anim.tick(elapsed);
+
+        main_canvas.window_mut().set_size(ww, *anim.value).unwrap(); // set_size accepts 0 as "do not change"
 
         // Set draw color and clear
         main_canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
