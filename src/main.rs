@@ -37,6 +37,7 @@ use sources::Source;
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::secrets::Secrets;
+use sources::tmux::Tmux;
 use sources::windows::WindowSource;
 use sources::SourceItem;
 use utils::cache::TextureCache;
@@ -75,6 +76,7 @@ fn main() {
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
         Box::new(Secrets::new()),
+        Box::new(Tmux::new()),
     ];
 
     for source in sources.iter_mut() {

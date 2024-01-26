@@ -4,6 +4,7 @@ pub mod actions;
 pub mod apps;
 pub mod lua;
 pub mod secrets;
+pub mod tmux;
 pub mod windows;
 
 #[derive(Debug, Clone, PartialEq)]
