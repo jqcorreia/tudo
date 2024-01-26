@@ -1,5 +1,5 @@
 fn ease_out(a: &mut Animation, tick: u128) {
-    let duration = 250.0; // One second
+    let duration = 125.0;
     let distance = a.target as i32 - a.start_value as i32;
 
     let elapsed_percent = ((tick - a.start_tick) as f32 / duration).clamp(0.0, 1.0);
@@ -10,7 +10,7 @@ fn ease_out(a: &mut Animation, tick: u128) {
 }
 
 fn linear(a: &mut Animation, tick: u128) {
-    let duration = 100.0; // One second
+    let duration = 100.0;
     let distance = a.target as i32 - a.start_value as i32;
 
     let elapsed_percent = ((tick - a.start_tick) as f32 / duration).clamp(0.0, 1.0);

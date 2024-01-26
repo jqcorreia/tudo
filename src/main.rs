@@ -60,6 +60,7 @@ fn main() {
     // Create app context and main window canvas
     let (mut app, mut main_canvas) = init(&ttf);
 
+    // Load initial fonts
     app.load_font("normal-20".to_string(), FONT_PATH.to_string(), 20);
     app.load_font("normal-16".to_string(), FONT_PATH.to_string(), 16);
 
@@ -127,7 +128,8 @@ fn main() {
     let mut frame_lock = true;
     let frame_lock_value = 60;
 
-    let (ww, mut wh) = main_canvas.window().size();
+    let (ww, _) = main_canvas.window().size();
+    let mut wh = 60;
 
     let mut anim = Animation::new(&mut wh, 0);
 
