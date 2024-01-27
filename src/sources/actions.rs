@@ -11,6 +11,7 @@ pub enum Action {
     Run(RunAction),
     WindowSwitch(WindowSwitchAction),
     PassSecret(PassSecretAction),
+    Tmux(TmuxAction),
 }
 
 impl Action {
@@ -19,6 +20,7 @@ impl Action {
             Action::Run(action) => action.execute(ctx),
             Action::PassSecret(action) => action.execute(ctx),
             Action::WindowSwitch(action) => action.execute(ctx),
+            Action::Tmux(action) => action.execute(ctx),
         }
     }
     pub fn tags(&self) -> Vec<String> {
@@ -26,6 +28,7 @@ impl Action {
             Action::Run(_) => vec!["run".to_string()],
             Action::PassSecret(_) => vec!["secret".to_string()],
             Action::WindowSwitch(_) => vec!["window".to_string()],
+            Action::Tmux(_) => vec!["tmux".to_string()],
         }
     }
 }
@@ -101,5 +104,20 @@ impl WindowSwitchAction {
             ctx.running = false;
             std::process::exit(0);
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TmuxAction {
+    pub session: String,
+}
+
+impl TmuxAction {
+    pub fn execute(&self, ctx: &mut App) {
+        Command::new("sh")
+            .args(["-c", &format!("alacritty -e tmux new -As {}", self.session)])
+            .spawn()
+            .unwrap();
+        ctx.running = false;
     }
 }

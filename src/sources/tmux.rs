@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use crate::sources::actions::{Action, RunAction};
+use crate::sources::actions::{Action, RunAction, TmuxAction};
 
 use super::{Source, SourceItem};
 
@@ -27,42 +27,13 @@ impl Source for Tmux {
             res.push(SourceItem {
                 title: line.to_string(),
                 icon: None,
-                action: Action::Run(RunAction {
-                    clip_output: false,
-                    exit_after: true,
-                    path: format!("alacritty -e tmux new -As {}", session_name).to_string(),
+                action: Action::Tmux(TmuxAction {
+                    session: session_name.to_string(),
                 }),
             });
             dbg!(line);
         }
         self.calculated_items = res;
-
-        // match std::fs::read_dir(home_path) {
-        //     Ok(dir) => {
-        //         for file in dir {
-        //             // Secret name will be the file name minus the extension
-        //             // Use it as the item title
-        //             let filename = file.unwrap().file_name().into_string().unwrap();
-
-        //             // Ignore hidden files and .gpg-id
-        //             if filename.starts_with(".") {
-        //                 continue;
-        //             }
-
-        //             let secret_name = filename.split(".gpg").next().unwrap();
-
-        //             res.push(SourceItem {
-        //                 title: secret_name.to_string(),
-        //                 action: Action::PassSecret(PassSecretAction {
-        //                     secret_name: secret_name.to_string(),
-        //                 }),
-        //                 icon: None,
-        //             });
-        //         }
-        //     }
-        //     Err(_) => println!("No password store folder was found."),
-        // };
-        // self.calculated_items = res;
     }
 
     fn items(&self) -> &Vec<SourceItem> {
