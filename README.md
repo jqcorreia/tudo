@@ -15,7 +15,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Tray icons, interactable
 - TOML configuration (with sane defaults)
 - Extendable in Lua
-- Minimal list of dependencies
+- Minimal list of dependencies, i.e no UI toolkit
 
 ## Dependencies
 - SDL2 with `ttf` and `image`
@@ -34,11 +34,11 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Various font sizes and faces. This was hard....
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
-- [ ] Get system default font, maybe
 - [ ] Mouse coords translation to local component coords and list item click
+- [ ] Get system default font, maybe
 - [ ] Prompt window available to actions
 - [ ] More prettier  
 - [ ] Better search (fuzzy)
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
-
+- [ ] Notion integration for notes. Depends on a prompt action.
