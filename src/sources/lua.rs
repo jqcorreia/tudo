@@ -21,11 +21,8 @@ impl Source for LuaSource {
     fn is_async(&self) -> bool {
         false
     }
-    fn items(&self) -> &Vec<SourceItem> {
-        &self.items
-    }
 
-    fn calculate_items(&mut self) {
+    fn generate_items(&self) -> Vec<SourceItem> {
         let mut items = Vec::<SourceItem>::new();
         let lua = Lua::new();
 
@@ -64,7 +61,7 @@ impl Source for LuaSource {
                 });
             }
         });
-        self.items = items;
+        items
     }
 }
 

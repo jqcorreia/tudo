@@ -2,15 +2,11 @@ use std::env;
 
 use super::{actions::PassSecretAction, Action, Source, SourceItem};
 
-pub struct Secrets {
-    calculated_items: Vec<SourceItem>,
-}
+pub struct Secrets {}
 
 impl Secrets {
     pub fn new() -> Secrets {
-        Secrets {
-            calculated_items: Vec::new(),
-        }
+        Secrets {}
     }
 }
 
@@ -18,7 +14,7 @@ impl Source for Secrets {
     fn is_async(&self) -> bool {
         false
     }
-    fn calculate_items(&mut self) {
+    fn generate_items(&self) -> Vec<SourceItem> {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let home_path = format!("{}/.password-store", env::var("HOME").unwrap());
@@ -48,10 +44,6 @@ impl Source for Secrets {
             }
             Err(_) => println!("No password store folder was found."),
         };
-        self.calculated_items = res;
-    }
-
-    fn items(&self) -> &Vec<SourceItem> {
-        return &self.calculated_items;
+        res
     }
 }

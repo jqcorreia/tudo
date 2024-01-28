@@ -5,9 +5,7 @@ use xcb::Connection;
 use super::actions::WindowSwitchAction;
 use super::SourceItem;
 
-pub struct WindowSource {
-    items: Vec<SourceItem>,
-}
+pub struct WindowSource {}
 
 fn get_atom(conn: &Connection, name: &str) -> Atom {
     let cookie = conn.send_request(&x::InternAtom {
@@ -120,7 +118,7 @@ pub fn switch_to_window(
 
 impl WindowSource {
     pub fn new() -> Self {
-        WindowSource { items: Vec::new() }
+        WindowSource {}
     }
 }
 
@@ -128,10 +126,8 @@ impl Source for WindowSource {
     fn is_async(&self) -> bool {
         false
     }
-    fn items(&self) -> &Vec<SourceItem> {
-        &self.items
-    }
-    fn calculate_items(&mut self) {
+
+    fn generate_items(&self) -> Vec<SourceItem> {
         let mut res: Vec<SourceItem> = Vec::new();
 
         // Connect to the X server.
@@ -175,6 +171,6 @@ impl Source for WindowSource {
                 title: format!("{}", wname),
             });
         }
-        self.items = res;
+        res
     }
 }

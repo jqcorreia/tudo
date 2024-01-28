@@ -1,25 +1,22 @@
 use std::process::Command;
 
-use crate::sources::actions::{Action, RunAction, TmuxAction};
+use crate::sources::actions::{Action, TmuxAction};
 
 use super::{Source, SourceItem};
 
-pub struct Tmux {
-    calculated_items: Vec<SourceItem>,
-}
+pub struct Tmux {}
 
 impl Tmux {
     pub fn new() -> Tmux {
-        Tmux {
-            calculated_items: Vec::new(),
-        }
+        Tmux {}
     }
 }
+
 impl Source for Tmux {
     fn is_async(&self) -> bool {
         false
     }
-    fn calculate_items(&mut self) {
+    fn generate_items(&self) -> Vec<SourceItem> {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let output = Command::new("sh").args(["-c", "tmux ls"]).output();
@@ -34,12 +31,7 @@ impl Source for Tmux {
                     session: session_name.to_string(),
                 }),
             });
-            dbg!(line);
         }
-        self.calculated_items = res;
-    }
-
-    fn items(&self) -> &Vec<SourceItem> {
-        return &self.calculated_items;
+        res
     }
 }

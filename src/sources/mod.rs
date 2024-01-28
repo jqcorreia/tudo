@@ -15,7 +15,8 @@ pub struct SourceItem {
 }
 
 pub trait Source {
-    fn calculate_items(&mut self);
-    fn items(&self) -> &Vec<SourceItem>;
-    fn is_async(&self) -> bool;
+    fn generate_items(&self) -> Vec<SourceItem>;
+
+    fn is_async(&self) -> bool; //TODO(quadrado): Use this in order async load or not, unused for
+                                //now
 }

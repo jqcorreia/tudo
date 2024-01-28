@@ -7,22 +7,18 @@ use crate::{
 
 use super::{actions::RunAction, Action};
 
-pub struct DesktopApplications {
-    calculated_items: Vec<SourceItem>,
-}
+pub struct DesktopApplications {}
 
 impl DesktopApplications {
     pub fn new() -> DesktopApplications {
-        DesktopApplications {
-            calculated_items: Vec::new(),
-        }
+        DesktopApplications {}
     }
 }
 impl Source for DesktopApplications {
     fn is_async(&self) -> bool {
         false
     }
-    fn calculate_items(&mut self) {
+    fn generate_items(&self) -> Vec<SourceItem> {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let icon_finder = IconFinder::new();
@@ -86,9 +82,6 @@ impl Source for DesktopApplications {
                 }
             }
         }
-        self.calculated_items = res;
-    }
-    fn items(&self) -> &Vec<SourceItem> {
-        return &self.calculated_items;
+        res
     }
 }

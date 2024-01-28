@@ -27,6 +27,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - (Really) Minimal UI lib with a couple of components and a layout manager
 - Primitive Lua sources support (no function exporting yet)
 - Texture cache (fonts, icons and generic image files)
+- Asynchronous load of item sources in order to reduce startup time (no async/await, simple thread spawn)
 
 ## TODO
 - [x] action tags and search for action (:run, :window, :secret, etc)
@@ -34,6 +35,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Various font sizes and faces. This was hard....
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
+- [x] Async load sources
 - [ ] Prevent from starting multiple instances
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
@@ -43,3 +45,4 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 - [ ] Notion integration for notes. Depends on a prompt action.
+- [ ] Investigate async/await for async source loading

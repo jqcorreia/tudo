@@ -10,6 +10,7 @@ pub mod sources;
 pub mod utils;
 
 use std::process::Command;
+use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -40,6 +41,7 @@ use sources::secrets::Secrets;
 use sources::tmux::Tmux;
 use sources::windows::WindowSource;
 use sources::SourceItem;
+use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::misc;
 
@@ -47,7 +49,16 @@ use crate::layout::Container;
 
 const FONT_PATH: &str = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
+fn already_running() -> bool {
+    false
+}
+
 fn main() {
+    if already_running() {
+        println!("Tudo is already running!");
+        return;
+    }
+
     // First measurement and initial state
     let initial_instant = Instant::now();
     let mut first_render = true;
@@ -71,24 +82,23 @@ fn main() {
 
     let mut cache = TextureCache::new(&tc);
 
-    // Process sources and pre-calculate global items list
-    let mut sources: Vec<Box<dyn Source>> = vec![
+    // Generate items list from all sources
+    let items: Arc<Mutex<Vec<SourceItem>>> = Arc::new(Mutex::new(Vec::new()));
+
+    let sources: Vec<Box<dyn Source + Send>> = vec![
         Box::new(DesktopApplications::new()),
         Box::new(WindowSource::new()),
         Box::new(Secrets::new()),
         Box::new(Tmux::new()),
     ];
 
-    for source in sources.iter_mut() {
-        source.calculate_items();
-    }
-
-    // Generate items list from all sources
-    let mut items: Vec<SourceItem> = Vec::new();
+    // 'async' it
     for source in sources {
-        for item in source.items().iter() {
-            items.push(item.clone());
-        }
+        let i = items.clone();
+        thread::spawn(move || {
+            let mut items = i.lock().unwrap();
+            items.extend(source.generate_items());
+        });
     }
 
     // Create main UI components
@@ -158,7 +168,7 @@ fn main() {
         {
             let l: &mut SelectList<SourceItem> =
                 &mut lay.get_mut(1).unwrap().2.as_variant_mut().unwrap();
-            l.set_list_and_prompt(items.clone(), ps)
+            l.set_list_and_prompt(items.lock().unwrap().clone(), ps)
         }
 
         // Consume events and pass them to the components
