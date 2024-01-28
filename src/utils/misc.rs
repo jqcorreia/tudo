@@ -26,4 +26,3 @@ pub fn ignore_numlock(event: &Event) -> Event {
     };
     _event
 }
-

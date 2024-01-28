@@ -125,6 +125,9 @@ impl WindowSource {
 }
 
 impl Source for WindowSource {
+    fn is_async(&self) -> bool {
+        false
+    }
     fn items(&self) -> &Vec<SourceItem> {
         &self.items
     }

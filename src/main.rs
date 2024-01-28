@@ -183,9 +183,9 @@ fn main() {
                     ..
                 } => app.running = false,
                 sdl2::event::Event::Quit { .. } => app.running = false,
-                sdl2::event::Event::MouseButtonDown { x, y, .. } => {
-                    println!("{} {}", x, y)
-                }
+                // sdl2::event::Event::MouseButtonDown { x, y, .. } => {
+                //     println!("{} {}", x, y)
+                // }
                 _ => (),
             }
 

@@ -34,6 +34,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Various font sizes and faces. This was hard....
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
+- [ ] Prevent from starting multiple instances
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
 - [ ] Prompt window available to actions

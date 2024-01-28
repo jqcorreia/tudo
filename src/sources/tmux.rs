@@ -16,6 +16,9 @@ impl Tmux {
     }
 }
 impl Source for Tmux {
+    fn is_async(&self) -> bool {
+        false
+    }
     fn calculate_items(&mut self) {
         let mut res: Vec<SourceItem> = Vec::new();
 

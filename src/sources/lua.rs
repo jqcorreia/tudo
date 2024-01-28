@@ -18,6 +18,9 @@ impl LuaSource {
     }
 }
 impl Source for LuaSource {
+    fn is_async(&self) -> bool {
+        false
+    }
     fn items(&self) -> &Vec<SourceItem> {
         &self.items
     }

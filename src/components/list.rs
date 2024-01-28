@@ -475,6 +475,9 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
                     self.move_viewport_down();
                 }
             }
+            sdl2::event::Event::MouseButtonDown { x, y, .. } => {
+                println!("{} {}", x, y)
+            }
             _ => (),
         }
     }

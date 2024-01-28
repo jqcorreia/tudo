@@ -17,4 +17,5 @@ pub struct SourceItem {
 pub trait Source {
     fn calculate_items(&mut self);
     fn items(&self) -> &Vec<SourceItem>;
+    fn is_async(&self) -> bool;
 }
