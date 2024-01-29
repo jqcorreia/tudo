@@ -120,8 +120,10 @@ fn main() {
     for source in sources {
         let i = items.clone();
         thread::spawn(move || {
+            let is = source.generate_items();
+
             let mut items = i.lock().unwrap();
-            items.extend(source.generate_items());
+            items.extend(is);
         });
     }
 
