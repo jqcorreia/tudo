@@ -3,14 +3,18 @@ extern crate sdl2;
 pub mod animation;
 pub mod app;
 pub mod components;
+pub mod config;
 pub mod context;
 pub mod execute;
 pub mod layout;
 pub mod sources;
 pub mod utils;
 
+use std::env;
+use std::fs::create_dir_all;
 use std::process::Command;
 use std::thread;
+use std::thread::LocalKey;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -22,6 +26,7 @@ use components::list::SelectList;
 use components::text;
 
 use components::text::Prompt;
+use config::load_config;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
 use execute::execute;
@@ -49,15 +54,34 @@ use crate::layout::Container;
 
 const FONT_PATH: &str = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
 
-fn already_running() -> bool {
-    false
+fn already_running(lock_path: &String) -> bool {
+    match std::fs::read(lock_path.clone()) {
+        Ok(_) => true,
+        Err(_) => {
+            std::fs::write(lock_path, Vec::new()).unwrap();
+            false
+        }
+    }
+}
+
+fn check_config_folder() -> String {
+    let home = env::var("HOME").expect("$HOME not set, can't create config folder");
+    let base_path = format!("{}/.config/tudo", home);
+
+    create_dir_all(base_path.clone()).unwrap();
+    base_path.to_string()
 }
 
 fn main() {
-    if already_running() {
+    let base_folder = check_config_folder();
+    let lock_path = format!("{}/run-lock", base_folder);
+
+    if already_running(&lock_path) {
         println!("Tudo is already running!");
         return;
     }
+
+    let config = load_config("config.lua");
 
     // First measurement and initial state
     let initial_instant = Instant::now();
@@ -102,7 +126,7 @@ fn main() {
     }
 
     // Create main UI components
-    let prompt = text::Prompt::new();
+    let prompt = text::Prompt::new(config);
     let mut select_list = SelectList::<SourceItem>::new();
     select_list.on_select = execute;
 
@@ -291,4 +315,7 @@ fn main() {
             .unwrap()
             .stdout;
     }
+
+    // Remove run lock
+    std::fs::remove_file(lock_path).unwrap();
 }

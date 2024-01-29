@@ -8,6 +8,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 
 use crate::app::App;
 use crate::components::traits::{EventConsumer, Render};
+use crate::config::Config;
 use crate::utils::cache::TextureCache;
 
 pub struct Prompt {
@@ -18,10 +19,10 @@ pub struct Prompt {
 }
 
 impl Prompt {
-    pub fn new() -> Self {
+    pub fn new(config: Config) -> Self {
         Prompt {
             text: String::from(""),
-            foreground_color: Color::RGBA(255, 255, 255, 255),
+            foreground_color: config.prompt_color,
             cursor_x: 0,
             last_cursor_move: 0,
         }

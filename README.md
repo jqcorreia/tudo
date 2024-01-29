@@ -36,7 +36,10 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
 - [x] Async load sources
-- [ ] Prevent from starting multiple instances
+- [ ] Show that the sources are still loading
+- [x] Prevent from starting multiple instances
+- [x] Create .config folder, need to check if this is cross platform
+- [x] Lua based configuration (very early but promising)
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
 - [ ] Prompt window available to actions
@@ -46,3 +49,4 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 - [ ] Notion integration for notes. Depends on a prompt action.
 - [ ] Investigate async/await for async source loading
+
