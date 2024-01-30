@@ -97,8 +97,8 @@ fn main() {
     let (mut app, mut main_canvas) = init(&ttf);
 
     // Load initial fonts
-    app.load_font("normal-20".to_string(), FONT_PATH.to_string(), 20);
-    app.load_font("normal-16".to_string(), FONT_PATH.to_string(), 16);
+    app.load_font("normal-20".to_string(), &config.font_file, 20);
+    app.load_font("normal-16".to_string(), &config.font_file, 16);
 
     // Event pump, for now just sits in the main loop
     let mut event_pump = app.sdl.event_pump().unwrap();

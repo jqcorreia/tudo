@@ -29,8 +29,8 @@ impl<'a> App<'a> {
         window
     }
 
-    pub fn load_font(&mut self, font_id: String, path: String, point_size: u16) {
-        let font = self.ttf.load_font(&path, point_size).unwrap();
+    pub fn load_font(&mut self, font_id: String, path: impl AsRef<str>, point_size: u16) {
+        let font = self.ttf.load_font(&path.as_ref(), point_size).unwrap();
 
         self.fonts.insert(font_id, font);
     }

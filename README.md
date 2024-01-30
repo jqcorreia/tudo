@@ -22,12 +22,20 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 
 ## Features
 - Application launcher (XDG only)
-- XCB and EWMH based window switching (supports: i3, awesome, xfce, etc.)
+- XCB and EWMH based window switching (supports: i2, awesome, xfce, etc.)
 - `pass` secrets integration
 - (Really) Minimal UI lib with a couple of components and a layout manager
 - Primitive Lua sources support (no function exporting yet)
 - Texture cache (fonts, icons and generic image files)
 - Asynchronous load of item sources in order to reduce startup time (no async/await, simple thread spawn)
+
+## Sources
+- XDG Applications
+- EWMH based window switching (supports: i3, awesome, xfce, etc.)
+- `tmux` sessions
+- `pass` secrets
+- TODO: Notion Notes
+- TODO: Browser tabs (this one is a challenge)
 
 ## TODO
 - [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
@@ -37,7 +45,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
 - [x] Async load sources
-- [ ] Show that the sources are still loading (ongoing)
+- [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
+- [ ] Show that the sources are still loading (failed for now)
 - [x] Prevent from starting multiple instances
 - [x] Create .config folder, need to check if this is cross platform
 - [x] Lua based configuration (very early but promising)
@@ -46,7 +55,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Prompt window available to actions
 - [ ] More prettier  
 - [ ] Better search (fuzzy)
-- [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 - [ ] Notion integration for notes. Depends on a prompt action.
 - [ ] Investigate async/await for async source loading
-
+- [ ] Dashboard-like widgets for things like metrics
+- [ ] Submenus for some actions

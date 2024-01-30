@@ -1,5 +1,2 @@
--- for k, v in pairs(config) do
--- 	print(k, v)
--- end
-
-config.prompt_color = color(255, 255, 255, 255)
+config.prompt_color = color(150, 150, 150, 255)
+config.font_file = "/usr/share/fonts/noto/NotoSans-Regular.ttf"
