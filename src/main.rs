@@ -117,6 +117,7 @@ fn main() {
         Box::new(Tmux::new()),
     ];
 
+    // Get number of sources before consuming them
     let total_threads = sources.len();
 
     // 'async' it
@@ -131,6 +132,7 @@ fn main() {
             let mut items = i.lock().unwrap();
             items.extend(is);
 
+            // Increment completed_threads
             let mut ct = ct.lock().unwrap();
             *ct += 1;
         });
