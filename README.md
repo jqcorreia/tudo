@@ -30,13 +30,14 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Asynchronous load of item sources in order to reduce startup time (no async/await, simple thread spawn)
 
 ## TODO
+- [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
 - [x] action tags and search for action (:run, :window, :secret, etc)
 - [x] Icon files may not exist even if referenced by XDG icon files format
 - [x] Various font sizes and faces. This was hard....
 - [x] Primitive animations
 - [x] tmux list source items, open default terminal in a given session
 - [x] Async load sources
-- [ ] Show that the sources are still loading
+- [ ] Show that the sources are still loading (ongoing)
 - [x] Prevent from starting multiple instances
 - [x] Create .config folder, need to check if this is cross platform
 - [x] Lua based configuration (very early but promising)
@@ -45,7 +46,6 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Prompt window available to actions
 - [ ] More prettier  
 - [ ] Better search (fuzzy)
-- [ ] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
 - [ ] Notion integration for notes. Depends on a prompt action.
 - [ ] Investigate async/await for async source loading

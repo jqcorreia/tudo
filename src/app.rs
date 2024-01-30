@@ -1,15 +1,11 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use sdl2::render::Canvas;
 use sdl2::ttf::Font;
 use sdl2::ttf::Sdl2TtfContext;
 use sdl2::video::Window;
-use sdl2::video::WindowContext;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
-
-use crate::utils::cache::TextureCache;
 
 pub struct App<'a> {
     pub sdl: Sdl,

@@ -18,6 +18,20 @@ fn linear(a: &mut Animation, tick: u128) {
     *a.value = (a.start_value as i32 + (distance as f32 * elapsed_percent) as i32) as u32;
 }
 
+pub enum AnimationType {
+    Linear,
+    EaseOut,
+}
+
+impl AnimationType {
+    pub fn func(&self) -> fn(&mut Animation, u128) {
+        match self {
+            Self::Linear => linear,
+            Self::EaseOut => ease_out,
+        }
+    }
+}
+
 // Hey sis!
 //
 // Low level animation code
@@ -28,18 +42,18 @@ pub struct Animation<'a> {
     running: bool,
     start_tick: u128,
     pub target: u32,
-    tick_fn: fn(animation: &mut Animation, tick: u128),
+    animation_type: AnimationType,
 }
 
 impl<'a> Animation<'a> {
-    pub fn new(value: &'a mut u32, target: u32) -> Animation {
+    pub fn new(value: &'a mut u32, target: u32, atype: AnimationType) -> Animation {
         Animation {
             start_value: *value,
             value,
             running: false,
             start_tick: 0,
             target,
-            tick_fn: ease_out,
+            animation_type: atype,
         }
     }
     pub fn start(&mut self, tick: u128) {
@@ -59,6 +73,6 @@ impl<'a> Animation<'a> {
     }
 
     pub fn tick(&mut self, tick: u128) {
-        (self.tick_fn)(self, tick);
+        (self.animation_type.func())(self, tick);
     }
 }

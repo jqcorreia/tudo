@@ -14,11 +14,11 @@ use std::env;
 use std::fs::create_dir_all;
 use std::process::Command;
 use std::thread;
-use std::thread::LocalKey;
 use std::time::Duration;
 use std::time::Instant;
 
 use animation::Animation;
+use animation::AnimationType;
 use app::init;
 use app::App;
 use components::enums::Component;
@@ -120,8 +120,10 @@ fn main() {
     for source in sources {
         let i = items.clone();
         thread::spawn(move || {
+            // Calc, ...
             let is = source.generate_items();
 
+            // ... and then lock
             let mut items = i.lock().unwrap();
             items.extend(is);
         });
@@ -169,7 +171,7 @@ fn main() {
     let (ww, _) = main_canvas.window().size();
     let mut wh = 60;
 
-    let mut anim = Animation::new(&mut wh, 0);
+    let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
 
     while app.running {
         // Sometime elapsed time is 0 and we need to account for that
