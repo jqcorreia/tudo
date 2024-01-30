@@ -100,7 +100,7 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
     let res = lua.context(|ctx| {
         let globals = ctx.globals();
 
-        globals.set("config", config)?;
+        globals.set("tudo", config)?;
         let color_func =
             ctx.create_function(|ctx, (r, g, b, a)| Ok(LuaColor(Color::RGBA(r, g, b, a))))?;
         globals.set("color", color_func)?;
@@ -111,7 +111,7 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
                 panic!("{}", err)
             }
         };
-        let c = globals.get::<_, Config>("config");
+        let c = globals.get::<_, Config>("tudo");
         c
     });
     dbg!(res.unwrap())

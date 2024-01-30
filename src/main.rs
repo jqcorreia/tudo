@@ -52,7 +52,7 @@ use utils::misc;
 
 use crate::layout::Container;
 
-const FONT_PATH: &str = "/usr/share/fonts/noto/NotoSans-Regular.ttf";
+type ArcM<T> = Arc<Mutex<T>>;
 
 fn already_running(lock_path: &String) -> bool {
     match std::fs::read(lock_path.clone()) {
@@ -81,7 +81,7 @@ fn main() {
         return;
     }
 
-    let config = load_config("config.lua");
+    let config = load_config(format!("{}/config.lua", base_folder));
 
     // First measurement and initial state
     let initial_instant = Instant::now();
@@ -108,6 +108,7 @@ fn main() {
 
     // Generate items list from all sources
     let items: Arc<Mutex<Vec<SourceItem>>> = Arc::new(Mutex::new(Vec::new()));
+    let completed_threads: ArcM<u32> = Arc::new(Mutex::new(0));
 
     let sources: Vec<Box<dyn Source + Send>> = vec![
         Box::new(DesktopApplications::new()),
@@ -116,9 +117,12 @@ fn main() {
         Box::new(Tmux::new()),
     ];
 
+    let total_threads = sources.len();
+
     // 'async' it
     for source in sources {
         let i = items.clone();
+        let ct = completed_threads.clone();
         thread::spawn(move || {
             // Calc, ...
             let is = source.generate_items();
@@ -126,6 +130,9 @@ fn main() {
             // ... and then lock
             let mut items = i.lock().unwrap();
             items.extend(is);
+
+            let mut ct = ct.lock().unwrap();
+            *ct += 1;
         });
     }
 
@@ -174,6 +181,15 @@ fn main() {
     let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
 
     while app.running {
+        let ct = completed_threads.lock().unwrap();
+        let clear_color = if *ct == total_threads as u32 {
+            Color::RGBA(50, 50, 50, 255)
+        } else {
+            Color::RGBA(200, 0, 0, 255)
+        };
+        // We need to drop here in order to yield the lock
+        drop(ct);
+
         // Sometime elapsed time is 0 and we need to account for that
         if tick_time.elapsed().as_millis() > 0 {
             fps = 1000 / tick_time.elapsed().as_millis();
@@ -242,7 +258,7 @@ fn main() {
         main_canvas.window_mut().set_size(ww, *anim.value).unwrap(); // set_size accepts 0 as "do not change"
 
         // Set draw color and clear
-        main_canvas.set_draw_color(Color::RGBA(50, 50, 50, 255));
+        main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
         // Render all components

@@ -46,7 +46,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] tmux list source items, open default terminal in a given session
 - [x] Async load sources
 - [ ] Implement drawing 'toolkit' context containing Sdl, Canvas, TextureCreator, etc
-- [ ] Show that the sources are still loading (failed for now)
+- [x] Show that the sources are still loading (really simple, but working)
 - [x] Prevent from starting multiple instances
 - [x] Create .config folder, need to check if this is cross platform
 - [x] Lua based configuration (very early but promising)
