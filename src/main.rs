@@ -257,7 +257,7 @@ fn main() {
         }
         anim.tick(elapsed);
 
-        main_canvas.window_mut().set_size(ww, *anim.value).unwrap(); // set_size accepts 0 as "do not change"
+        // main_canvas.window_mut().set_size(ww, *anim.value).unwrap(); // set_size accepts 0 as "do not change"
 
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
