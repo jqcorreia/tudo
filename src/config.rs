@@ -1,4 +1,4 @@
-use std::{ascii::AsciiExt, collections::HashMap};
+use std::collections::HashMap;
 
 use mlua::{IntoLua, Lua, LuaSerdeExt, Value};
 use sdl2::pixels::Color;
@@ -38,7 +38,6 @@ where
         where
             A: serde::de::MapAccess<'de>,
         {
-            map.next_key
             // println!("I'm here");
             // let _ = map;
             Ok(Color::RGBA(255, 0, 0, 255))
@@ -142,14 +141,16 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
     globals.set("color", color_func.unwrap()).unwrap();
 
     lua.load(&contents).set_name("test").exec().unwrap();
-    // match lua.load(&contents).set_name("config").eval() {
-    //     Ok(r) => r,
-    //     Err(err) => {
-    //         panic!("{}", err)
-    //     }
-    // };
-    // let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
-    // c
+    match lua.load(&contents).set_name("config").eval() {
+        Ok(r) => dbg!(r),
+        Err(err) => {
+            panic!("{}", err)
+        }
+    };
 
+    // let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
+    // let c = globals
+    //     .get::<_, HashMap<String, u8>>("tudo.prompt_color")
+    //     .unwrap();
     config
 }
