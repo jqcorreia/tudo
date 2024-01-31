@@ -1,7 +1,9 @@
+use std::{ascii::AsciiExt, collections::HashMap};
+
 use mlua::{IntoLua, Lua, LuaSerdeExt, Value};
 use sdl2::pixels::Color;
 
-use serde::{ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -24,10 +26,29 @@ where
     map.end()
 }
 
-fn deserialize_color<'de, D>(deserializer: D) -> Result<Color, D::Error>
+fn deserialize_color<'de, D>(des: D) -> Result<Color, D::Error>
 where
     D: Deserializer<'de>,
 {
+    struct ColorVisitor;
+    impl<'de> Visitor<'de> for ColorVisitor {
+        type Value = Color;
+
+        fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::MapAccess<'de>,
+        {
+            map.next_key
+            // println!("I'm here");
+            // let _ = map;
+            Ok(Color::RGBA(255, 0, 0, 255))
+        }
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("Expects a map with 4 keys 'r', 'g', 'b', 'a'")
+        }
+    }
+
+    des.deserialize_map(ColorVisitor)?;
     Ok(Color::RGBA(255, 1, 1, 255))
 }
 
@@ -47,39 +68,39 @@ impl Default for Config {
     }
 }
 
-// impl<'lua> ToLua<'lua> for Config {
-//     fn to_lua(self, lua: rlua::prelude::LuaContext<'lua>) -> rlua::prelude::LuaResult<Value<'lua>> {
-//         let table = lua.create_table()?;
+// // impl<'lua> ToLua<'lua> for Config {
+// //     fn to_lua(self, lua: rlua::prelude::LuaContext<'lua>) -> rlua::prelude::LuaResult<Value<'lua>> {
+// //         let table = lua.create_table()?;
 
-//         let color = self.prompt_color;
-//         let lcolor = LuaColor(color);
-//         table.set("prompt_color", lcolor)?;
-//         table.set("font_file", self.font_file)?;
+// //         let color = self.prompt_color;
+// //         let lcolor = LuaColor(color);
+// //         table.set("prompt_color", lcolor)?;
+// //         table.set("font_file", self.font_file)?;
 
-//         Ok(Value::Table(table))
+// //         Ok(Value::Table(table))
+// //     }
+// // }
+
+// // Used to be able to have a SDL2 color as a lua value
+// #[derive(Debug)]
+// struct LuaColor(Color);
+
+// impl LuaColor {
+//     fn to_color(self) -> Color {
+//         self.0
 //     }
 // }
 
-// Used to be able to have a SDL2 color as a lua value
-#[derive(Debug)]
-struct LuaColor(Color);
-
-impl LuaColor {
-    fn to_color(self) -> Color {
-        self.0
-    }
-}
-
-impl<'lua> IntoLua<'lua> for LuaColor {
-    fn into_lua(self, lua: &'lua Lua) -> mlua::prelude::LuaResult<mlua::prelude::LuaValue<'lua>> {
-        let table = lua.create_table()?;
-        table.set("r", self.0.r)?;
-        table.set("g", self.0.g)?;
-        table.set("b", self.0.b)?;
-        table.set("a", self.0.a)?;
-        Ok(Value::Table(table))
-    }
-}
+// impl<'lua> IntoLua<'lua> for LuaColor {
+//     fn into_lua(self, lua: &'lua Lua) -> mlua::prelude::LuaResult<mlua::prelude::LuaValue<'lua>> {
+//         let table = lua.create_table()?;
+//         table.set("r", self.0.r)?;
+//         table.set("g", self.0.g)?;
+//         table.set("b", self.0.b)?;
+//         table.set("a", self.0.a)?;
+//         Ok(Value::Table(table))
+//     }
+// }
 
 // impl<'lua> FromLua<'lua> for LuaColor {
 //     fn from_lua(
@@ -108,15 +129,27 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
     let globals = lua.globals();
 
     globals.set("tudo", lua.to_value(&config).unwrap()).unwrap();
-    let color_func = lua.create_function(|ctx, (r, g, b, a)| Ok(LuaColor(Color::RGBA(r, g, b, a))));
+    let color_func = lua.create_function(|_ctx, (r, g, b, a): (u8, u8, u8, u8)| {
+        let mut hm: HashMap<String, u8> = HashMap::new();
+        hm.insert("r".to_string(), r);
+        hm.insert("g".to_string(), g);
+        hm.insert("b".to_string(), b);
+        hm.insert("a".to_string(), a);
+
+        Ok(hm)
+    });
+
     globals.set("color", color_func.unwrap()).unwrap();
 
-    match lua.load(&contents).set_name("config").eval() {
-        Ok(r) => r,
-        Err(err) => {
-            panic!("{}", err)
-        }
-    };
-    let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
-    c
+    lua.load(&contents).set_name("test").exec().unwrap();
+    // match lua.load(&contents).set_name("config").eval() {
+    //     Ok(r) => r,
+    //     Err(err) => {
+    //         panic!("{}", err)
+    //     }
+    // };
+    // let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
+    // c
+
+    config
 }
