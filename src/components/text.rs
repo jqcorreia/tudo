@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
 use sdl2::keyboard::Keycode;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
@@ -16,6 +13,7 @@ pub struct Prompt {
     pub foreground_color: Color,
     pub cursor_x: i32,
     pub last_cursor_move: u128,
+    pub blink: bool,
 }
 
 impl Prompt {
@@ -25,6 +23,7 @@ impl Prompt {
             foreground_color: config.prompt_color,
             cursor_x: 0,
             last_cursor_move: 0,
+            blink: config.cursor_blink,
         }
     }
     pub fn with_text(mut self, text: String) -> Self {
@@ -80,7 +79,10 @@ impl Render for Prompt {
 
         if draw_cursor {
             let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - h) / 2, 5, h as u32);
-            let alpha = ((((elapsed as f32 / 100.0) as f32).sin() + 1.0) / 2.0) * 255.0;
+            let alpha = match self.blink {
+                true => ((((elapsed as f32 / 100.0) as f32).sin() + 1.0) / 2.0) * 255.0,
+                false => 255.0,
+            };
 
             canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
 

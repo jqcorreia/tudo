@@ -5,6 +5,7 @@ use sdl2::pixels::Color;
 pub struct Config {
     pub prompt_color: Color,
     pub font_file: String,
+    pub cursor_blink: bool,
 }
 
 impl Config {
@@ -18,6 +19,7 @@ impl Default for Config {
         Config {
             prompt_color: Color::RGBA(255, 255, 255, 255),
             font_file: "/usr/share/fonts/noto/NotoSans-Regular.ttf".to_string(),
+            cursor_blink: true,
         }
     }
 }
@@ -31,9 +33,11 @@ impl<'lua> FromLua<'lua> for Config {
             Value::Table(table) => {
                 let lcolor = table.get::<_, LuaColor>("prompt_color")?;
                 let font_file = table.get::<_, String>("font_file")?;
+                let cursor_blink = table.get::<_, bool>("cursor_blink")?;
                 Ok(Config {
                     prompt_color: lcolor.to_color(),
                     font_file,
+                    cursor_blink,
                 })
             }
             _ => panic!("Error on lua return"),
@@ -44,10 +48,12 @@ impl<'lua> FromLua<'lua> for Config {
 impl<'lua> ToLua<'lua> for Config {
     fn to_lua(self, lua: rlua::prelude::LuaContext<'lua>) -> rlua::prelude::LuaResult<Value<'lua>> {
         let table = lua.create_table()?;
+
         let color = self.prompt_color;
         let lcolor = LuaColor(color);
         table.set("prompt_color", lcolor)?;
         table.set("font_file", self.font_file)?;
+
         Ok(Value::Table(table))
     }
 }
