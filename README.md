@@ -37,7 +37,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - TODO: Notion Notes
 - TODO: Browser tabs (this one is a challenge)
 
-## TODO
+## Rolling Dev Notes
 - [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
 - [x] action tags and search for action (:run, :window, :secret, etc)
 - [x] Icon files may not exist even if referenced by XDG icon files format
@@ -50,6 +50,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Prevent from starting multiple instances
 - [x] Create .config folder, need to check if this is cross platform
 - [x] Lua based configuration (very early but promising)
+- [ ] ! Migrate to mlua, due to serde support
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
 - [ ] Prompt window available to actions
