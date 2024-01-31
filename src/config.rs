@@ -3,7 +3,11 @@ use std::collections::HashMap;
 use mlua::{IntoLua, Lua, LuaSerdeExt, Value};
 use sdl2::pixels::Color;
 
-use serde::{de::Visitor, ser::SerializeMap, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    de::{Error, Visitor},
+    ser::SerializeMap,
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -38,17 +42,32 @@ where
         where
             A: serde::de::MapAccess<'de>,
         {
+            let mut r: u8 = 0;
+            let mut g: u8 = 0;
+            let mut b: u8 = 0;
+            let mut a: u8 = 0;
+            while let Some((key, value)) = map.next_entry::<String, u8>().unwrap() {
+                match key.as_str() {
+                    "r" => r = value,
+                    "g" => g = value,
+                    "b" => b = value,
+                    "a" => a = value,
+                    _ => return Err(Error::custom("Unknown key")),
+                }
+                // while let Some((key, value)) = map.next_value::<(String, u8)>().unwrap() {
+                dbg!(key);
+            }
             // println!("I'm here");
             // let _ = map;
-            Ok(Color::RGBA(255, 0, 0, 255))
+            Ok(Color::RGBA(r, g, b, a))
         }
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
             formatter.write_str("Expects a map with 4 keys 'r', 'g', 'b', 'a'")
         }
     }
 
-    des.deserialize_map(ColorVisitor)?;
-    Ok(Color::RGBA(255, 1, 1, 255))
+    Ok(des.deserialize_map(ColorVisitor))?
+    // Ok(Color::RGBA(255, 1, 1, 255))
 }
 
 impl Config {
@@ -147,10 +166,11 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
             panic!("{}", err)
         }
     };
-
-    // let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
     // let c = globals
     //     .get::<_, HashMap<String, u8>>("tudo.prompt_color")
     //     .unwrap();
-    config
+
+    let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
+    c
+    // config
 }

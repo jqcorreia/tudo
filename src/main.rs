@@ -339,5 +339,5 @@ fn main() {
     }
 
     // Remove run lock
-    std::fs::remove_file(lock_path).unwrap();
+    let _ = std::fs::remove_file(lock_path);
 }
