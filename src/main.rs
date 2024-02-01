@@ -4,7 +4,6 @@ pub mod animation;
 pub mod app;
 pub mod components;
 pub mod config;
-pub mod context;
 pub mod execute;
 pub mod layout;
 pub mod sources;
