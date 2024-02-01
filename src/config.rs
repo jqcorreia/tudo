@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use mlua::{IntoLua, Lua, LuaSerdeExt, Value};
+use mlua::{Lua, LuaSerdeExt};
 use sdl2::pixels::Color;
 
 use serde::{
@@ -54,11 +54,7 @@ where
                     "a" => a = value,
                     _ => return Err(Error::custom("Unknown key")),
                 }
-                // while let Some((key, value)) = map.next_value::<(String, u8)>().unwrap() {
-                dbg!(key);
             }
-            // println!("I'm here");
-            // let _ = map;
             Ok(Color::RGBA(r, g, b, a))
         }
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -67,7 +63,6 @@ where
     }
 
     Ok(des.deserialize_map(ColorVisitor))?
-    // Ok(Color::RGBA(255, 1, 1, 255))
 }
 
 impl Config {
@@ -85,59 +80,6 @@ impl Default for Config {
         }
     }
 }
-
-// // impl<'lua> ToLua<'lua> for Config {
-// //     fn to_lua(self, lua: rlua::prelude::LuaContext<'lua>) -> rlua::prelude::LuaResult<Value<'lua>> {
-// //         let table = lua.create_table()?;
-
-// //         let color = self.prompt_color;
-// //         let lcolor = LuaColor(color);
-// //         table.set("prompt_color", lcolor)?;
-// //         table.set("font_file", self.font_file)?;
-
-// //         Ok(Value::Table(table))
-// //     }
-// // }
-
-// // Used to be able to have a SDL2 color as a lua value
-// #[derive(Debug)]
-// struct LuaColor(Color);
-
-// impl LuaColor {
-//     fn to_color(self) -> Color {
-//         self.0
-//     }
-// }
-
-// impl<'lua> IntoLua<'lua> for LuaColor {
-//     fn into_lua(self, lua: &'lua Lua) -> mlua::prelude::LuaResult<mlua::prelude::LuaValue<'lua>> {
-//         let table = lua.create_table()?;
-//         table.set("r", self.0.r)?;
-//         table.set("g", self.0.g)?;
-//         table.set("b", self.0.b)?;
-//         table.set("a", self.0.a)?;
-//         Ok(Value::Table(table))
-//     }
-// }
-
-// impl<'lua> FromLua<'lua> for LuaColor {
-//     fn from_lua(
-//         lua_value: rlua::prelude::LuaValue<'lua>,
-//         _lua: rlua::prelude::LuaContext<'lua>,
-//     ) -> rlua::prelude::LuaResult<Self> {
-//         let (r, g, b, a);
-//         match lua_value {
-//             Value::Table(table) => {
-//                 r = table.get::<_, u8>("r")?;
-//                 g = table.get::<_, u8>("g")?;
-//                 b = table.get::<_, u8>("b")?;
-//                 a = table.get::<_, u8>("a")?;
-//                 Ok(LuaColor(Color::RGBA(r, g, b, a)))
-//             }
-//             _ => panic!("Bad color format"),
-//         }
-//     }
-// }
 
 pub fn load_config(path: impl AsRef<str>) -> Config {
     let lua = Lua::new();
@@ -159,18 +101,12 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
 
     globals.set("color", color_func.unwrap()).unwrap();
 
-    lua.load(&contents).set_name("test").exec().unwrap();
     match lua.load(&contents).set_name("config").eval() {
         Ok(r) => dbg!(r),
         Err(err) => {
             panic!("{}", err)
         }
     };
-    // let c = globals
-    //     .get::<_, HashMap<String, u8>>("tudo.prompt_color")
-    //     .unwrap();
-
     let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
     c
-    // config
 }
