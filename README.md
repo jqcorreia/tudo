@@ -60,4 +60,5 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Investigate async/await for async source loading
 - [ ] Dashboard-like widgets for things like metrics
 - [ ] Submenus for some actions
+
 ! - means ongoing
