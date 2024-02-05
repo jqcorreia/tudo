@@ -102,7 +102,6 @@ impl WindowSwitchAction {
 
         if self.exit_after {
             ctx.running = false;
-            std::process::exit(0);
         }
     }
 }
