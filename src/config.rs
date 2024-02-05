@@ -81,12 +81,9 @@ impl Default for Config {
     }
 }
 
-pub fn load_config(path: impl AsRef<str>) -> Config {
-    let lua = Lua::new();
-    let contents = std::fs::read(path.as_ref()).unwrap_or_else(|_| "".into());
-    let config = Config::new();
-
+pub fn set_globals(lua: &Lua) {
     let globals = lua.globals();
+    let config = Config::new();
 
     globals.set("tudo", lua.to_value(&config).unwrap()).unwrap();
     let color_func = lua.create_function(|_ctx, (r, g, b, a): (u8, u8, u8, u8)| {
@@ -100,6 +97,15 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
     });
 
     globals.set("color", color_func.unwrap()).unwrap();
+}
+
+pub fn load_config(path: impl AsRef<str>) -> Config {
+    let lua = Lua::new();
+    let contents = std::fs::read(path.as_ref()).unwrap_or_else(|_| "".into());
+
+    let globals = lua.globals();
+
+    set_globals(&lua);
 
     match lua.load(&contents).set_name("config").eval() {
         Ok(r) => dbg!(r),
