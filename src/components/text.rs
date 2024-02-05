@@ -1,7 +1,7 @@
 use sdl2::keyboard::Keycode;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
-use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
+use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Window};
 
 use crate::app::App;
 use crate::components::traits::{EventConsumer, Render};
@@ -102,7 +102,7 @@ impl Render for Prompt {
 }
 
 impl EventConsumer for Prompt {
-    fn consume_event(&mut self, event: &Event, app: &mut App) {
+    fn consume_event(&mut self, event: &Event, _: &mut App) {
         match event {
             sdl2::event::Event::TextInput { text, .. } => {
                 self.text += &text;

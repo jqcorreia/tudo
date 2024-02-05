@@ -17,6 +17,3 @@ serde = { version = "1.0.196", "features" = ["derive"] }
 name = "tudo"
 path = "src/main.rs"
 
-[[bin]]
-name = "sandbox"
-path = "src/sandbox.rs"

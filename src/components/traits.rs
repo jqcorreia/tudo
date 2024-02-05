@@ -3,11 +3,7 @@ use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, TextureCreator};
-use sdl2::ttf::Font;
 use sdl2::video::{Window, WindowContext};
-
-use std::cell::RefCell;
-use std::rc::Rc;
 
 pub trait Render {
     fn id(&self) -> String;

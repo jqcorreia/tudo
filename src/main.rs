@@ -176,7 +176,7 @@ fn main() {
     let mut frame_lock = true;
     let frame_lock_value = 60;
 
-    let (ww, _) = main_canvas.window().size();
+    let (_ww, _) = main_canvas.window().size();
     let mut wh = 60;
 
     let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);

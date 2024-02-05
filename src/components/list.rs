@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
