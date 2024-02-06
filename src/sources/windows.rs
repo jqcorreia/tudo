@@ -163,7 +163,7 @@ impl Source for WindowSource {
             let mut split = buf.split(|item| item == &(0 as u8));
             let wname = String::from_utf8(split.nth(1).unwrap().to_vec()).unwrap();
             res.push(SourceItem {
-                action: Action::WindowSwitch(WindowSwitchAction {
+                action: Box::new(WindowSwitchAction {
                     window: *w,
                     exit_after: true,
                 }),

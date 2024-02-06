@@ -66,7 +66,7 @@ impl Source for DesktopApplications {
                     res.push(SourceItem {
                         icon,
                         title: title.unwrap().to_string(),
-                        action: Action::Run(RunAction {
+                        action: Box::new(RunAction {
                             path: action.unwrap().to_string(),
                             exit_after: true,
                             clip_output: false,

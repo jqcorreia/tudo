@@ -7,11 +7,19 @@ pub mod secrets;
 pub mod tmux;
 pub mod windows;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone)]
 pub struct SourceItem {
     pub icon: Option<String>,
     pub title: String,
-    pub action: Action,
+    pub action: Box<dyn Action + Send>,
+}
+
+impl PartialEq for SourceItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.icon == other.icon
+            && self.title == other.title
+            && self.action.tags() == other.action.tags()
+    }
 }
 
 pub trait Source {

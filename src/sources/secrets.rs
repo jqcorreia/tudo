@@ -35,7 +35,7 @@ impl Source for Secrets {
 
                     res.push(SourceItem {
                         title: secret_name.to_string(),
-                        action: Action::PassSecret(PassSecretAction {
+                        action: Box::new(PassSecretAction {
                             secret_name: secret_name.to_string(),
                         }),
                         icon: None,

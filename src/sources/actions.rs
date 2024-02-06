@@ -1,45 +1,25 @@
 use std::process::Command;
 
+use dyn_clone::DynClone;
 use xcb::x::Window;
 
 use crate::App;
 
 use super::windows::switch_to_window;
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum Action {
-    Run(RunAction),
-    WindowSwitch(WindowSwitchAction),
-    PassSecret(PassSecretAction),
-    Tmux(TmuxAction),
+pub trait Action: DynClone {
+    fn execute(&self, ctx: &mut App);
+    fn tags(&self) -> Vec<String>;
 }
-
-impl Action {
-    pub fn execute(&self, ctx: &mut App) {
-        match self {
-            Action::Run(action) => action.execute(ctx),
-            Action::PassSecret(action) => action.execute(ctx),
-            Action::WindowSwitch(action) => action.execute(ctx),
-            Action::Tmux(action) => action.execute(ctx),
-        }
-    }
-    pub fn tags(&self) -> Vec<String> {
-        match self {
-            Action::Run(_) => vec!["run".to_string()],
-            Action::PassSecret(_) => vec!["secret".to_string()],
-            Action::WindowSwitch(_) => vec!["window".to_string()],
-            Action::Tmux(_) => vec!["tmux".to_string()],
-        }
-    }
-}
+dyn_clone::clone_trait_object!(Action);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PassSecretAction {
     pub secret_name: String,
 }
 
-impl PassSecretAction {
-    pub fn execute(&self, ctx: &mut App) {
+impl Action for PassSecretAction {
+    fn execute(&self, ctx: &mut App) {
         let pass_args = vec![
             "-c".to_string(),
             format!("pass {}", self.secret_name.to_string()),
@@ -61,6 +41,9 @@ impl PassSecretAction {
         }
         ctx.running = false;
     }
+    fn tags(&self) -> Vec<String> {
+        vec!["secret".to_string()]
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -70,8 +53,8 @@ pub struct RunAction {
     pub clip_output: bool,
 }
 
-impl RunAction {
-    pub fn execute(&self, ctx: &mut App) {
+impl Action for RunAction {
+    fn execute(&self, ctx: &mut App) {
         let args = vec!["-c", &self.path];
 
         if self.clip_output {
@@ -86,6 +69,9 @@ impl RunAction {
             ctx.running = false;
         }
     }
+    fn tags(&self) -> Vec<String> {
+        vec!["run".to_string()]
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -94,8 +80,8 @@ pub struct WindowSwitchAction {
     pub exit_after: bool,
 }
 
-impl WindowSwitchAction {
-    pub fn execute(&self, ctx: &mut App) {
+impl Action for WindowSwitchAction {
+    fn execute(&self, ctx: &mut App) {
         let (conn, _) = xcb::Connection::connect(None).unwrap();
         let root = conn.get_setup().roots().nth(0).unwrap().root();
         let _ = switch_to_window(&conn, &self.window, &root);
@@ -104,6 +90,9 @@ impl WindowSwitchAction {
             ctx.running = false;
         }
     }
+    fn tags(&self) -> Vec<String> {
+        vec!["window".to_string()]
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -111,12 +100,15 @@ pub struct TmuxAction {
     pub session: String,
 }
 
-impl TmuxAction {
-    pub fn execute(&self, ctx: &mut App) {
+impl Action for TmuxAction {
+    fn execute(&self, ctx: &mut App) {
         Command::new("sh")
             .args(["-c", &format!("alacritty -e tmux new -As {}", self.session)])
             .spawn()
             .unwrap();
         ctx.running = false;
+    }
+    fn tags(&self) -> Vec<String> {
+        vec!["tmux".to_string()]
     }
 }

@@ -27,7 +27,7 @@ impl Source for Tmux {
             res.push(SourceItem {
                 title: line.to_string(),
                 icon: None,
-                action: Action::Tmux(TmuxAction {
+                action: Box::new(TmuxAction {
                     session: session_name.to_string(),
                 }),
             });
