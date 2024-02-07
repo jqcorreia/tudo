@@ -145,6 +145,8 @@ fn main() {
     // Define layout
     let mut layout2 = Layout {
         gap: 2,
+        width: main_canvas.window().size().0 as usize,
+        height: main_canvas.window().size().1 as usize,
         root: Container::VSplit(Split {
             children: Vec::from([
                 Container::Leaf(Leaf {
@@ -164,10 +166,7 @@ fn main() {
     };
 
     // Generate layout rects
-    let mut lay = layout2.generate(
-        main_canvas.window().size().0 as usize,
-        main_canvas.window().size().1 as usize,
-    );
+    let mut lay = layout2.generate();
 
     // misc main loop setup
     let mut tick_time = Instant::now();

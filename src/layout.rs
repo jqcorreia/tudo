@@ -28,6 +28,8 @@ pub enum Container {
 pub struct Layout {
     pub gap: usize,
     pub root: Container,
+    pub width: usize,
+    pub height: usize,
 }
 
 pub struct LayoutItem<'a>(pub Rect, pub String, pub &'a mut Component);
@@ -148,7 +150,15 @@ impl Layout {
         };
         vec
     }
-    pub fn generate(&mut self, w: usize, h: usize) -> Vec<LayoutItem> {
-        return Layout::generate_recur(self.gap.clone(), 0, &mut self.root, 0, 0, w, h);
+    pub fn generate(&mut self) -> Vec<LayoutItem> {
+        return Layout::generate_recur(
+            self.gap.clone(),
+            0,
+            &mut self.root,
+            0,
+            0,
+            self.width,
+            self.height,
+        );
     }
 }
