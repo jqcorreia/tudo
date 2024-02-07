@@ -164,7 +164,7 @@ fn main() {
     };
 
     // Generate layout rects
-    let mut lay = layout2.generate2(
+    let mut lay = layout2.generate(
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
     );

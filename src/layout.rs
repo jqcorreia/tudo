@@ -8,7 +8,6 @@ pub enum SizeTypeEnum {
     Fixed,
 }
 
-// #[derive(Debug)]
 pub struct Split {
     pub children: Vec<Container>,
 }
@@ -26,7 +25,6 @@ pub enum Container {
     VSplit(Split),
 }
 
-// #[derive(Debug)]
 pub struct Layout {
     pub gap: usize,
     pub root: Container,
@@ -35,16 +33,16 @@ pub struct Layout {
 pub struct LayoutItem<'a>(pub Rect, pub String, pub &'a mut Component);
 
 impl Layout {
-    fn generate_recur2<'a>(
+    fn generate_recur<'a>(
         gap: usize,
         num: usize,
-        vec: &mut Vec<LayoutItem<'a>>,
         node: &'a mut Container,
         x: usize,
         y: usize,
         w: usize,
         h: usize,
-    ) {
+    ) -> Vec<LayoutItem> {
+        let mut vec: Vec<LayoutItem> = Vec::new();
         match node {
             Container::Leaf(leaf) => {
                 let m = gap;
@@ -91,7 +89,15 @@ impl Layout {
                         _ => 0,
                     };
 
-                    Layout::generate_recur2(gap, num + 1, vec, n, accum_x, accum_y, w_step, h);
+                    vec.extend(Self::generate_recur(
+                        gap,
+                        num + 1,
+                        n,
+                        accum_x,
+                        accum_y,
+                        w_step,
+                        h,
+                    ));
                     accum_x += w_step;
                 }
             }
@@ -127,16 +133,22 @@ impl Layout {
                         _ => 0,
                     };
 
-                    Layout::generate_recur2(gap, num + 1, vec, n, accum_x, accum_y, w, h_step);
+                    vec.extend(Self::generate_recur(
+                        gap,
+                        num + 1,
+                        n,
+                        accum_x,
+                        accum_y,
+                        w,
+                        h_step,
+                    ));
                     accum_y += h_step;
                 }
             }
         };
-    }
-    pub fn generate2(&mut self, w: usize, h: usize) -> Vec<LayoutItem> {
-        let mut vec: Vec<LayoutItem> = Vec::new();
-
-        Layout::generate_recur2(self.gap.clone(), 0, &mut vec, &mut self.root, 0, 0, w, h);
         vec
+    }
+    pub fn generate(&mut self, w: usize, h: usize) -> Vec<LayoutItem> {
+        return Layout::generate_recur(self.gap.clone(), 0, &mut self.root, 0, 0, w, h);
     }
 }
