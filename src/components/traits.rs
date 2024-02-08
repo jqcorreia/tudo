@@ -21,3 +21,5 @@ pub trait Render {
 pub trait EventConsumer {
     fn consume_event(&mut self, event: &Event, app: &mut App);
 }
+
+pub trait UIComponent: Render + EventConsumer {}

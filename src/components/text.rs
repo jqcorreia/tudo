@@ -8,7 +8,10 @@ use crate::components::traits::{EventConsumer, Render};
 use crate::config::Config;
 use crate::utils::cache::TextureCache;
 
+use super::traits::UIComponent;
+
 pub struct Prompt {
+    pub id: String,
     pub text: String,
     pub foreground_color: Color,
     pub cursor_x: i32,
@@ -17,8 +20,9 @@ pub struct Prompt {
 }
 
 impl Prompt {
-    pub fn new(config: Config) -> Self {
+    pub fn new(id: impl AsRef<str>, config: Config) -> Self {
         Prompt {
+            id: id.as_ref().to_string(),
             text: String::from(""),
             foreground_color: config.prompt_color,
             cursor_x: 0,
@@ -39,9 +43,11 @@ impl Prompt {
     }
 }
 
+impl UIComponent for Prompt {}
+
 impl Render for Prompt {
     fn id(&self) -> String {
-        String::from("prompt")
+        self.id.clone()
     }
 
     fn render(

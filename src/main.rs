@@ -9,6 +9,7 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
+use std::any::Any;
 use std::env;
 use std::fs::create_dir_all;
 use std::process::Command;
@@ -138,35 +139,30 @@ fn main() {
     }
 
     // Create main UI components
-    let prompt = text::Prompt::new(config);
-    let mut select_list = SelectList::<SourceItem>::new();
+    let mut prompt = text::Prompt::new("prompt", config);
+    let mut select_list = SelectList::<SourceItem>::new("list");
     select_list.on_select = execute;
 
     // Define layout
-    let mut layout2 = Layout {
-        gap: 2,
-        width: main_canvas.window().size().0 as usize,
-        height: main_canvas.window().size().1 as usize,
-        root: Container::VSplit(Split {
+    let mut layout2 = Layout::new(
+        2,
+        Container::VSplit(Split {
             children: Vec::from([
                 Container::Leaf(Leaf {
-                    key: "prompt".to_string(),
                     size_type: SizeTypeEnum::Fixed,
                     size: 64,
-                    component: Component::Prompt(prompt),
+                    component: &mut prompt,
                 }),
                 Container::Leaf(Leaf {
-                    key: "list".to_string(),
                     size_type: SizeTypeEnum::Percent,
                     size: 100,
-                    component: Component::SelectList(select_list),
+                    component: &mut select_list,
                 }),
             ]),
         }),
-    };
-
-    // Generate layout rects
-    let mut lay = layout2.generate();
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
+    );
 
     // misc main loop setup
     let mut tick_time = Instant::now();
@@ -200,20 +196,20 @@ fn main() {
         let ps: String;
         // We need to do this since we cannot have multiple mutable borrows of lay
         // NOTE(quadrado): must revisit this
-        {
-            let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
-            ps = p.text.clone().into();
-            if ps.len() == 0 {
-                anim.set_target(lay.get(0).unwrap().0.height() + 3, Some(elapsed));
-            } else {
-                anim.set_target(768, Some(elapsed));
-            }
-        }
-        {
-            let l: &mut SelectList<SourceItem> =
-                &mut lay.get_mut(1).unwrap().2.as_variant_mut().unwrap();
-            l.set_list_and_prompt(items.lock().unwrap().clone(), ps)
-        }
+        // {
+        //     let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
+        //     ps = p.text.clone().into();
+        //     if ps.len() == 0 {
+        //         anim.set_target(lay.get(0).unwrap().0.height() + 3, Some(elapsed));
+        //     } else {
+        //         anim.set_target(768, Some(elapsed));
+        //     }
+        // }
+        // {
+        //     let l: &mut SelectList<SourceItem> =
+        //         &mut lay.get_mut(1).unwrap().2.as_variant_mut().unwrap();
+        //     l.set_list_and_prompt(items.lock().unwrap().clone(), ps)
+        // }
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
@@ -244,11 +240,11 @@ fn main() {
             }
 
             // Pass the event to every component
-            for LayoutItem(_, _k, p) in lay.iter_mut() {
-                let comp: &mut dyn components::traits::EventConsumer = match p {
-                    Component::Prompt(prompt) => prompt,
-                    Component::SelectList(list) => list,
-                };
+            for LayoutItem(_, comp) in layout2.items.values_mut() {
+                // let comp: &mut dyn components::traits::EventConsumer = match p {
+                //     Component::Prompt(prompt) => prompt,
+                //     Component::SelectList(list) => list,
+                // };
 
                 comp.consume_event(&_event, &mut app);
             }
@@ -262,11 +258,11 @@ fn main() {
         main_canvas.clear();
 
         // Render all components
-        for LayoutItem(rect, _k, p) in lay.iter_mut() {
-            let comp: &mut dyn components::traits::Render = match p {
-                Component::Prompt(prompt) => prompt,
-                Component::SelectList(list) => list,
-            };
+        for LayoutItem(rect, comp) in layout2.items.values_mut() {
+            // let comp: &mut dyn components::traits::Render = match p {
+            //     Component::Prompt(prompt) => prompt,
+            //     Component::SelectList(list) => list,
+            // };
 
             let mut tex = tc
                 .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())

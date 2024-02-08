@@ -12,6 +12,8 @@ use crate::utils::cache::TextureCache;
 use crate::utils::fuzzy::basic_contains;
 use crate::App;
 
+use super::traits::UIComponent;
+
 trait RenderItem<T> {
     fn render_row<'a>(
         &'a self,
@@ -39,6 +41,7 @@ impl Viewport {
 }
 
 pub struct SelectList<T> {
+    pub id: String,
     pub items: Vec<T>,
     pub foreground_color: Color,
     pub selected_index: usize,
@@ -46,9 +49,13 @@ pub struct SelectList<T> {
     pub on_select: fn(&T, &mut App),
 }
 
+impl UIComponent for SelectList<SourceItem> {}
+impl UIComponent for SelectList<String> {}
+
 impl<T: PartialEq> SelectList<T> {
-    pub fn new() -> SelectList<T> {
+    pub fn new(id: impl AsRef<str>) -> SelectList<T> {
         SelectList {
+            id: id.as_ref().to_string(),
             items: Vec::<T>::new(),
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
@@ -186,7 +193,7 @@ impl SelectList<SourceItem> {
 
 impl Render for SelectList<SourceItem> {
     fn id(&self) -> String {
-        String::from("select")
+        self.id.clone()
     }
 
     fn render(

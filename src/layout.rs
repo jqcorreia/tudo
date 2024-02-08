@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use sdl2::rect::Rect;
 
-use crate::components::enums::Component;
+use crate::components::{enums::Component, traits::UIComponent};
 
 #[derive(Debug)]
 pub enum SizeTypeEnum {
@@ -8,56 +10,70 @@ pub enum SizeTypeEnum {
     Fixed,
 }
 
-pub struct Split {
-    pub children: Vec<Container>,
+pub struct Split<'a> {
+    pub children: Vec<Container<'a>>,
 }
 
-pub struct Leaf {
-    pub key: String,
+pub struct Leaf<'a> {
     pub size: usize,
     pub size_type: SizeTypeEnum,
-    pub component: Component,
+    pub component: &'a mut dyn UIComponent,
 }
 
-pub enum Container {
-    Leaf(Leaf),
-    HSplit(Split),
-    VSplit(Split),
+pub enum Container<'a> {
+    Leaf(Leaf<'a>),
+    HSplit(Split<'a>),
+    VSplit(Split<'a>),
 }
 
-pub struct Layout {
+pub struct Layout<'a> {
+    pub items: HashMap<String, LayoutItem<'a>>,
     pub gap: usize,
-    pub root: Container,
+    // pub root: Container<'a>,
     pub width: usize,
     pub height: usize,
 }
 
-pub struct LayoutItem<'a>(pub Rect, pub String, pub &'a mut Component);
+pub struct LayoutItem<'a>(pub Rect, pub &'a mut dyn UIComponent);
 
-impl Layout {
-    fn generate_recur<'a>(
+impl<'a> Layout<'a> {
+    pub fn new(gap: usize, mut root: Container<'a>, width: usize, height: usize) -> Self {
+        let items = Layout::generate_recur(gap.clone(), &mut root, 0, 0, width, height);
+
+        let layout = Layout {
+            gap,
+            width,
+            height,
+            // root,
+            items,
+        };
+        layout
+    }
+
+    fn generate_recur(
         gap: usize,
-        num: usize,
         node: &'a mut Container,
         x: usize,
         y: usize,
         w: usize,
         h: usize,
-    ) -> Vec<LayoutItem> {
-        let mut vec: Vec<LayoutItem> = Vec::new();
+    ) -> HashMap<String, LayoutItem<'a>> {
+        let mut hm: HashMap<String, LayoutItem<'a>> = HashMap::new();
         match node {
             Container::Leaf(leaf) => {
                 let m = gap;
-                vec.push(LayoutItem(
-                    Rect::new(
-                        (x + m) as i32,
-                        (y + m) as i32,
-                        (w - 2 * m) as u32,
-                        (h - 2 * m) as u32,
+                hm.insert(
+                    leaf.component.id(),
+                    LayoutItem(
+                        Rect::new(
+                            (x + m) as i32,
+                            (y + m) as i32,
+                            (w - 2 * m) as u32,
+                            (h - 2 * m) as u32,
+                        ),
+                        leaf.component,
                     ),
-                    leaf.key.clone(),
-                    &mut leaf.component,
-                ));
+                );
             }
             Container::HSplit(split) => {
                 let mut accum_x = x;
@@ -91,15 +107,7 @@ impl Layout {
                         _ => 0,
                     };
 
-                    vec.extend(Self::generate_recur(
-                        gap,
-                        num + 1,
-                        n,
-                        accum_x,
-                        accum_y,
-                        w_step,
-                        h,
-                    ));
+                    hm.extend(Self::generate_recur(gap, n, accum_x, accum_y, w_step, h));
                     accum_x += w_step;
                 }
             }
@@ -135,30 +143,21 @@ impl Layout {
                         _ => 0,
                     };
 
-                    vec.extend(Self::generate_recur(
-                        gap,
-                        num + 1,
-                        n,
-                        accum_x,
-                        accum_y,
-                        w,
-                        h_step,
-                    ));
+                    hm.extend(Self::generate_recur(gap, n, accum_x, accum_y, w, h_step));
                     accum_y += h_step;
                 }
             }
         };
-        vec
+        hm
     }
-    pub fn generate(&mut self) -> Vec<LayoutItem> {
-        return Layout::generate_recur(
-            self.gap.clone(),
-            0,
-            &mut self.root,
-            0,
-            0,
-            self.width,
-            self.height,
-        );
-    }
+    // pub fn generate(&'a mut self) -> HashMap<String, LayoutItem<'a>> {
+    //     return Layout::generate_recur(
+    //         self.gap.clone(),
+    //         &mut self.root,
+    //         0,
+    //         0,
+    //         self.width,
+    //         self.height,
+    //     );
+    // }
 }
