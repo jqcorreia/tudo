@@ -29,7 +29,6 @@ pub enum Container<'a> {
 pub struct Layout<'a> {
     pub items: HashMap<String, LayoutItem<'a>>,
     pub gap: usize,
-    // pub root: Container<'a>,
     pub width: usize,
     pub height: usize,
 }
@@ -37,8 +36,8 @@ pub struct Layout<'a> {
 pub struct LayoutItem<'a>(pub Rect, pub &'a mut dyn UIComponent);
 
 impl<'a> Layout<'a> {
-    pub fn new(gap: usize, mut root: Container<'a>, width: usize, height: usize) -> Self {
-        let items = Layout::generate_recur(gap.clone(), &mut root, 0, 0, width, height);
+    pub fn new(gap: usize, root: Container<'a>, width: usize, height: usize) -> Self {
+        let items = Layout::generate_recur(gap.clone(), root, 0, 0, width, height);
 
         let layout = Layout {
             gap,
@@ -52,7 +51,7 @@ impl<'a> Layout<'a> {
 
     fn generate_recur(
         gap: usize,
-        node: &'a mut Container,
+        node: Container<'a>,
         x: usize,
         y: usize,
         w: usize,
@@ -92,7 +91,7 @@ impl<'a> Layout<'a> {
                 }
                 let remaining_size = w - sum_fixed_size;
 
-                for n in split.children.iter_mut() {
+                for n in split.children {
                     let w_step = match n {
                         Container::Leaf(Leaf {
                             size_type: SizeTypeEnum::Fixed,
@@ -128,7 +127,7 @@ impl<'a> Layout<'a> {
                 }
                 let remaining_size = h - sum_fixed_size;
 
-                for n in split.children.iter_mut() {
+                for n in split.children {
                     let h_step = match n {
                         Container::Leaf(Leaf {
                             size_type: SizeTypeEnum::Fixed,
@@ -150,14 +149,4 @@ impl<'a> Layout<'a> {
         };
         hm
     }
-    // pub fn generate(&'a mut self) -> HashMap<String, LayoutItem<'a>> {
-    //     return Layout::generate_recur(
-    //         self.gap.clone(),
-    //         &mut self.root,
-    //         0,
-    //         0,
-    //         self.width,
-    //         self.height,
-    //     );
-    // }
 }

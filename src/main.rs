@@ -139,8 +139,10 @@ fn main() {
     }
 
     // Create main UI components
+    //NOTE(quadrado): IDs should be inside the layout?
     let mut prompt = text::Prompt::new("prompt", config);
     let mut select_list = SelectList::<SourceItem>::new("list");
+
     select_list.on_select = execute;
 
     // Define layout
@@ -194,6 +196,9 @@ fn main() {
 
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
+        dbg!(prompt.text.clone());
+        // let p = layout2.items.get("prompt").unwrap();
+
         // We need to do this since we cannot have multiple mutable borrows of lay
         // NOTE(quadrado): must revisit this
         // {
