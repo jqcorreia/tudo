@@ -9,8 +9,6 @@ pub mod layout;
 pub mod sources;
 pub mod utils;
 
-use std::any::Any;
-use std::any::TypeId;
 use std::env;
 use std::fs::create_dir_all;
 use std::process::Command;
@@ -22,11 +20,11 @@ use animation::Animation;
 use animation::AnimationType;
 use app::init;
 use app::App;
-use components::enums::Component;
 use components::list::SelectList;
 use components::text;
 
 use components::text::Prompt;
+use components::traits::EventConsumer;
 use config::load_config;
 use enum_downcast::AsVariant;
 use enum_downcast::AsVariantMut;
@@ -41,6 +39,7 @@ use sdl2::pixels::PixelFormatEnum;
 use sdl2::rect::Rect;
 use sources::Source;
 
+use components::traits::Render;
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::secrets::Secrets;
@@ -146,27 +145,6 @@ fn main() {
     let mut select_list = SelectList::<SourceItem>::new("list");
     select_list.on_select = execute;
 
-    // Define layout
-    let mut layout2 = Layout::new(
-        2,
-        Container::VSplit(Split {
-            children: Vec::from([
-                Container::Leaf(Leaf {
-                    size_type: SizeTypeEnum::Fixed,
-                    size: 64,
-                    component: Box::new(prompt),
-                }),
-                Container::Leaf(Leaf {
-                    size_type: SizeTypeEnum::Percent,
-                    size: 100,
-                    component: Box::new(select_list),
-                }),
-            ]),
-        }),
-        main_canvas.window().size().0 as usize,
-        main_canvas.window().size().1 as usize,
-    );
-
     // misc main loop setup
     let mut tick_time = Instant::now();
     let mut draw_fps = false;
@@ -178,6 +156,26 @@ fn main() {
     let mut wh = 60;
 
     let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
+
+    let mut layout2 = Layout::new(
+        2,
+        Container::VSplit(Split {
+            children: Vec::from([
+                Container::Leaf(Leaf {
+                    size_type: SizeTypeEnum::Fixed,
+                    size: 64,
+                    key: prompt.id(),
+                }),
+                Container::Leaf(Leaf {
+                    size_type: SizeTypeEnum::Percent,
+                    size: 100,
+                    key: select_list.id(),
+                }),
+            ]),
+        }),
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
+    );
 
     while app.running {
         let ct = completed_threads.lock().unwrap();
@@ -196,37 +194,8 @@ fn main() {
         }
 
         let elapsed = initial_instant.elapsed().as_millis();
-        let ps: String;
-        // let p = &layout2.items.get("prompt").unwrap().component.as_ref() as &dyn Any;
-
-        // dbg!(p.type_id());
-        // dbg!(TypeId::of::<Prompt>());
-        // dbg!(TypeId::of::<&Prompt>());
-        // dbg!(TypeId::of::<Box<Prompt>>());
-        // dbg!(TypeId::of::<&Box<Prompt>>());
-        // dbg!(p.downcast_ref::<&Box<Prompt>>());
-        // dbg!(p.downcast_ref::<Prompt>());
-        // dbg!(p.downcast_ref::<&Prompt>());
-        // dbg!(p.downcast_ref::<Box<Prompt>>());
-        // dbg!(p.downcast_ref::<&Box<Prompt>>());
-        // dbg!(p.downcast_ref::<Box<&Prompt>>());
-        // dbg!(p.downcast_ref::<&Box<&Prompt>>());
-        // We need to do this since we cannot have multiple mutable borrows of lay
-        // NOTE(quadrado): must revisit this
-        // {
-        //     let p: &Prompt = &mut lay.get(0).unwrap().2.as_variant().unwrap();
-        //     ps = p.text.clone().into();
-        //     if ps.len() == 0 {
-        //         anim.set_target(lay.get(0).unwrap().0.height() + 3, Some(elapsed));
-        //     } else {
-        //         anim.set_target(768, Some(elapsed));
-        //     }
-        // }
-        // {
-        //     let l: &mut SelectList<SourceItem> =
-        //         &mut lay.get_mut(1).unwrap().2.as_variant_mut().unwrap();
-        //     l.set_list_and_prompt(items.lock().unwrap().clone(), ps)
-        // }
+        let ps: String = prompt.text.clone();
+        select_list.set_list_and_prompt(items.lock().unwrap().clone(), ps);
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
@@ -256,15 +225,8 @@ fn main() {
                 _ => (),
             }
 
-            // Pass the event to every component
-            for li in layout2.items.values_mut() {
-                // let comp: &mut dyn components::traits::EventConsumer = match p {
-                //     Component::Prompt(prompt) => prompt,
-                //     Component::SelectList(list) => list,
-                // };
-
-                li.component.consume_event(&_event, &mut app);
-            }
+            prompt.consume_event(&_event, &mut app);
+            select_list.consume_event(&_event, &mut app);
         }
         anim.tick(elapsed);
 
@@ -275,25 +237,61 @@ fn main() {
         main_canvas.clear();
 
         // Render all components
-        for li in layout2.items.values_mut() {
-            // let comp: &mut dyn components::traits::Render = match p {
-            //     Component::Prompt(prompt) => prompt,
-            //     Component::SelectList(list) => list,
-            // };
+        // let mut comp_list: Vec<&dyn UIComponent> = Vec::new();
+        // comp_list.push(&mut prompt);
+        // comp_list.push(&mut select_list);
 
-            let mut tex = tc
-                .create_texture_target(PixelFormatEnum::RGBA8888, li.rect.width(), li.rect.height())
-                .unwrap();
-            main_canvas
-                .with_texture_canvas(&mut tex, |c| {
-                    li.component
-                        .render(&tc, &mut cache, &app, c, li.rect, elapsed);
-                })
-                .unwrap();
+        // for comp in comp_list {
+        //     let component_rect = layout2.items.get(&comp.id()).unwrap().rect;
 
-            main_canvas.copy(&tex, None, li.rect).unwrap();
-        }
+        //     let mut tex = tc
+        //         .create_texture_target(
+        //             PixelFormatEnum::RGBA8888,
+        //             component_rect.width(),
+        //             component_rect.height(),
+        //         )
+        //         .unwrap();
+        //     main_canvas
+        //         .with_texture_canvas(&mut tex, |c| {
+        //             comp.render(&tc, &mut cache, &app, c, component_rect, elapsed);
+        //         })
+        //         .unwrap();
 
+        //     main_canvas.copy(&tex, None, component_rect).unwrap();
+        // }
+        let component_rect = layout2.items.get(&prompt.id()).unwrap().rect;
+
+        let mut tex = tc
+            .create_texture_target(
+                PixelFormatEnum::RGBA8888,
+                component_rect.width(),
+                component_rect.height(),
+            )
+            .unwrap();
+        main_canvas
+            .with_texture_canvas(&mut tex, |c| {
+                prompt.render(&tc, &mut cache, &app, c, component_rect, elapsed);
+            })
+            .unwrap();
+
+        main_canvas.copy(&tex, None, component_rect).unwrap();
+
+        let component_rect = layout2.items.get(&select_list.id()).unwrap().rect;
+
+        let mut tex = tc
+            .create_texture_target(
+                PixelFormatEnum::RGBA8888,
+                component_rect.width(),
+                component_rect.height(),
+            )
+            .unwrap();
+        main_canvas
+            .with_texture_canvas(&mut tex, |c| {
+                select_list.render(&tc, &mut cache, &app, c, component_rect, elapsed);
+            })
+            .unwrap();
+
+        main_canvas.copy(&tex, None, component_rect).unwrap();
         // Draw info
         if draw_fps {
             let info_tex = tc

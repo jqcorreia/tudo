@@ -10,43 +10,41 @@ pub enum SizeTypeEnum {
     Fixed,
 }
 
-pub struct Split<'a> {
-    pub children: Vec<Container<'a>>,
+pub struct Split {
+    pub children: Vec<Container>,
 }
 
-pub struct Leaf<'a> {
+pub struct Leaf {
     pub size: usize,
     pub size_type: SizeTypeEnum,
-    pub component: Box<dyn UIComponent + 'a>,
+    pub key: String,
 }
 
-pub enum Container<'a> {
-    Leaf(Leaf<'a>),
-    HSplit(Split<'a>),
-    VSplit(Split<'a>),
+pub enum Container {
+    Leaf(Leaf),
+    HSplit(Split),
+    VSplit(Split),
 }
 
-pub struct Layout<'a> {
-    pub items: HashMap<String, LayoutItem<'a>>,
+pub struct Layout {
+    pub items: HashMap<String, LayoutItem>,
     pub gap: usize,
     pub width: usize,
     pub height: usize,
 }
 
-pub struct LayoutItem<'a> {
+pub struct LayoutItem {
     pub rect: Rect,
-    pub component: Box<dyn UIComponent + 'a>,
 }
 
-impl<'a> Layout<'a> {
-    pub fn new(gap: usize, root: Container<'a>, width: usize, height: usize) -> Self {
+impl Layout {
+    pub fn new(gap: usize, root: Container, width: usize, height: usize) -> Self {
         let items = Layout::generate_recur(gap.clone(), root, 0, 0, width, height);
 
         let layout = Layout {
             gap,
             width,
             height,
-            // root,
             items,
         };
         layout
@@ -54,18 +52,18 @@ impl<'a> Layout<'a> {
 
     fn generate_recur(
         gap: usize,
-        node: Container<'a>,
+        node: Container,
         x: usize,
         y: usize,
         w: usize,
         h: usize,
-    ) -> HashMap<String, LayoutItem<'a>> {
+    ) -> HashMap<String, LayoutItem> {
         let mut hm: HashMap<String, LayoutItem> = HashMap::new();
         match node {
             Container::Leaf(leaf) => {
                 let m = gap;
                 hm.insert(
-                    leaf.component.id(),
+                    leaf.key,
                     LayoutItem {
                         rect: Rect::new(
                             (x + m) as i32,
@@ -73,7 +71,6 @@ impl<'a> Layout<'a> {
                             (w - 2 * m) as u32,
                             (h - 2 * m) as u32,
                         ),
-                        component: leaf.component,
                     },
                 );
             }
@@ -152,6 +149,4 @@ impl<'a> Layout<'a> {
         };
         hm
     }
-
-    // pub fn by_name<'a>(&self, name: String) -> &(dyn Any + 'a) {}
 }
