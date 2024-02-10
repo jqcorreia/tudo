@@ -10,6 +10,7 @@ pub mod sources;
 pub mod utils;
 
 use std::any::Any;
+use std::any::TypeId;
 use std::env;
 use std::fs::create_dir_all;
 use std::process::Command;
@@ -50,6 +51,7 @@ use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::misc;
 
+use crate::components::traits::UIComponent;
 use crate::layout::Container;
 
 type ArcM<T> = Arc<Mutex<T>>;
@@ -142,7 +144,6 @@ fn main() {
     //NOTE(quadrado): IDs should be inside the layout?
     let mut prompt = text::Prompt::new("prompt", config);
     let mut select_list = SelectList::<SourceItem>::new("list");
-
     select_list.on_select = execute;
 
     // Define layout
@@ -153,12 +154,12 @@ fn main() {
                 Container::Leaf(Leaf {
                     size_type: SizeTypeEnum::Fixed,
                     size: 64,
-                    component: &mut prompt,
+                    component: Box::new(prompt),
                 }),
                 Container::Leaf(Leaf {
                     size_type: SizeTypeEnum::Percent,
                     size: 100,
-                    component: &mut select_list,
+                    component: Box::new(select_list),
                 }),
             ]),
         }),
@@ -196,9 +197,20 @@ fn main() {
 
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String;
-        dbg!(prompt.text.clone());
-        // let p = layout2.items.get("prompt").unwrap();
+        // let p = &layout2.items.get("prompt").unwrap().component.as_ref() as &dyn Any;
 
+        // dbg!(p.type_id());
+        // dbg!(TypeId::of::<Prompt>());
+        // dbg!(TypeId::of::<&Prompt>());
+        // dbg!(TypeId::of::<Box<Prompt>>());
+        // dbg!(TypeId::of::<&Box<Prompt>>());
+        // dbg!(p.downcast_ref::<&Box<Prompt>>());
+        // dbg!(p.downcast_ref::<Prompt>());
+        // dbg!(p.downcast_ref::<&Prompt>());
+        // dbg!(p.downcast_ref::<Box<Prompt>>());
+        // dbg!(p.downcast_ref::<&Box<Prompt>>());
+        // dbg!(p.downcast_ref::<Box<&Prompt>>());
+        // dbg!(p.downcast_ref::<&Box<&Prompt>>());
         // We need to do this since we cannot have multiple mutable borrows of lay
         // NOTE(quadrado): must revisit this
         // {
@@ -245,13 +257,13 @@ fn main() {
             }
 
             // Pass the event to every component
-            for LayoutItem(_, comp) in layout2.items.values_mut() {
+            for li in layout2.items.values_mut() {
                 // let comp: &mut dyn components::traits::EventConsumer = match p {
                 //     Component::Prompt(prompt) => prompt,
                 //     Component::SelectList(list) => list,
                 // };
 
-                comp.consume_event(&_event, &mut app);
+                li.component.consume_event(&_event, &mut app);
             }
         }
         anim.tick(elapsed);
@@ -263,22 +275,23 @@ fn main() {
         main_canvas.clear();
 
         // Render all components
-        for LayoutItem(rect, comp) in layout2.items.values_mut() {
+        for li in layout2.items.values_mut() {
             // let comp: &mut dyn components::traits::Render = match p {
             //     Component::Prompt(prompt) => prompt,
             //     Component::SelectList(list) => list,
             // };
 
             let mut tex = tc
-                .create_texture_target(PixelFormatEnum::RGBA8888, rect.width(), rect.height())
+                .create_texture_target(PixelFormatEnum::RGBA8888, li.rect.width(), li.rect.height())
                 .unwrap();
             main_canvas
                 .with_texture_canvas(&mut tex, |c| {
-                    comp.render(&tc, &mut cache, &app, c, *rect, elapsed);
+                    li.component
+                        .render(&tc, &mut cache, &app, c, li.rect, elapsed);
                 })
                 .unwrap();
 
-            main_canvas.copy(&tex, None, *rect).unwrap();
+            main_canvas.copy(&tex, None, li.rect).unwrap();
         }
 
         // Draw info

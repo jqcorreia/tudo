@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{any::Any, collections::HashMap};
 
 use sdl2::rect::Rect;
 
-use crate::components::{enums::Component, traits::UIComponent};
+use crate::components::traits::UIComponent;
 
 #[derive(Debug)]
 pub enum SizeTypeEnum {
@@ -17,7 +17,7 @@ pub struct Split<'a> {
 pub struct Leaf<'a> {
     pub size: usize,
     pub size_type: SizeTypeEnum,
-    pub component: &'a mut dyn UIComponent,
+    pub component: Box<dyn UIComponent + 'a>,
 }
 
 pub enum Container<'a> {
@@ -33,7 +33,10 @@ pub struct Layout<'a> {
     pub height: usize,
 }
 
-pub struct LayoutItem<'a>(pub Rect, pub &'a mut dyn UIComponent);
+pub struct LayoutItem<'a> {
+    pub rect: Rect,
+    pub component: Box<dyn UIComponent + 'a>,
+}
 
 impl<'a> Layout<'a> {
     pub fn new(gap: usize, root: Container<'a>, width: usize, height: usize) -> Self {
@@ -57,21 +60,21 @@ impl<'a> Layout<'a> {
         w: usize,
         h: usize,
     ) -> HashMap<String, LayoutItem<'a>> {
-        let mut hm: HashMap<String, LayoutItem<'a>> = HashMap::new();
+        let mut hm: HashMap<String, LayoutItem> = HashMap::new();
         match node {
             Container::Leaf(leaf) => {
                 let m = gap;
                 hm.insert(
                     leaf.component.id(),
-                    LayoutItem(
-                        Rect::new(
+                    LayoutItem {
+                        rect: Rect::new(
                             (x + m) as i32,
                             (y + m) as i32,
                             (w - 2 * m) as u32,
                             (h - 2 * m) as u32,
                         ),
-                        leaf.component,
-                    ),
+                        component: leaf.component,
+                    },
                 );
             }
             Container::HSplit(split) => {
@@ -149,4 +152,6 @@ impl<'a> Layout<'a> {
         };
         hm
     }
+
+    // pub fn by_name<'a>(&self, name: String) -> &(dyn Any + 'a) {}
 }

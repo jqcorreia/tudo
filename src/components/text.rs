@@ -10,6 +10,7 @@ use crate::utils::cache::TextureCache;
 
 use super::traits::UIComponent;
 
+#[derive(Debug)]
 pub struct Prompt {
     pub id: String,
     pub text: String,
