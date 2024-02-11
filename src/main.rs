@@ -53,8 +53,6 @@ use utils::misc;
 use crate::components::traits::UIComponent;
 use crate::layout::Container;
 
-type ArcM<T> = Arc<Mutex<T>>;
-
 fn already_running(lock_path: &String) -> bool {
     match std::fs::read(lock_path.clone()) {
         Ok(_) => true,
@@ -109,7 +107,7 @@ fn main() {
 
     // Generate items list from all sources
     let items: Arc<Mutex<Vec<SourceItem>>> = Arc::new(Mutex::new(Vec::new()));
-    let completed_threads: ArcM<u32> = Arc::new(Mutex::new(0));
+    let completed_threads: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
 
     let sources: Vec<Box<dyn Source + Send>> = vec![
         Box::new(DesktopApplications::new()),
@@ -237,9 +235,6 @@ fn main() {
         main_canvas.clear();
 
         // Render all components
-        // let mut comp_list: Vec<&dyn UIComponent> = Vec::new();
-        // comp_list.push(&mut prompt);
-        // comp_list.push(&mut select_list);
 
         // for comp in comp_list {
         //     let component_rect = layout2.items.get(&comp.id()).unwrap().rect;
@@ -259,6 +254,7 @@ fn main() {
 
         //     main_canvas.copy(&tex, None, component_rect).unwrap();
         // }
+
         let component_rect = layout2.items.get(&prompt.id()).unwrap().rect;
 
         let mut tex = tc
