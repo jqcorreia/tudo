@@ -228,66 +228,13 @@ fn main() {
         }
         anim.tick(elapsed);
 
-        // main_canvas.window_mut().set_size(ww, *anim.value).unwrap(); // set_size accepts 0 as "do not change"
-
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
-        // Render all components
+        prompt.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
+        select_list.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
 
-        // for comp in comp_list {
-        //     let component_rect = layout2.items.get(&comp.id()).unwrap().rect;
-
-        //     let mut tex = tc
-        //         .create_texture_target(
-        //             PixelFormatEnum::RGBA8888,
-        //             component_rect.width(),
-        //             component_rect.height(),
-        //         )
-        //         .unwrap();
-        //     main_canvas
-        //         .with_texture_canvas(&mut tex, |c| {
-        //             comp.render(&tc, &mut cache, &app, c, component_rect, elapsed);
-        //         })
-        //         .unwrap();
-
-        //     main_canvas.copy(&tex, None, component_rect).unwrap();
-        // }
-
-        let component_rect = layout2.items.get(&prompt.id()).unwrap().rect;
-
-        let mut tex = tc
-            .create_texture_target(
-                PixelFormatEnum::RGBA8888,
-                component_rect.width(),
-                component_rect.height(),
-            )
-            .unwrap();
-        main_canvas
-            .with_texture_canvas(&mut tex, |c| {
-                prompt.render(&tc, &mut cache, &app, c, component_rect, elapsed);
-            })
-            .unwrap();
-
-        main_canvas.copy(&tex, None, component_rect).unwrap();
-
-        let component_rect = layout2.items.get(&select_list.id()).unwrap().rect;
-
-        let mut tex = tc
-            .create_texture_target(
-                PixelFormatEnum::RGBA8888,
-                component_rect.width(),
-                component_rect.height(),
-            )
-            .unwrap();
-        main_canvas
-            .with_texture_canvas(&mut tex, |c| {
-                select_list.render(&tc, &mut cache, &app, c, component_rect, elapsed);
-            })
-            .unwrap();
-
-        main_canvas.copy(&tex, None, component_rect).unwrap();
         // Draw info
         if draw_fps {
             let info_tex = tc
