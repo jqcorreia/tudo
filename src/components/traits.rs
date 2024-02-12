@@ -1,13 +1,14 @@
 use std::any::Any;
 
 use crate::app::App;
-use crate::layout::Layout;
 use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
+
+// struct RenderContext<'a> {}
 
 pub trait Render {
     fn id(&self) -> String;

@@ -24,43 +24,43 @@ impl Source for LuaSource {
 
     fn generate_items(&self) -> Vec<SourceItem> {
         let mut items = Vec::<SourceItem>::new();
+
         // Rewrite this with serde!!
-        //
-        // let lua = Lua::new();
+        let lua = Lua::new();
 
-        // let script = std::fs::read(&self.source).unwrap();
-        // let res: Vec<Table>;
+        let script = std::fs::read(&self.source).unwrap();
+        let res: Vec<Table>;
 
-        // res = match lua.load(&script).set_name("teste").eval() {
-        //     Ok(r) => r,
-        //     Err(err) => {
-        //         panic!("{}", err)
-        //     }
-        // };
+        res = match lua.load(&script).set_name("teste").eval() {
+            Ok(r) => r,
+            Err(err) => {
+                panic!("{}", err)
+            }
+        };
 
-        // for v in res.iter() {
-        //     let title: String = v.get("title".to_string()).unwrap();
-        //     let icon: Option<String> = v.get("icon").unwrap();
-        //     let action_table: Table = v.get("action").unwrap();
-        //     let action_type: String = action_table.get("type").unwrap();
+        for v in res.iter() {
+            let title: String = v.get("title".to_string()).unwrap();
+            let icon: Option<String> = v.get("icon").unwrap();
+            let action_table: Table = v.get("action").unwrap();
+            let action_type: String = action_table.get("type").unwrap();
 
-        //     let action = match action_type.as_str() {
-        //         "run" => Action::Run(RunAction {
-        //             path: action_table.get("path").unwrap(),
-        //             clip_output: false,
-        //             exit_after: true,
-        //         }),
-        //         "secret" => Action::PassSecret(PassSecretAction {
-        //             secret_name: action_table.get("secret_name").unwrap(),
-        //         }),
-        //         _ => panic!("Unsupported lua action type"),
-        //     };
-        //     items.push(SourceItem {
-        //         title: title.clone(),
-        //         icon: icon.clone(),
-        //         action: action.clone(),
-        //     });
-        // }
+            let action: Box<dyn Action + Send> = match action_type.as_str() {
+                "run" => Box::new(RunAction {
+                    path: action_table.get("path").unwrap(),
+                    clip_output: false,
+                    exit_after: true,
+                }),
+                "secret" => Box::new(PassSecretAction {
+                    secret_name: action_table.get("secret_name").unwrap(),
+                }),
+                _ => panic!("Unsupported lua action type"),
+            };
+            items.push(SourceItem {
+                title: title.clone(),
+                icon: icon.clone(),
+                action: action.clone(),
+            });
+        }
         items
     }
 }

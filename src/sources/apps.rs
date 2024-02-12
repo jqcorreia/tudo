@@ -5,7 +5,7 @@ use crate::{
     utils::xdg::{parse_ini_file, IconFinder},
 };
 
-use super::{actions::RunAction, Action};
+use super::actions::RunAction;
 
 pub struct DesktopApplications {}
 

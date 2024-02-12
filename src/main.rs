@@ -24,18 +24,19 @@ use components::list::SelectList;
 use components::list::SelectListState;
 
 use components::text::Prompt;
-use components::traits::UIComponent;
 use config::load_config;
 use execute::execute;
 use layout::Layout;
 use layout::Leaf;
 use layout::SizeTypeEnum;
 use layout::Split;
+use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 use sources::Source;
 
-use components::traits::Render;
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
 use sources::secrets::Secrets;
@@ -96,6 +97,8 @@ fn main() {
 
     // Event pump, for now just sits in the main loop
     let mut event_pump = app.sdl.event_pump().unwrap();
+
+    // Create texture creator for the main window canvas
     let tc = main_canvas.texture_creator();
 
     let mut cache = TextureCache::new(&tc);
@@ -186,6 +189,12 @@ fn main() {
             tick_time = Instant::now();
         }
 
+        // Consume events and process them
+        let cur_events = event_pump
+            .poll_iter()
+            .map(|event| misc::ignore_numlock(&event))
+            .collect();
+
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String = layout
             .by_name("prompt".to_string())
@@ -202,17 +211,13 @@ fn main() {
                 items: items.lock().unwrap().clone(),
                 prompt: ps,
             }));
-        // select_list.set_list_and_prompt(items.lock().unwrap().clone(), ps);
 
-        // Consume events and pass them to the components
-        let cur_events: Vec<_> = event_pump.poll_iter().collect();
+        main_mode(&mut layout, &cur_events, &main_canvas);
+
         for event in cur_events.iter() {
-            // Ignore NumLock
-            let _event = misc::ignore_numlock(&event);
-
             // Deal with main loop events
             // Things like app quit and global window mouse events
-            match _event {
+            match event {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::F1),
                     ..
@@ -233,7 +238,7 @@ fn main() {
             }
 
             for component in layout.components() {
-                component.consume_event(&_event, &mut app);
+                component.consume_event(&event, &mut app);
             }
         }
         anim.tick(elapsed);
@@ -305,3 +310,4 @@ fn main() {
     // Remove run lock
     let _ = std::fs::remove_file(lock_path);
 }
+fn main_mode(_layout: &mut Layout, _events: &Vec<Event>, _main_canvas: &Canvas<Window>) {}

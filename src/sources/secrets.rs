@@ -1,6 +1,6 @@
 use std::env;
 
-use super::{actions::PassSecretAction, Action, Source, SourceItem};
+use super::{actions::PassSecretAction, Source, SourceItem};
 
 pub struct Secrets {}
 

@@ -1,4 +1,4 @@
-use crate::sources::{Action, Source};
+use crate::sources::Source;
 use xcb::x::{self, Atom, ConfigWindow, SendEventDest, Window};
 use xcb::Connection;
 

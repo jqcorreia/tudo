@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use crate::sources::actions::{Action, TmuxAction};
+use crate::sources::actions::TmuxAction;
 
 use super::{Source, SourceItem};
 
