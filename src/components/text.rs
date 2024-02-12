@@ -44,7 +44,15 @@ impl Prompt {
     }
 }
 
-impl UIComponent for Prompt {}
+impl UIComponent for Prompt {
+    fn get_state(&self) -> &dyn std::any::Any {
+        &self.text
+    }
+
+    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
+        self.text = state.downcast_ref::<String>().unwrap().to_string();
+    }
+}
 
 impl Render for Prompt {
     fn id(&self) -> String {

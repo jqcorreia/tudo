@@ -39,6 +39,11 @@ impl Viewport {
         self.1 -= amount;
     }
 }
+#[derive(Clone)]
+pub struct SelectListState<T> {
+    pub items: Vec<T>,
+    pub prompt: String,
+}
 
 pub struct SelectList<T> {
     pub id: String,
@@ -49,8 +54,92 @@ pub struct SelectList<T> {
     pub on_select: fn(&T, &mut App),
 }
 
-impl UIComponent for SelectList<SourceItem> {}
-impl UIComponent for SelectList<String> {}
+impl UIComponent for SelectList<SourceItem> {
+    fn get_state(&self) -> &dyn std::any::Any {
+        &self.items
+    }
+
+    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
+        let new_state = state.downcast_ref::<SelectListState<SourceItem>>().unwrap();
+        let prompt = &new_state.prompt;
+        let new_list = &new_state.items;
+
+        //FIXME(quadrado) this whole function is whack
+        // Refactor this ASAP
+        // Rewriting the fuzzy search in a generic way that returns clones is possibility
+        // in order to not have to manage original list indices
+        let mut final_list = Vec::new();
+
+        if prompt.len() == 0 {
+            final_list = new_list.clone();
+        } else {
+            let haystack: Vec<String>;
+            let mut matches;
+
+            // Tag and value search
+            if prompt.starts_with(":") {
+                let clean_prompt = prompt.replace(":", "");
+                let (tag, filter) = clean_prompt.split_once(" ").unwrap_or((&clean_prompt, ""));
+
+                // action type searching
+                haystack = new_list
+                    .iter()
+                    .map(|i| i.action.tags().get(0).unwrap().clone())
+                    .collect::<Vec<String>>();
+                matches = basic_contains(tag.to_string(), &haystack).unwrap_or(Vec::new());
+
+                // if filter present, further filter the list with another haystack
+                if filter != "".to_string() {
+                    let mut list2 = Vec::new();
+                    for m in matches.iter() {
+                        list2.push(new_list.get(m.original_idx).unwrap().clone());
+                    }
+
+                    let haystack2 = list2
+                        .iter()
+                        .map(|i| i.title.clone())
+                        .collect::<Vec<String>>();
+                    matches = basic_contains(filter.to_string(), &haystack2).unwrap_or(Vec::new());
+
+                    // We cant to the final list computation on the outside since we are getting values
+                    // from different lists based on
+                    for m in matches.iter() {
+                        final_list.push(list2.get(m.original_idx).unwrap().clone());
+                    }
+                } else {
+                    for m in matches.iter() {
+                        final_list.push(new_list.get(m.original_idx).unwrap().clone());
+                    }
+                }
+            } else {
+                // Simple title search
+                haystack = new_list
+                    .iter()
+                    .map(|i| i.title.clone())
+                    .collect::<Vec<String>>();
+                matches = basic_contains(prompt.to_string(), &haystack).unwrap_or(Vec::new());
+
+                for m in matches.iter() {
+                    final_list.push(new_list.get(m.original_idx).unwrap().clone());
+                }
+            }
+        }
+
+        // Sort by title
+        final_list.sort_by(|this, other| this.title.cmp(&other.title));
+        self.set_list(final_list);
+    }
+}
+
+impl UIComponent for SelectList<String> {
+    fn get_state(&self) -> &dyn std::any::Any {
+        &self.items
+    }
+
+    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
+        self.items = state.downcast_ref::<Vec<String>>().unwrap().to_vec();
+    }
+}
 
 impl<T: PartialEq> SelectList<T> {
     pub fn new(id: impl AsRef<str>) -> SelectList<T> {

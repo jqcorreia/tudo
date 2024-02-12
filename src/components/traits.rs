@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use crate::app::App;
 use crate::layout::Layout;
 use crate::utils::cache::TextureCache;
@@ -58,4 +60,7 @@ pub trait EventConsumer {
     fn consume_event(&mut self, event: &Event, app: &mut App);
 }
 
-pub trait UIComponent: Render + EventConsumer {}
+pub trait UIComponent: Render + EventConsumer {
+    fn get_state(&self) -> &dyn Any;
+    fn set_state(&mut self, state: Box<dyn Any>);
+}

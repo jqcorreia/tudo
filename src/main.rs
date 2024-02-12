@@ -21,21 +21,19 @@ use animation::AnimationType;
 use app::init;
 use app::App;
 use components::list::SelectList;
+use components::list::SelectListState;
 use components::text;
 
 use components::text::Prompt;
 use components::traits::EventConsumer;
+use components::traits::UIComponent;
 use config::load_config;
-use enum_downcast::AsVariant;
-use enum_downcast::AsVariantMut;
 use execute::execute;
 use layout::Layout;
-use layout::LayoutItem;
 use layout::Leaf;
 use layout::SizeTypeEnum;
 use layout::Split;
 use sdl2::image::InitFlag;
-use sdl2::pixels::PixelFormatEnum;
 use sdl2::rect::Rect;
 use sources::Source;
 
@@ -50,7 +48,6 @@ use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::misc;
 
-use crate::components::traits::UIComponent;
 use crate::layout::Container;
 
 fn already_running(lock_path: &String) -> bool {
@@ -139,7 +136,7 @@ fn main() {
 
     // Create main UI components
     //NOTE(quadrado): IDs should be inside the layout?
-    let mut prompt = text::Prompt::new("prompt", config);
+    let mut prompt = Prompt::new("prompt", config);
     let mut select_list = SelectList::<SourceItem>::new("list");
     select_list.on_select = execute;
 
@@ -155,7 +152,7 @@ fn main() {
 
     let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
 
-    let mut layout2 = Layout::new(
+    let layout2 = Layout::new(
         2,
         Container::VSplit(Split {
             children: Vec::from([
@@ -175,6 +172,8 @@ fn main() {
         main_canvas.window().size().1 as usize,
     );
 
+    let mut component_list: Vec<Box<dyn UIComponent>> =
+        vec![Box::new(prompt), Box::new(select_list)];
     while app.running {
         let ct = completed_threads.lock().unwrap();
         let clear_color = if *ct == total_threads as u32 {
@@ -192,8 +191,17 @@ fn main() {
         }
 
         let elapsed = initial_instant.elapsed().as_millis();
-        let ps: String = prompt.text.clone();
-        select_list.set_list_and_prompt(items.lock().unwrap().clone(), ps);
+        let ps: String = component_list[0]
+            .get_state()
+            .downcast_ref::<String>()
+            .unwrap()
+            .clone();
+
+        component_list[1].set_state(Box::new(SelectListState {
+            items: items.lock().unwrap().clone(),
+            prompt: ps,
+        }));
+        // select_list.set_list_and_prompt(items.lock().unwrap().clone(), ps);
 
         // Consume events and pass them to the components
         let cur_events: Vec<_> = event_pump.poll_iter().collect();
@@ -223,8 +231,9 @@ fn main() {
                 _ => (),
             }
 
-            prompt.consume_event(&_event, &mut app);
-            select_list.consume_event(&_event, &mut app);
+            for component in component_list.iter_mut() {
+                component.consume_event(&_event, &mut app);
+            }
         }
         anim.tick(elapsed);
 
@@ -232,9 +241,9 @@ fn main() {
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
-        prompt.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
-        select_list.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
-
+        for component in component_list.iter_mut() {
+            component.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
+        }
         // Draw info
         if draw_fps {
             let info_tex = tc
