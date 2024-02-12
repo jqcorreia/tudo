@@ -22,10 +22,8 @@ use app::init;
 use app::App;
 use components::list::SelectList;
 use components::list::SelectListState;
-use components::text;
 
 use components::text::Prompt;
-use components::traits::EventConsumer;
 use components::traits::UIComponent;
 use config::load_config;
 use execute::execute;
@@ -136,7 +134,7 @@ fn main() {
 
     // Create main UI components
     //NOTE(quadrado): IDs should be inside the layout?
-    let mut prompt = Prompt::new("prompt", config);
+    let prompt = Prompt::new("prompt", config);
     let mut select_list = SelectList::<SourceItem>::new("list");
     select_list.on_select = execute;
 
