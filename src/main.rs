@@ -150,19 +150,19 @@ fn main() {
 
     let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
 
-    let layout2 = Layout::new(
+    let mut layout = Layout::new(
         2,
         Container::VSplit(Split {
             children: Vec::from([
                 Container::Leaf(Leaf {
                     size_type: SizeTypeEnum::Fixed,
                     size: 64,
-                    key: prompt.id(),
+                    component: Box::new(prompt),
                 }),
                 Container::Leaf(Leaf {
                     size_type: SizeTypeEnum::Percent,
                     size: 100,
-                    key: select_list.id(),
+                    component: Box::new(select_list),
                 }),
             ]),
         }),
@@ -170,8 +170,6 @@ fn main() {
         main_canvas.window().size().1 as usize,
     );
 
-    let mut component_list: Vec<Box<dyn UIComponent>> =
-        vec![Box::new(prompt), Box::new(select_list)];
     while app.running {
         let ct = completed_threads.lock().unwrap();
         let clear_color = if *ct == total_threads as u32 {
@@ -189,16 +187,21 @@ fn main() {
         }
 
         let elapsed = initial_instant.elapsed().as_millis();
-        let ps: String = component_list[0]
+        let ps: String = layout
+            .by_name("prompt".to_string())
+            .component
             .get_state()
             .downcast_ref::<String>()
             .unwrap()
             .clone();
 
-        component_list[1].set_state(Box::new(SelectListState {
-            items: items.lock().unwrap().clone(),
-            prompt: ps,
-        }));
+        layout
+            .by_name("list".to_string())
+            .component
+            .set_state(Box::new(SelectListState {
+                items: items.lock().unwrap().clone(),
+                prompt: ps,
+            }));
         // select_list.set_list_and_prompt(items.lock().unwrap().clone(), ps);
 
         // Consume events and pass them to the components
@@ -229,8 +232,8 @@ fn main() {
                 _ => (),
             }
 
-            for component in component_list.iter_mut() {
-                component.consume_event(&_event, &mut app);
+            for car in layout.components_with_rect() {
+                car.component.consume_event(&_event, &mut app);
             }
         }
         anim.tick(elapsed);
@@ -239,8 +242,9 @@ fn main() {
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
-        for component in component_list.iter_mut() {
-            component.draw(&tc, &mut cache, &app, &mut main_canvas, &layout2, elapsed);
+        for car in layout.components_with_rect() {
+            car.component
+                .draw(&tc, &mut cache, &app, &mut main_canvas, car.rect, elapsed);
         }
         // Draw info
         if draw_fps {

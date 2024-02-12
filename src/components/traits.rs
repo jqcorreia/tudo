@@ -27,11 +27,9 @@ pub trait Render {
         mut cache: &mut TextureCache,
         app: &App,
         main_canvas: &mut Canvas<Window>,
-        layout: &Layout,
+        component_rect: Rect,
         elapsed: u128,
     ) {
-        let component_rect = layout.items.get(&self.id()).unwrap().rect;
-
         let mut tex = texture_creator
             .create_texture_target(
                 PixelFormatEnum::RGBA8888,

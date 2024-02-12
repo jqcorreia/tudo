@@ -17,7 +17,7 @@ pub struct Split {
 pub struct Leaf {
     pub size: usize,
     pub size_type: SizeTypeEnum,
-    pub key: String,
+    pub component: Box<dyn UIComponent>,
 }
 
 pub enum Container {
@@ -35,6 +35,7 @@ pub struct Layout {
 
 pub struct LayoutItem {
     pub rect: Rect,
+    pub component: Box<dyn UIComponent>,
 }
 
 impl Layout {
@@ -49,6 +50,18 @@ impl Layout {
         };
         layout
     }
+    pub fn by_name(&mut self, name: String) -> &mut LayoutItem {
+        self.items.get_mut(&name).unwrap()
+    }
+
+    pub fn components_with_rect(
+        &mut self,
+    ) -> std::collections::hash_map::ValuesMut<'_, String, LayoutItem> {
+        self.items.values_mut()
+    }
+    // pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
+    //     self.items.values_mut().map(${1:f})$0
+    // }
 
     fn generate_recur(
         gap: usize,
@@ -63,7 +76,7 @@ impl Layout {
             Container::Leaf(leaf) => {
                 let m = gap;
                 hm.insert(
-                    leaf.key,
+                    leaf.component.id().clone(),
                     LayoutItem {
                         rect: Rect::new(
                             (x + m) as i32,
@@ -71,6 +84,7 @@ impl Layout {
                             (w - 2 * m) as u32,
                             (h - 2 * m) as u32,
                         ),
+                        component: leaf.component,
                     },
                 );
             }
