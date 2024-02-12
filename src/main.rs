@@ -232,8 +232,8 @@ fn main() {
                 _ => (),
             }
 
-            for car in layout.components_with_rect() {
-                car.component.consume_event(&_event, &mut app);
+            for component in layout.components() {
+                component.consume_event(&_event, &mut app);
             }
         }
         anim.tick(elapsed);

@@ -59,9 +59,10 @@ impl Layout {
     ) -> std::collections::hash_map::ValuesMut<'_, String, LayoutItem> {
         self.items.values_mut()
     }
-    // pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
-    //     self.items.values_mut().map(${1:f})$0
-    // }
+
+    pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
+        self.items.values_mut().map(|i| &mut i.component).collect()
+    }
 
     fn generate_recur(
         gap: usize,
