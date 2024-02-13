@@ -17,6 +17,9 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - Extendable in Lua
 - Minimal list of dependencies, i.e no UI toolkit
 
+## Thing I will **not** implement
+- TTF parser
+- HTTP client
 ## Dependencies
 - SDL2 with `ttf` and `image`
 

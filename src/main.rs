@@ -39,6 +39,7 @@ use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
 use sources::apps::DesktopApplications;
+use sources::lua::LuaSource;
 use sources::secrets::Secrets;
 use sources::tmux::Tmux;
 use sources::windows::WindowSource;
@@ -112,6 +113,7 @@ fn main() {
         Box::new(WindowSource::new()),
         Box::new(Secrets::new()),
         Box::new(Tmux::new()),
+        Box::new(LuaSource::new("plugins/vlad.lua".to_string())),
     ];
 
     // Get number of sources before consuming them
