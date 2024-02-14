@@ -48,7 +48,7 @@ local function get_systems(token)
 end
 
 local function get_components(token)
-	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/components?page_size=100", {
+	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/componentsv2?page_size=1000", {
 		Authorization = "Bearer " .. token,
 	})
 
@@ -63,12 +63,14 @@ local function get_components(token)
 	local cenas = {}
 	local idx = 1
 	for _, value in pairs(tmp) do
-		cenas[idx] = {
-			title = value.name,
-			icon = nil,
-			action = { type = "secret", secret_name = "foo" },
-		}
-		idx = idx + 1
+		if type(value.system) == "string" and type(value.name) == "string" then
+			cenas[idx] = {
+				title = value.system .. "-" .. value.name .. "-" .. value.environment,
+				icon = nil,
+				action = { type = "secret", secret_name = "foo" },
+			}
+			idx = idx + 1
+		end
 	end
 
 	print(tprint(cenas))
