@@ -1,4 +1,12 @@
-function tprint(tbl, indent)
+local function keys(tbl)
+	local res = {}
+	for k, _ in pairs(tbl) do
+		table.insert(res, k)
+	end
+	return res
+end
+
+local function tprint(tbl, indent)
 	if not indent then
 		indent = 0
 	end
@@ -25,14 +33,60 @@ function tprint(tbl, indent)
 	return toprint
 end
 
-local auth_path = "/home/jqcorreia/.config/vlad/auth.json"
+local function get_systems(token)
+	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/systems", {
+		Authorization = "Bearer " .. token,
+	})
 
-vlad_auth = open_json(auth_path)
+	local res = {}
+	for i, value in pairs(a.systems) do
+		res[i] = { title = value.name, icon = nil, action = { type = "secret", secret_name = value.name } }
+	end
+	print(tprint(res))
 
-print(tprint(vlad_auth))
+	return res
+end
 
-local a = http_get("https://httpbin.org/json")
+local function get_components(token)
+	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/components?page_size=100", {
+		Authorization = "Bearer " .. token,
+	})
 
-print(tprint(a))
+	local tmp = {}
 
-return {}
+	for i, value in pairs(a.components) do
+		if i > 1 then
+			tmp[i] = value
+		end
+	end
+
+	local cenas = {}
+	local idx = 1
+	for _, value in pairs(tmp) do
+		cenas[idx] = {
+			title = value.name,
+			icon = nil,
+			action = { type = "secret", secret_name = "foo" },
+		}
+		idx = idx + 1
+	end
+
+	print(tprint(cenas))
+	return cenas
+end
+
+local function parse_token()
+	local auth_path = "/home/jqcorreia/.config/vlad/auth.json"
+	vlad_auth = open_json(auth_path)
+
+	local account_key = ""
+	for _, k in ipairs(keys(vlad_auth.AccessToken)) do
+		account_key = k
+	end
+
+	local token = vlad_auth.AccessToken[account_key].secret
+	return token
+end
+
+local token = parse_token()
+return get_components(token)

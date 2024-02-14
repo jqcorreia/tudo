@@ -1,4 +1,6 @@
-use mlua::{IntoLua, Lua, LuaSerdeExt, Table, UserData};
+use std::collections::HashMap;
+
+use mlua::{Error, IntoLua, Lua, LuaSerdeExt, Table, UserData};
 use ureq::serde_json;
 
 use crate::sources::Action;
@@ -19,39 +21,52 @@ impl LuaSource {
     }
 }
 
-struct LuaHttpJsonResponse {
+// Struct that wraps a serde_jso::Value and implements the IntoLua trait
+// FIXME(quadrado) only supports root objects
+struct LuaJSON {
     value: serde_json::Value,
 }
-impl<'lua> IntoLua<'lua> for LuaHttpJsonResponse {
+impl<'lua> IntoLua<'lua> for LuaJSON {
     fn into_lua(self, lua: &'lua Lua) -> mlua::prelude::LuaResult<mlua::prelude::LuaValue<'lua>> {
-        Ok(lua.to_value(self.value.as_object().unwrap())?)
+        match self.value {
+            serde_json::Value::Object(obj) => Ok(lua.to_value(&obj)?),
+            _ => panic!("Unsupported JSON return type"),
+        }
     }
 }
 
+fn http_get(
+    _lua: &Lua,
+    req_args: (String, HashMap<String, String>),
+) -> Result<impl IntoLua, Error> {
+    let mut req = ureq::get(&req_args.0);
+
+    for (k, v) in req_args.1 {
+        req = req.set(&k, &v);
+    }
+
+    let contents: serde_json::Value;
+    match req.call() {
+        Ok(response) => contents = response.into_json().unwrap(),
+        Err(err) => return Err(mlua::Error::RuntimeError(err.to_string())),
+    }
+    Ok(LuaJSON { value: contents })
+}
+
+fn load_json_file(_lua: &Lua, path: String) -> Result<impl IntoLua, Error> {
+    let res = std::fs::read(path).unwrap();
+
+    let contents = serde_json::from_slice(res.as_slice()).unwrap();
+    Ok(LuaJSON { value: contents })
+}
+
+// Set some utility functions
 fn setup(lua: &Lua) {
-    let http_get = lua
-        .create_function(|_, url: String| {
-            let res = ureq::get(&url);
+    let http_get = lua.create_function(http_get).unwrap();
+    let load_json_file = lua.create_function(load_json_file).unwrap();
 
-            let contents: serde_json::Value;
-            match res.call() {
-                Ok(response) => contents = response.into_json().unwrap(),
-                Err(_) => return Err(mlua::Error::RuntimeError("cenas a abrir http".to_string())),
-            }
-            Ok(LuaHttpJsonResponse { value: contents })
-        })
-        .unwrap();
     lua.globals().set("http_get", http_get).unwrap();
-
-    let open_json = lua
-        .create_function(|_, path: String| {
-            let res = std::fs::read(path).unwrap();
-
-            let contents = serde_json::from_slice(res.as_slice()).unwrap();
-            Ok(LuaHttpJsonResponse { value: contents })
-        })
-        .unwrap();
-    lua.globals().set("open_json", open_json).unwrap();
+    lua.globals().set("open_json", load_json_file).unwrap();
 }
 
 impl Source for LuaSource {
@@ -80,10 +95,12 @@ impl Source for LuaSource {
         res = match lua.load(&script).set_name("teste").eval() {
             Ok(r) => r,
             Err(err) => {
-                panic!("{}", err)
+                println!("{}", err);
+                return vec![];
             }
         };
 
+        dbg!(&res);
         for v in res.iter() {
             let title: String = v.get("title".to_string()).unwrap();
             let icon: Option<String> = v.get("icon").unwrap();
