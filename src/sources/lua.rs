@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use mlua::{Error, IntoLua, Lua, LuaSerdeExt, Table, UserData};
+use mlua::{Error, IntoLua, Lua, LuaSerdeExt, Table};
 use ureq::serde_json;
 
 use crate::sources::Action;

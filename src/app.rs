@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::ttf::Font;
 use sdl2::ttf::Sdl2TtfContext;
@@ -41,6 +43,29 @@ impl<'a> App<'a> {
 
     pub fn get_font(&'a self, font_id: &'a str) -> &'a Font<'a, 'a> {
         self.fonts.get(font_id).unwrap()
+    }
+
+    pub fn handle_global_events(&mut self, events: &Vec<Event>) {
+        for event in events.iter() {
+            // Deal with main loop events
+            // Things like app quit and global window mouse events
+            match event {
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F1),
+                    ..
+                } => self.draw_fps = !self.draw_fps,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F2),
+                    ..
+                } => self.frame_lock = !self.frame_lock,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => self.running = false,
+                sdl2::event::Event::Quit { .. } => self.running = false,
+                _ => (),
+            }
+        }
     }
 }
 pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {

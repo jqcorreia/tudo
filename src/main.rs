@@ -17,27 +17,18 @@ use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
-use animation::Animation;
-use animation::AnimationType;
 use app::init;
 use app::App;
-use components::list::SelectList;
-use components::list::SelectListState;
 
-use components::text::Prompt;
 use config::load_config;
 use execute::execute;
-use layout::Layout;
-use layout::Leaf;
-use layout::SizeTypeEnum;
-use layout::Split;
 use screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sdl2::rect::Rect;
 use sources::Source;
 
-use sdl2::{keyboard::Keycode, pixels::Color};
+use sdl2::pixels::Color;
 use sources::apps::DesktopApplications;
 use sources::lua::LuaSource;
 use sources::secrets::Secrets;
@@ -47,8 +38,6 @@ use sources::SourceItem;
 use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::misc;
-
-use crate::layout::Container;
 
 fn already_running(lock_path: &String) -> bool {
     match std::fs::read(lock_path.clone()) {
@@ -137,43 +126,12 @@ fn main() {
         });
     }
 
-    // Create main UI components
-    //NOTE(quadrado): IDs should be inside the layout?
-    let prompt = Prompt::new("prompt", &config);
-    let mut select_list = SelectList::<SourceItem>::new("list");
-    select_list.on_select = execute;
-
     // misc main loop setup
     let mut tick_time = Instant::now();
     let mut fps = 0;
     let frame_lock_value = 60;
 
-    let (_ww, _) = main_canvas.window().size();
-    let mut wh = 60;
-
-    let mut anim = Animation::new(&mut wh, 0, AnimationType::EaseOut);
-
-    let mut layout = Layout::new(
-        2,
-        Container::VSplit(Split {
-            children: Vec::from([
-                Container::Leaf(Leaf {
-                    size_type: SizeTypeEnum::Fixed,
-                    size: 64,
-                    component: Box::new(prompt),
-                }),
-                Container::Leaf(Leaf {
-                    size_type: SizeTypeEnum::Percent,
-                    size: 100,
-                    component: Box::new(select_list),
-                }),
-            ]),
-        }),
-        main_canvas.window().size().0 as usize,
-        main_canvas.window().size().1 as usize,
-    );
-
-    let main_screen = MainScreen::new(
+    let mut main_screen = MainScreen::new(
         &config,
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
@@ -198,63 +156,27 @@ fn main() {
             tick_time = Instant::now();
         }
 
+        // Calculate elapsed time
+        let elapsed = initial_instant.elapsed().as_millis();
+
         // Consume events and process them
         let cur_events = event_pump
             .poll_iter()
             .map(|event| misc::ignore_numlock(&event))
             .collect::<Vec<Event>>();
 
-        let elapsed = initial_instant.elapsed().as_millis();
-        let ps: String = layout
-            .by_name("prompt".to_string())
-            .component
-            .get_state()
-            .downcast_ref::<String>()
-            .unwrap()
-            .clone();
+        // Handle application global events
+        app.handle_global_events(&cur_events);
 
-        layout
-            .by_name("list".to_string())
-            .component
-            .set_state(Box::new(SelectListState {
-                items: items.lock().unwrap().clone(),
-                prompt: ps,
-            }));
-
-        for event in cur_events.iter() {
-            // Deal with main loop events
-            // Things like app quit and global window mouse events
-            match event {
-                sdl2::event::Event::KeyDown {
-                    keycode: Some(Keycode::F1),
-                    ..
-                } => app.draw_fps = !app.draw_fps,
-                sdl2::event::Event::KeyDown {
-                    keycode: Some(Keycode::F2),
-                    ..
-                } => app.frame_lock = !app.frame_lock,
-                sdl2::event::Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => app.running = false,
-                sdl2::event::Event::Quit { .. } => app.running = false,
-                _ => (),
-            }
-
-            for component in layout.components() {
-                component.consume_event(&event, &mut app);
-            }
-        }
-        anim.tick(elapsed);
+        // Screen update
+        main_screen.update(&mut app, &cur_events, elapsed);
 
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
-        for car in layout.components_with_rect() {
-            car.component
-                .draw(&tc, &mut cache, &app, &mut main_canvas, car.rect, elapsed);
-        }
+        main_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
+
         // Draw info
         if app.draw_fps {
             let info_tex = tc
