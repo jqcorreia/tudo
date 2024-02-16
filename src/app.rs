@@ -21,17 +21,17 @@ pub struct App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub fn create_window(&self, title: String, width: u32, height: u32) -> Window {
-        let window = self
-            .video
-            .window(&title, width, height)
-            .opengl()
-            .borderless()
-            .position_centered()
-            .build()
-            .unwrap();
-        window
-    }
+    // pub fn create_window(&self, title: String, width: u32, height: u32) -> Window {
+    //     let window = self
+    //         .video
+    //         .window(&title, width, height)
+    //         .opengl()
+    //         .borderless()
+    //         .position_centered()
+    //         .build()
+    //         .unwrap();
+    //     window
+    // }
 
     pub fn load_font(&mut self, font_id: String, path: impl AsRef<str>, point_size: u16) {
         let font = self.ttf.load_font(&path.as_ref(), point_size).unwrap();

@@ -73,7 +73,6 @@ local function get_components(token)
 		end
 	end
 
-	print(tprint(cenas))
 	return cenas
 end
 

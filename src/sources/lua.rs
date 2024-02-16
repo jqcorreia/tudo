@@ -100,7 +100,6 @@ impl Source for LuaSource {
             }
         };
 
-        dbg!(&res);
         for v in res.iter() {
             let title: String = v.get("title".to_string()).unwrap();
             let icon: Option<String> = v.get("icon").unwrap();
