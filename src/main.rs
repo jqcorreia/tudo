@@ -6,6 +6,7 @@ pub mod components;
 pub mod config;
 pub mod execute;
 pub mod layout;
+pub mod screen;
 pub mod sources;
 pub mod utils;
 
@@ -30,6 +31,7 @@ use layout::Layout;
 use layout::Leaf;
 use layout::SizeTypeEnum;
 use layout::Split;
+use screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sdl2::rect::Rect;
@@ -137,7 +139,7 @@ fn main() {
 
     // Create main UI components
     //NOTE(quadrado): IDs should be inside the layout?
-    let prompt = Prompt::new("prompt", config);
+    let prompt = Prompt::new("prompt", &config);
     let mut select_list = SelectList::<SourceItem>::new("list");
     select_list.on_select = execute;
 
@@ -169,6 +171,13 @@ fn main() {
         }),
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
+    );
+
+    let main_screen = MainScreen::new(
+        &config,
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
+        items.clone(),
     );
 
     while app.running {
@@ -229,9 +238,6 @@ fn main() {
                     ..
                 } => app.running = false,
                 sdl2::event::Event::Quit { .. } => app.running = false,
-                // sdl2::event::Event::MouseButtonDown { x, y, .. } => {
-                //     println!("{} {}", x, y)
-                // }
                 _ => (),
             }
 

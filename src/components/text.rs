@@ -22,7 +22,7 @@ pub struct Prompt {
 }
 
 impl Prompt {
-    pub fn new(id: impl AsRef<str>, config: Config) -> Self {
+    pub fn new(id: impl AsRef<str>, config: &Config) -> Self {
         Prompt {
             id: id.as_ref().to_string(),
             text: String::from(""),
