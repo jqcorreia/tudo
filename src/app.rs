@@ -17,13 +17,14 @@ pub struct App<'a> {
     pub running: bool,
     pub draw_fps: bool,
     pub frame_lock: bool,
+    pub loading: bool,
 }
 
 impl<'a> App<'a> {
-    pub fn create_window(&self) -> Window {
+    pub fn create_window(&self, title: String, width: u32, height: u32) -> Window {
         let window = self
             .video
-            .window("tudo", 1024, 768)
+            .window(&title, width, height)
             .opengl()
             .borderless()
             .position_centered()
@@ -59,13 +60,15 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
     (
         App {
             sdl,
-            running: true,
             clipboard: None,
             video,
             fonts: HashMap::new(),
             ttf,
+
+            running: true,
             frame_lock: true,
             draw_fps: false,
+            loading: true,
         },
         canvas,
     )

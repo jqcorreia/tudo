@@ -33,8 +33,6 @@ use layout::Split;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sdl2::rect::Rect;
-use sdl2::render::Canvas;
-use sdl2::video::Window;
 use sources::Source;
 
 use sdl2::{keyboard::Keycode, pixels::Color};
@@ -175,10 +173,12 @@ fn main() {
 
     while app.running {
         let ct = completed_threads.lock().unwrap();
-        let clear_color = if *ct == total_threads as u32 {
-            Color::RGBA(50, 50, 50, 255)
-        } else {
+        app.loading = *ct != total_threads as u32;
+
+        let clear_color = if app.loading {
             Color::RGBA(200, 0, 0, 255)
+        } else {
+            Color::RGBA(50, 50, 50, 255)
         };
         // We need to drop here in order to yield the lock
         drop(ct);
@@ -193,7 +193,7 @@ fn main() {
         let cur_events = event_pump
             .poll_iter()
             .map(|event| misc::ignore_numlock(&event))
-            .collect();
+            .collect::<Vec<Event>>();
 
         let elapsed = initial_instant.elapsed().as_millis();
         let ps: String = layout
@@ -211,8 +211,6 @@ fn main() {
                 items: items.lock().unwrap().clone(),
                 prompt: ps,
             }));
-
-        main_mode(&mut layout, &cur_events, &main_canvas);
 
         for event in cur_events.iter() {
             // Deal with main loop events
@@ -310,4 +308,3 @@ fn main() {
     // Remove run lock
     let _ = std::fs::remove_file(lock_path);
 }
-fn main_mode(_layout: &mut Layout, _events: &Vec<Event>, _main_canvas: &Canvas<Window>) {}
