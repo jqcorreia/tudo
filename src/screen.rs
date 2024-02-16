@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use sdl2::{
     event::Event,
     pixels::Color,
-    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -64,7 +63,7 @@ impl MainScreen {
 
     pub fn init(&mut self) {}
 
-    pub fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
+    pub fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
         let ps: String = self
             .layout
             .by_name("prompt".to_string())

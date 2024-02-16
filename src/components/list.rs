@@ -354,7 +354,7 @@ impl RenderItem<String> for SelectList<String> {
         &'a self,
         item: &String,
         texture_creator: &'a TextureCreator<WindowContext>,
-        cache: &mut TextureCache,
+        _cache: &mut TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
