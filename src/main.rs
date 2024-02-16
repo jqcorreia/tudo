@@ -145,9 +145,7 @@ fn main() {
 
     // misc main loop setup
     let mut tick_time = Instant::now();
-    let mut draw_fps = false;
     let mut fps = 0;
-    let mut frame_lock = true;
     let frame_lock_value = 60;
 
     let (_ww, _) = main_canvas.window().size();
@@ -223,11 +221,11 @@ fn main() {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::F1),
                     ..
-                } => draw_fps = !draw_fps,
+                } => app.draw_fps = !app.draw_fps,
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::F2),
                     ..
-                } => frame_lock = !frame_lock,
+                } => app.frame_lock = !app.frame_lock,
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
@@ -254,7 +252,7 @@ fn main() {
                 .draw(&tc, &mut cache, &app, &mut main_canvas, car.rect, elapsed);
         }
         // Draw info
-        if draw_fps {
+        if app.draw_fps {
             let info_tex = tc
                 .create_texture_from_surface(
                     &app.get_font("normal-20")
@@ -290,7 +288,7 @@ fn main() {
             let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
 
             // Make sure we are not overflowing the substraction
-            if frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
+            if app.frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
                 spin_sleep::sleep(
                     Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
                 );

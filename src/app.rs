@@ -9,11 +9,14 @@ use sdl2::VideoSubsystem;
 
 pub struct App<'a> {
     pub sdl: Sdl,
-    pub running: bool,
     pub clipboard: Option<String>,
     pub video: VideoSubsystem,
     fonts: HashMap<String, Font<'a, 'a>>,
     pub ttf: &'a Sdl2TtfContext,
+
+    pub running: bool,
+    pub draw_fps: bool,
+    pub frame_lock: bool,
 }
 
 impl<'a> App<'a> {
@@ -52,8 +55,6 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
         .unwrap();
 
     let canvas = window.into_canvas().build().unwrap();
-    // let tc = canvas.texture_creator();
-    // let texture_cache = TextureCache::new(&tc);
 
     (
         App {
@@ -63,6 +64,8 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
             video,
             fonts: HashMap::new(),
             ttf,
+            frame_lock: true,
+            draw_fps: false,
         },
         canvas,
     )
