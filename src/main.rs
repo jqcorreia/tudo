@@ -25,7 +25,6 @@ use execute::execute;
 use screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
-use sdl2::rect::Rect;
 use sources::Source;
 
 use sdl2::pixels::Color;
@@ -170,7 +169,7 @@ fn main() {
         // Screen render
         main_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
 
-        // Draw info
+        // Draw info directly into the canvas
         if app.draw_fps {
             let font = &app.get_font("normal-20");
 
@@ -203,6 +202,7 @@ fn main() {
             }
         }
     }
+
     if app.clipboard.is_some() {
         let _out = Command::new("sh")
             .arg("-c")
