@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use sdl2::{
     event::Event,
+    pixels::Color,
     rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
@@ -95,6 +96,15 @@ impl MainScreen {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     ) {
+        let clear_color = if app.loading {
+            Color::RGBA(200, 0, 0, 255)
+        } else {
+            Color::RGBA(50, 50, 50, 255)
+        };
+        // Set draw color and clear
+        main_canvas.set_draw_color(clear_color);
+        main_canvas.clear();
+
         for car in self.layout.components_with_rect() {
             car.component.draw(
                 &texture_creator,

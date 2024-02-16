@@ -37,6 +37,7 @@ use sources::windows::WindowSource;
 use sources::SourceItem;
 use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
+use utils::draw::draw_string;
 use utils::misc;
 
 fn already_running(lock_path: &String) -> bool {
@@ -130,6 +131,8 @@ fn main() {
     let mut tick_time = Instant::now();
     let mut fps = 0;
     let frame_lock_value = 60;
+    let window_width = main_canvas.window().size().clone().0 as i32;
+    let window_height = main_canvas.window().size().clone().1 as i32;
 
     let mut main_screen = MainScreen::new(
         &config,
@@ -141,12 +144,6 @@ fn main() {
     while app.running {
         let ct = completed_threads.lock().unwrap();
         app.loading = *ct != total_threads as u32;
-
-        let clear_color = if app.loading {
-            Color::RGBA(200, 0, 0, 255)
-        } else {
-            Color::RGBA(50, 50, 50, 255)
-        };
         // We need to drop here in order to yield the lock
         drop(ct);
 
@@ -170,36 +167,21 @@ fn main() {
 
         // Screen update
         main_screen.update(&mut app, &cur_events, elapsed);
-
-        // Set draw color and clear
-        main_canvas.set_draw_color(clear_color);
-        main_canvas.clear();
-
+        // Screen render
         main_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
 
         // Draw info
         if app.draw_fps {
-            let info_tex = tc
-                .create_texture_from_surface(
-                    &app.get_font("normal-20")
-                        .render(&format!("{}", fps).to_string())
-                        .blended(Color::RGBA(0, 120, 0, 128))
-                        .unwrap(),
-                )
-                .unwrap();
-            let info_tex_query = info_tex.query();
-            main_canvas
-                .copy(
-                    &info_tex,
-                    None,
-                    Rect::new(
-                        (main_canvas.window().size().0 - 200) as i32,
-                        (main_canvas.window().size().1 - 100) as i32,
-                        info_tex_query.width,
-                        info_tex_query.height,
-                    ),
-                )
-                .unwrap();
+            let font = &app.get_font("normal-20");
+
+            draw_string(
+                format!("{}", fps).to_string(),
+                &mut main_canvas,
+                font,
+                Color::RGBA(0, 120, 0, 128),
+                window_width - 200,
+                window_height - 200,
+            );
         }
 
         main_canvas.present();
