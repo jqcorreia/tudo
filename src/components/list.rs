@@ -9,6 +9,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
 use crate::utils::cache::TextureCache;
+use crate::utils::draw::{draw_string, draw_string_texture};
 use crate::utils::fuzzy::basic_contains;
 use crate::App;
 
@@ -230,18 +231,14 @@ impl Render for SelectList<SourceItem> {
         let font2 = app.get_font("normal-16");
 
         if self.items.len() == 0 {
-            let texture = cache.font.draw_string(
+            draw_string(
                 "No items found".to_string(),
                 canvas,
                 font,
                 self.foreground_color,
+                20,
+                y as i32,
             );
-
-            let query = texture.query();
-            let (w, h) = (query.width, query.height);
-            canvas
-                .copy(&texture, None, Some(Rect::new(20, y as i32, w, h)))
-                .unwrap();
         } else {
             let row_height: u32 = 34;
 
@@ -304,18 +301,14 @@ impl Render for SelectList<String> {
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
-            let texture = cache.font.draw_string(
+            draw_string(
                 "No items found".to_string(),
                 canvas,
                 font,
                 self.foreground_color,
+                20,
+                y as i32,
             );
-
-            let query = texture.query();
-            let (w, h) = (query.width, query.height);
-            canvas
-                .copy(&texture, None, Some(Rect::new(20, y as i32, w, h)))
-                .unwrap();
         } else {
             for (idx, item) in self.items.as_slice().iter().enumerate() {
                 // FIXME(jqcorreia): This could be abstracted
@@ -373,17 +366,7 @@ impl RenderItem<String> for SelectList<String> {
 
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
-                let texture =
-                    cache
-                        .font
-                        .draw_string(item.clone(), canvas, font, self.foreground_color);
-
-                let query = texture.query();
-                let (w, h) = (query.width, query.height);
-
-                canvas
-                    .copy(&texture, None, Some(Rect::new(0, 0, w, h)))
-                    .unwrap();
+                draw_string(item.clone(), canvas, font, self.foreground_color, 0, 0);
             })
             .unwrap();
         tex
@@ -428,9 +411,9 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
 
                 {
                     // Draw text
-                    let text_texture = cache.font.draw_string(
+                    let text_texture = draw_string_texture(
                         item.title.clone(),
-                        canvas,
+                        texture_creator,
                         font,
                         self.foreground_color,
                     );
@@ -443,9 +426,9 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                 }
 
                 // Draw tag
-                let tag_texture = cache.font.draw_string(
+                let tag_texture = draw_string_texture(
                     format!(":{}", item.action.tags().get(0).unwrap().clone()),
-                    canvas,
+                    texture_creator,
                     font,
                     Color::RGBA(128, 128, 128, 128),
                 );

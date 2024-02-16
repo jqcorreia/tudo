@@ -7,6 +7,7 @@ use crate::app::App;
 use crate::components::traits::{EventConsumer, Render};
 use crate::config::Config;
 use crate::utils::cache::TextureCache;
+use crate::utils::draw::draw_string_texture;
 
 use super::traits::UIComponent;
 
@@ -61,8 +62,8 @@ impl Render for Prompt {
 
     fn render(
         &mut self,
-        _texture_creator: &TextureCreator<WindowContext>,
-        cache: &mut TextureCache,
+        texture_creator: &TextureCreator<WindowContext>,
+        _cache: &mut TextureCache,
         app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -73,15 +74,18 @@ impl Render for Prompt {
         let draw_cursor = self.text.len() > 0;
 
         let texture = match self.text.len() {
-            0 => cache.font.draw_string(
+            0 => draw_string_texture(
                 "Write something".to_string(),
-                canvas,
+                &texture_creator,
                 font,
                 Color::RGBA(100, 100, 100, 255),
             ),
-            _ => cache
-                .font
-                .draw_string(self.text.clone(), canvas, font, self.foreground_color),
+            _ => draw_string_texture(
+                self.text.clone(),
+                &texture_creator,
+                font,
+                self.foreground_color,
+            ),
         };
 
         let query = texture.query();
