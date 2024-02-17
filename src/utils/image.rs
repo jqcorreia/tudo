@@ -4,6 +4,8 @@ use sdl2::{
     video::WindowContext,
 };
 
+use std::cell::UnsafeCell;
+
 use std::{collections::HashMap, fs};
 #[derive(Hash, Eq, PartialEq, Clone)]
 pub struct ImageKey {
@@ -11,38 +13,39 @@ pub struct ImageKey {
 }
 
 pub struct ImageCache<'fa> {
-    pub cache: HashMap<ImageKey, Texture<'fa>>,
+    pub cache: UnsafeCell<HashMap<ImageKey, Texture<'fa>>>,
     tc: &'fa TextureCreator<WindowContext>,
+}
+
+fn gen_tex<'a>(path: String, tc: &'a TextureCreator<WindowContext>) -> Texture<'a> {
+    let buf = fs::read(&path).unwrap();
+
+    let tex: Texture = tc.load_texture_bytes(&buf).unwrap();
+
+    tex
 }
 
 impl<'fa> ImageCache<'fa> {
     pub fn new(tc: &'fa TextureCreator<WindowContext>) -> Self {
         ImageCache {
-            cache: HashMap::new(),
+            cache: HashMap::new().into(),
             tc,
         }
     }
-    pub fn generate_new_texture(&mut self, path: String) -> &Texture {
-        let buf = fs::read(&path).unwrap();
 
-        let tex: Texture<'fa> = self.tc.load_texture_bytes(&buf).unwrap();
-
-        let key = ImageKey { path };
-        self.cache.insert(key.clone(), tex);
-        self.cache.get(&key).unwrap()
-    }
-
-    pub fn get_image(&mut self, path: String) -> &Texture {
+    // Use interior mutability in order to have a shared reference &self be able to mutate the
+    // inner hashmap
+    pub fn get_image(&self, path: String) -> &Texture {
         let key = ImageKey { path: path.clone() };
 
-        let mut new = false;
-        if let None = self.cache.get(&key) {
-            new = true
-        }
-        if new {
-            self.generate_new_texture(path)
-        } else {
-            self.cache.get(&key).unwrap()
-        }
+        let tex = gen_tex(path, self.tc);
+
+        // SAFETY this is pulled from FrozenMap implementation at https://docs.rs/elsa/latest/src/elsa/map.rs.html#74
+        // Still not sure how this works
+        let ret = unsafe {
+            let map = self.cache.get();
+            &*(*map).entry(key).or_insert(tex)
+        };
+        ret
     }
 }

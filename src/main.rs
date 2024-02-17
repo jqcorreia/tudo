@@ -166,6 +166,7 @@ fn main() {
 
         // Screen update
         main_screen.update(&mut app, &cur_events, elapsed);
+
         // Screen render
         main_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
 
