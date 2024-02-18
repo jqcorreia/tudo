@@ -9,35 +9,20 @@ use sdl2::video::Window;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
 
-use crate::screen::Screen;
-
 pub struct App<'a> {
     pub sdl: Sdl,
-    pub clipboard: Option<String>,
     pub video: VideoSubsystem,
     fonts: HashMap<String, Font<'a, 'a>>,
     pub ttf: &'a Sdl2TtfContext,
 
+    pub clipboard: Option<String>,
     pub running: bool,
     pub draw_fps: bool,
     pub frame_lock: bool,
     pub loading: bool,
-    // pub current_screen: Box<dyn Screen>,
 }
 
 impl<'a> App<'a> {
-    // pub fn create_window(&self, title: String, width: u32, height: u32) -> Window {
-    //     let window = self
-    //         .video
-    //         .window(&title, width, height)
-    //         .opengl()
-    //         .borderless()
-    //         .position_centered()
-    //         .build()
-    //         .unwrap();
-    //     window
-    // }
-
     pub fn load_font(&mut self, font_id: String, path: impl AsRef<str>, point_size: u16) {
         let font = self.ttf.load_font(&path.as_ref(), point_size).unwrap();
 
@@ -70,9 +55,6 @@ impl<'a> App<'a> {
             }
         }
     }
-    // pub fn change_screen(&mut self, screen: Box<dyn Screen>) {
-    //     self.current_screen = screen;
-    // }
 }
 
 pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
