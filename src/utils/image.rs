@@ -38,13 +38,11 @@ impl<'fa> ImageCache<'fa> {
     pub fn get_image(&self, path: String) -> &Texture {
         let key = ImageKey { path: path.clone() };
 
-        let tex = gen_tex(path, self.tc);
-
         // SAFETY this is pulled from FrozenMap implementation at https://docs.rs/elsa/latest/src/elsa/map.rs.html#74
         // Still not sure how this works
         let ret = unsafe {
             let map = self.cache.get();
-            &*(*map).entry(key).or_insert(tex)
+            &*(*map).entry(key).or_insert_with(|| gen_tex(path, self.tc))
         };
         ret
     }
