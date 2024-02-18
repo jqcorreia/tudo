@@ -84,14 +84,11 @@ fn main() {
     let (mut app, mut main_canvas) = init(&ttf);
 
     // Load initial fonts
-    app.borrow_mut()
-        .load_font("normal-20".to_string(), &config.font_file, 20);
-    app.borrow_mut()
-        .load_font("normal-16".to_string(), &config.font_file, 16);
+    app.load_font("normal-20".to_string(), &config.font_file, 20);
+    app.load_font("normal-16".to_string(), &config.font_file, 16);
 
-    // let fps_font = app.borrow_mut().get_font("normal-20");
     // Event pump, for now just sits in the main loop
-    let mut event_pump = app.borrow_mut().sdl.event_pump().unwrap();
+    let mut event_pump = app.sdl.event_pump().unwrap();
 
     // Create texture creator for the main window canvas
     let tc = main_canvas.texture_creator();
@@ -140,18 +137,18 @@ fn main() {
 
     let mut main_screen = MainScreen::new(
         &config,
-        window_width as usize,
-        window_height as usize,
+        main_canvas.window().size().0 as usize,
+        main_canvas.window().size().1 as usize,
         items.clone(),
     );
 
     let mut submenu = SubMenu::new();
 
-    let current_screen = &mut submenu;
+    let current_screen = &mut main_screen;
 
-    while app.borrow().running {
+    while app.running {
         let ct = completed_threads.lock().unwrap();
-        app.borrow_mut().loading = *ct != total_threads as u32;
+        app.loading = *ct != total_threads as u32;
         // We need to drop here in order to yield the lock
         drop(ct);
 
@@ -171,21 +168,22 @@ fn main() {
             .collect::<Vec<Event>>();
 
         // Handle application global events
-        app.borrow_mut().handle_global_events(&cur_events);
+        app.handle_global_events(&cur_events);
 
         // Screen update
-        current_screen.update(&mut app.borrow_mut(), &cur_events, elapsed);
+        current_screen.update(&mut app, &cur_events, elapsed);
 
         // Screen render
-        current_screen.render(&tc, &mut cache, &app.borrow(), &mut main_canvas, elapsed);
+        current_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
 
         // Draw info directly into the canvas
-        if app.borrow().draw_fps {
-            let _app = app.borrow_mut();
+        if app.draw_fps {
+            let font = &app.get_font("normal-20");
+
             draw_string(
                 format!("{}", fps).to_string(),
                 &mut main_canvas,
-                _app.get_font("normal-20"),
+                font,
                 Color::RGBA(0, 120, 0, 128),
                 window_width - 200,
                 window_height - 200,
@@ -200,26 +198,24 @@ fn main() {
                 "Time to first render: {}ms",
                 initial_instant.elapsed().as_millis()
             )
-        }
+        } else {
+            let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
 
-        let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
-
-        // Make sure we are not overflowing the substraction
-        if app.borrow().frame_lock
-            && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis()
-        {
-            spin_sleep::sleep(
-                Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
-            );
+            // Make sure we are not overflowing the substraction
+            if app.frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
+                spin_sleep::sleep(
+                    Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
+                );
+            }
         }
     }
 
-    if app.borrow().clipboard.is_some() {
+    if app.clipboard.is_some() {
         let _out = Command::new("sh")
             .arg("-c")
             .arg(format!(
                 r"echo -n {} | xsel --clipboard --input",
-                app.borrow().clipboard.clone().unwrap().replace("\n", "")
+                app.clipboard.clone().unwrap().replace("\n", "")
             ))
             .output()
             .unwrap()

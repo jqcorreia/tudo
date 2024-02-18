@@ -1,6 +1,4 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -77,7 +75,7 @@ impl<'a> App<'a> {
     // }
 }
 
-pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (Rc<RefCell<App<'a>>>, Canvas<Window>) {
+pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();
 
@@ -92,7 +90,7 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (Rc<RefCell<App<'a>>>, Canvas<Window
     let canvas = window.into_canvas().build().unwrap();
 
     (
-        Rc::new(RefCell::new(App {
+        App {
             sdl,
             clipboard: None,
             video,
@@ -103,7 +101,7 @@ pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (Rc<RefCell<App<'a>>>, Canvas<Window
             frame_lock: true,
             draw_fps: false,
             loading: true,
-        })),
+        },
         canvas,
     )
 }
