@@ -23,10 +23,12 @@ use app::App;
 use config::load_config;
 use execute::execute;
 use screen::MainScreen;
+use screen::SubMenu;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sources::Source;
 
+use screen::Screen;
 use sdl2::pixels::Color;
 use sources::apps::DesktopApplications;
 use sources::lua::LuaSource;
@@ -140,6 +142,10 @@ fn main() {
         items.clone(),
     );
 
+    let mut submenu = SubMenu::new();
+
+    let current_screen = &mut main_screen;
+
     while app.running {
         let ct = completed_threads.lock().unwrap();
         app.loading = *ct != total_threads as u32;
@@ -165,10 +171,10 @@ fn main() {
         app.handle_global_events(&cur_events);
 
         // Screen update
-        main_screen.update(&mut app, &cur_events, elapsed);
+        current_screen.update(&mut app, &cur_events, elapsed);
 
         // Screen render
-        main_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
+        current_screen.render(&tc, &mut cache, &app, &mut main_canvas, elapsed);
 
         // Draw info directly into the canvas
         if app.draw_fps {

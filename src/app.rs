@@ -9,6 +9,8 @@ use sdl2::video::Window;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
 
+use crate::screen::Screen;
+
 pub struct App<'a> {
     pub sdl: Sdl,
     pub clipboard: Option<String>,
@@ -20,6 +22,7 @@ pub struct App<'a> {
     pub draw_fps: bool,
     pub frame_lock: bool,
     pub loading: bool,
+    // pub current_screen: Box<dyn Screen>,
 }
 
 impl<'a> App<'a> {
@@ -67,7 +70,11 @@ impl<'a> App<'a> {
             }
         }
     }
+    // pub fn change_screen(&mut self, screen: Box<dyn Screen>) {
+    //     self.current_screen = screen;
+    // }
 }
+
 pub fn init<'a>(ttf: &'a Sdl2TtfContext) -> (App<'a>, Canvas<Window>) {
     let sdl = sdl2::init().unwrap();
     let video = sdl.video().unwrap();

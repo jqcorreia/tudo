@@ -17,8 +17,22 @@ use crate::{
     execute,
     layout::{Container, Layout, Leaf, SizeTypeEnum, Split},
     sources::SourceItem,
-    utils::cache::TextureCache,
+    utils::{cache::TextureCache, draw::draw_string},
 };
+
+pub trait Screen {
+    fn init(&mut self) {}
+
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128);
+    fn render(
+        &mut self,
+        texture_creator: &TextureCreator<WindowContext>,
+        cache: &mut TextureCache,
+        app: &App,
+        main_canvas: &mut Canvas<Window>,
+        elapsed: u128,
+    );
+}
 
 pub struct MainScreen {
     layout: Layout,
@@ -60,10 +74,9 @@ impl MainScreen {
             source_items: items,
         }
     }
-
-    pub fn init(&mut self) {}
-
-    pub fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
+}
+impl Screen for MainScreen {
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
         let ps: String = self
             .layout
             .by_name("prompt".to_string())
@@ -87,7 +100,7 @@ impl MainScreen {
         }
     }
 
-    pub fn render(
+    fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
         mut cache: &mut TextureCache,
@@ -114,5 +127,41 @@ impl MainScreen {
                 elapsed,
             );
         }
+    }
+}
+
+pub struct SubMenu {}
+
+impl SubMenu {
+    pub fn new() -> SubMenu {
+        SubMenu {}
+    }
+}
+
+impl Screen for SubMenu {
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {}
+
+    fn render(
+        &mut self,
+        texture_creator: &TextureCreator<WindowContext>,
+        mut cache: &mut TextureCache,
+        app: &App,
+        main_canvas: &mut Canvas<Window>,
+        elapsed: u128,
+    ) {
+        let clear_color = Color::RGBA(0, 0, 0, 255);
+        let font = app.get_font("normal-20");
+        // Set draw color and clear
+        main_canvas.set_draw_color(clear_color);
+        main_canvas.clear();
+
+        draw_string(
+            "Sub Menu!!!".to_string(),
+            main_canvas,
+            font,
+            Color::RGBA(128, 128, 128, 255),
+            10,
+            10,
+        )
     }
 }
