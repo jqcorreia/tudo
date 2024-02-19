@@ -11,11 +11,11 @@ use sdl2::VideoSubsystem;
 
 pub struct App<'a> {
     pub sdl: Sdl,
+    pub clipboard: Option<String>,
     pub video: VideoSubsystem,
     fonts: HashMap<String, Font<'a, 'a>>,
     pub ttf: &'a Sdl2TtfContext,
 
-    pub clipboard: Option<String>,
     pub running: bool,
     pub draw_fps: bool,
     pub frame_lock: bool,
