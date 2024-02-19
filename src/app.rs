@@ -5,6 +5,9 @@ use sdl2::video::Window;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
 
+use crate::config::load_config;
+use crate::config::Config;
+
 pub struct App {
     pub sdl: Sdl,
     pub video: VideoSubsystem,
@@ -15,6 +18,26 @@ pub struct App {
     pub frame_lock: bool,
     pub loading: bool,
     pub current_screen_id: String,
+    pub config: Config,
+    pub lock_path: String,
+}
+
+fn already_running(lock_path: &String) -> bool {
+    match std::fs::read(lock_path.clone()) {
+        Ok(_) => true,
+        Err(_) => {
+            std::fs::write(lock_path, Vec::new()).unwrap();
+            false
+        }
+    }
+}
+
+fn check_config_folder() -> String {
+    let home = std::env::var("HOME").expect("$HOME not set, can't create config folder");
+    let base_path = format!("{}/.config/tudo", home);
+
+    std::fs::create_dir_all(base_path.clone()).unwrap();
+    base_path.to_string()
 }
 
 impl App {
@@ -30,7 +53,14 @@ impl App {
             .build()
             .unwrap();
 
+        let base_folder = check_config_folder();
+        let config = load_config(format!("{}/config.lua", base_folder));
         let canvas = window.into_canvas().build().unwrap();
+        let lock_path = format!("{}/run-lock", base_folder);
+
+        if already_running(&lock_path) {
+            panic!("Tudo is already running!");
+        }
 
         (
             App {
@@ -43,6 +73,8 @@ impl App {
                 draw_fps: false,
                 loading: true,
                 current_screen_id: "main".to_string(),
+                config,
+                lock_path,
             },
             canvas,
         )

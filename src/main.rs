@@ -9,8 +9,6 @@ pub mod sources;
 pub mod utils;
 
 use std::collections::HashMap;
-use std::env;
-use std::fs::create_dir_all;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
@@ -18,7 +16,6 @@ use std::time::Instant;
 
 use app::App;
 
-use config::load_config;
 use execute::execute;
 use screen::MainScreen;
 use screen::SubMenu;
@@ -40,35 +37,7 @@ use utils::draw::draw_string;
 use utils::font::FontConfig;
 use utils::misc;
 
-fn already_running(lock_path: &String) -> bool {
-    match std::fs::read(lock_path.clone()) {
-        Ok(_) => true,
-        Err(_) => {
-            std::fs::write(lock_path, Vec::new()).unwrap();
-            false
-        }
-    }
-}
-
-fn check_config_folder() -> String {
-    let home = env::var("HOME").expect("$HOME not set, can't create config folder");
-    let base_path = format!("{}/.config/tudo", home);
-
-    create_dir_all(base_path.clone()).unwrap();
-    base_path.to_string()
-}
-
 fn main() {
-    let base_folder = check_config_folder();
-    let lock_path = format!("{}/run-lock", base_folder);
-
-    if already_running(&lock_path) {
-        println!("Tudo is already running!");
-        return;
-    }
-
-    let config = load_config(format!("{}/config.lua", base_folder));
-
     // First measurement and initial state
     let initial_instant = Instant::now();
     let mut first_render = true;
@@ -91,12 +60,12 @@ fn main() {
     // Load initial fonts
     cache.fonts.load_font(FontConfig {
         alias: "normal-20".to_string(),
-        path: config.font_file.clone(),
+        path: app.config.font_file.clone(),
         point_size: 20,
     });
     cache.fonts.load_font(FontConfig {
         alias: "normal-16".to_string(),
-        path: config.font_file.clone(),
+        path: app.config.font_file.clone(),
         point_size: 16,
     });
 
@@ -144,13 +113,13 @@ fn main() {
     let window_height = main_canvas.window().size().clone().1 as i32;
 
     let main_screen = MainScreen::new(
-        &config,
+        &app.config,
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
         items.clone(),
     );
 
-    let submenu = SubMenu::new(&config);
+    let submenu = SubMenu::new(&app.config);
 
     let mut screen_map: HashMap<String, Box<dyn Screen>> = HashMap::new();
     screen_map.insert("main".to_string(), Box::new(main_screen));
@@ -233,5 +202,6 @@ fn main() {
     }
 
     // Remove run lock
-    let _ = std::fs::remove_file(lock_path);
+    //FIXME(quadrado): impl Drop in App perhaps?
+    let _ = std::fs::remove_file(app.lock_path);
 }
