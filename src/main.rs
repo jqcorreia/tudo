@@ -209,15 +209,14 @@ fn main() {
                 "Time to first render: {}ms",
                 initial_instant.elapsed().as_millis()
             )
-        } else {
-            let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
+        }
+        let frame_lock_duration = Duration::new(0, (1000 / frame_lock_value) * 1_000_000);
 
-            // Make sure we are not overflowing the substraction
-            if app.frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
-                spin_sleep::sleep(
-                    Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
-                );
-            }
+        // Make sure we are not overflowing the substraction
+        if app.frame_lock && frame_lock_duration.as_millis() > tick_time.elapsed().as_millis() {
+            spin_sleep::sleep(
+                Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
+            );
         }
     }
 
