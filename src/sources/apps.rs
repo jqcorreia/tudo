@@ -24,7 +24,7 @@ impl Source for DesktopApplications {
         let icon_finder = IconFinder::new();
         for path in [
             "/usr/share/applications",
-            "/home/jqcorreia/.local/share/applications",
+            "/home/jqcorreia/.local/share/applications", // FIXME(quadrado): Generalize this path
         ] {
             let desktop_files = match fs::read_dir(path) {
                 Ok(entries) => entries

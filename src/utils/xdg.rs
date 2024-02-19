@@ -49,9 +49,9 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
                 res.insert(header_title.to_string(), HashMap::new());
             }
         } else {
-            let mut split = line.split("=");
-            match (split.next(), split.next()) {
-                (Some(k), Some(v)) => {
+            let split = line.split_once("=");
+            match split {
+                Some((k, v)) => {
                     res.get_mut(header_title)
                         .unwrap()
                         .insert(k.to_string(), v.to_string());
