@@ -143,17 +143,16 @@ fn main() {
     let window_width = main_canvas.window().size().clone().0 as i32;
     let window_height = main_canvas.window().size().clone().1 as i32;
 
-    let mut main_screen = MainScreen::new(
+    let main_screen = MainScreen::new(
         &config,
         main_canvas.window().size().0 as usize,
         main_canvas.window().size().1 as usize,
         items.clone(),
     );
 
-    let mut submenu = SubMenu::new();
+    let submenu = SubMenu::new(&config);
 
     let mut screen_map: HashMap<String, Box<dyn Screen>> = HashMap::new();
-
     screen_map.insert("main".to_string(), Box::new(main_screen));
     screen_map.insert("submenu".to_string(), Box::new(submenu));
 

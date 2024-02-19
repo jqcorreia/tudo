@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use sdl2::{
     event::Event,
     pixels::Color,
+    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -12,6 +13,7 @@ use crate::{
     components::{
         list::{SelectList, SelectListState},
         text::Prompt,
+        traits::{EventConsumer, Render},
     },
     config::Config,
     execute,
@@ -130,16 +132,26 @@ impl Screen for MainScreen {
     }
 }
 
-pub struct SubMenu {}
+pub struct SubMenu {
+    text1: Prompt,
+    text2: Prompt,
+}
 
 impl SubMenu {
-    pub fn new() -> SubMenu {
-        SubMenu {}
+    pub fn new(config: &Config) -> SubMenu {
+        let text1 = Prompt::new("t1", config);
+        let text2 = Prompt::new("t2", config);
+        SubMenu { text1, text2 }
     }
 }
 
 impl Screen for SubMenu {
-    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {}
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
+        for event in events.iter() {
+            self.text1.consume_event(event, app);
+            self.text2.consume_event(event, app);
+        }
+    }
 
     fn render(
         &mut self,
@@ -149,19 +161,23 @@ impl Screen for SubMenu {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     ) {
-        let clear_color = Color::RGBA(0, 0, 0, 255);
-        let font = cache.fonts.get_font("normal-20");
-        // Set draw color and clear
-        main_canvas.set_draw_color(clear_color);
+        main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-
-        draw_string(
-            "Sub Menu!!!".to_string(),
+        self.text1.draw(
+            texture_creator,
+            cache,
+            app,
             main_canvas,
-            font,
-            Color::RGBA(128, 128, 128, 255),
-            10,
-            10,
-        )
+            Rect::new(10, 10, 600, 200),
+            elapsed,
+        );
+        self.text2.draw(
+            texture_creator,
+            cache,
+            app,
+            main_canvas,
+            Rect::new(10, 210, 600, 200),
+            elapsed,
+        );
     }
 }

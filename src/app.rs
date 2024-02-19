@@ -47,6 +47,7 @@ impl App {
             canvas,
         )
     }
+
     pub fn handle_global_events(&mut self, events: &Vec<Event>) {
         for event in events.iter() {
             // Deal with main loop events
