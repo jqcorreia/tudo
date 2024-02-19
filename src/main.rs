@@ -8,6 +8,7 @@ pub mod screen;
 pub mod sources;
 pub mod utils;
 
+use std::collections::HashMap;
 use std::env;
 use std::fs::create_dir_all;
 use std::process::Command;
@@ -15,7 +16,6 @@ use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 
-use app::init;
 use app::App;
 
 use config::load_config;
@@ -80,7 +80,7 @@ fn main() {
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
     // Create app context and main window canvas
-    let (mut app, mut main_canvas) = init();
+    let (mut app, mut main_canvas) = App::init();
 
     // Create texture creator for the main window canvas
     let tc = main_canvas.texture_creator();
@@ -152,9 +152,13 @@ fn main() {
 
     let mut submenu = SubMenu::new();
 
-    let current_screen = &mut main_screen;
+    let mut screen_map: HashMap<String, Box<dyn Screen>> = HashMap::new();
+
+    screen_map.insert("main".to_string(), Box::new(main_screen));
+    screen_map.insert("submenu".to_string(), Box::new(submenu));
 
     while app.running {
+        let current_screen = screen_map.get_mut(&app.current_screen_id).unwrap();
         let ct = completed_threads.lock().unwrap();
         app.loading = *ct != total_threads as u32;
         // We need to drop here in order to yield the lock
