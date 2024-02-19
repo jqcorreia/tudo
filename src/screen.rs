@@ -150,7 +150,7 @@ impl Screen for SubMenu {
         elapsed: u128,
     ) {
         let clear_color = Color::RGBA(0, 0, 0, 255);
-        let font = app.get_font("normal-20");
+        let font = cache.fonts.get_font("normal-20");
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();

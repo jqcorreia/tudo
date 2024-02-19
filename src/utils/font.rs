@@ -4,14 +4,14 @@ use sdl2::ttf::{Font, Sdl2TtfContext};
 
 #[derive(Eq, Hash, PartialEq, Clone)]
 pub struct FontConfig {
+    pub alias: String,
     pub path: String,
     pub point_size: u16,
 }
 
 pub struct FontManager<'a> {
     pub ttf: &'a Sdl2TtfContext,
-    fonts: HashMap<FontConfig, Font<'a, 'a>>,
-    pub cache: UnsafeCell<HashMap<FontConfig, Font<'a, 'a>>>,
+    pub cache: UnsafeCell<HashMap<String, Font<'a, 'a>>>,
 }
 
 fn process_font<'a>(fconfig: FontConfig, ttf: &'a Sdl2TtfContext) -> Font<'a, 'a> {
@@ -23,13 +23,19 @@ impl<'a> FontManager<'_> {
     pub fn new(ttf: &'a Sdl2TtfContext) -> FontManager<'a> {
         FontManager {
             ttf,
-            fonts: HashMap::new(),
             cache: HashMap::new().into(),
         }
     }
+
+    pub fn get_font(&'a self, alias: impl AsRef<str>) -> &'a Font<'a, 'a> {
+        let map = self.cache.get();
+
+        unsafe { (*map).get(alias.as_ref()).unwrap() }
+    }
+
     // Use interior mutability in order to have a shared reference &self be able to mutate the
     // inner hashmap
-    pub fn get_font(&'a self, font_config: FontConfig) -> &'a Font<'a, 'a> {
+    pub fn load_font(&'a self, font_config: FontConfig) -> &'a Font<'a, 'a> {
         let key = font_config.clone();
 
         // SAFETY this is pulled from FrozenMap implementation at https://docs.rs/elsa/latest/src/elsa/map.rs.html#74
@@ -37,7 +43,7 @@ impl<'a> FontManager<'_> {
         let ret = unsafe {
             let map = self.cache.get();
             &*(*map)
-                .entry(key)
+                .entry(key.alias)
                 .or_insert_with(|| process_font(font_config, self.ttf))
         };
         ret

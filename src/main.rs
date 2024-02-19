@@ -1,5 +1,3 @@
-extern crate sdl2;
-
 pub mod animation;
 pub mod app;
 pub mod components;
@@ -39,6 +37,7 @@ use sources::SourceItem;
 use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::draw::draw_string;
+use utils::font::FontConfig;
 use utils::misc;
 
 fn already_running(lock_path: &String) -> bool {
@@ -81,19 +80,28 @@ fn main() {
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
     // Create app context and main window canvas
-    let (mut app, mut main_canvas) = init(&ttf);
-
-    // Load initial fonts
-    app.load_font("normal-20".to_string(), &config.font_file, 20);
-    app.load_font("normal-16".to_string(), &config.font_file, 16);
-
-    // Event pump, for now just sits in the main loop
-    let mut event_pump = app.sdl.event_pump().unwrap();
+    let (mut app, mut main_canvas) = init();
 
     // Create texture creator for the main window canvas
     let tc = main_canvas.texture_creator();
 
-    let mut cache = TextureCache::new(&tc);
+    // Create texture caches
+    let mut cache = TextureCache::new(&tc, &ttf);
+
+    // Load initial fonts
+    cache.fonts.load_font(FontConfig {
+        alias: "normal-20".to_string(),
+        path: config.font_file.clone(),
+        point_size: 20,
+    });
+    cache.fonts.load_font(FontConfig {
+        alias: "normal-16".to_string(),
+        path: config.font_file.clone(),
+        point_size: 16,
+    });
+
+    // Event pump, for now just sits in the main loop
+    let mut event_pump = app.sdl.event_pump().unwrap();
 
     // Generate items list from all sources
     let items: Arc<Mutex<Vec<SourceItem>>> = Arc::new(Mutex::new(Vec::new()));
@@ -178,7 +186,7 @@ fn main() {
 
         // Draw info directly into the canvas
         if app.draw_fps {
-            let font = &app.get_font("normal-20");
+            let font = &cache.fonts.get_font("normal-20");
 
             draw_string(
                 format!("{}", fps).to_string(),

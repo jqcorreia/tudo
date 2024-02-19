@@ -63,13 +63,13 @@ impl Render for Prompt {
     fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
-        _cache: &mut TextureCache,
-        app: &App,
+        cache: &mut TextureCache,
+        _app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
     ) {
-        let font = app.get_font("normal-20");
+        let font = cache.fonts.get_font("normal-20");
 
         let draw_cursor = self.text.len() > 0;
 

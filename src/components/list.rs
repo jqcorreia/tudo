@@ -20,7 +20,7 @@ trait RenderItem<T> {
         &'a self,
         item: &'a T,
         texture_creator: &'a TextureCreator<WindowContext>,
-        tex_cache: &mut TextureCache,
+        tex_cache: &TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -227,8 +227,8 @@ impl Render for SelectList<SourceItem> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = app.get_font("normal-20");
-        let font2 = app.get_font("normal-16");
+        let font = cache.fonts.get_font("normal-20");
+        let font2 = cache.fonts.get_font("normal-16");
 
         if self.items.len() == 0 {
             draw_string(
@@ -297,7 +297,7 @@ impl Render for SelectList<String> {
         elapsed: u128,
     ) {
         let mut y: u32 = 0;
-        let font = &app.get_font("normal-20");
+        let font = &cache.fonts.get_font("normal-20");
 
         //FIXME(quadrado): drawing routines should be abstracted
         if self.items.len() == 0 {
@@ -354,7 +354,7 @@ impl RenderItem<String> for SelectList<String> {
         &'a self,
         item: &String,
         texture_creator: &'a TextureCreator<WindowContext>,
-        _cache: &mut TextureCache,
+        _cache: &TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
@@ -378,7 +378,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         &'a self,
         item: &SourceItem,
         texture_creator: &'a TextureCreator<WindowContext>,
-        cache: &mut TextureCache,
+        cache: &TextureCache,
         font: &Font,
         canvas: &mut Canvas<Window>,
         rect: Rect,
