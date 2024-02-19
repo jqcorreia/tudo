@@ -19,7 +19,7 @@ use crate::{
     execute,
     layout::{Container, Layout, Leaf, SizeTypeEnum, Split},
     sources::SourceItem,
-    utils::{cache::TextureCache, draw::draw_string},
+    utils::cache::TextureCache,
 };
 
 pub trait Screen {
@@ -156,7 +156,7 @@ impl Screen for SubMenu {
     fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
-        mut cache: &mut TextureCache,
+        cache: &mut TextureCache,
         app: &App,
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
