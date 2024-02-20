@@ -146,6 +146,7 @@ impl SubMenu {
         let spinner = Spinner {
             id: "spinner".to_string(),
             running: true,
+            period_millis: 1000,
         };
         SubMenu {
             text1,
@@ -173,22 +174,22 @@ impl Screen for SubMenu {
     ) {
         main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-        // self.text1.draw(
-        //     texture_creator,
-        //     cache,
-        //     app,
-        //     main_canvas,
-        //     Rect::new(10, 10, 600, 200),
-        //     elapsed,
-        // );
-        // self.text2.draw(
-        //     texture_creator,
-        //     cache,
-        //     app,
-        //     main_canvas,
-        //     Rect::new(10, 210, 600, 200),
-        //     elapsed,
-        // );
+        self.text1.draw(
+            texture_creator,
+            cache,
+            app,
+            main_canvas,
+            Rect::new(10, 10, 600, 200),
+            elapsed,
+        );
+        self.text2.draw(
+            texture_creator,
+            cache,
+            app,
+            main_canvas,
+            Rect::new(10, 210, 600, 200),
+            elapsed,
+        );
         self.spinner.draw(
             texture_creator,
             cache,

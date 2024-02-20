@@ -1,4 +1,7 @@
-use std::usize;
+use std::{
+    ops::{Add, Rem},
+    usize,
+};
 
 use sdl2::{pixels::PixelFormatEnum, rect::Rect, surface::Surface};
 
@@ -7,6 +10,7 @@ use super::traits::{EventConsumer, Render, UIComponent};
 pub struct Spinner {
     pub id: String,
     pub running: bool,
+    pub period_millis: u128,
 }
 
 impl Render for Spinner {
@@ -16,8 +20,8 @@ impl Render for Spinner {
     fn render(
         &mut self,
         texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
-        cache: &mut crate::utils::cache::TextureCache,
-        app: &crate::app::App,
+        _cache: &mut crate::utils::cache::TextureCache,
+        _app: &crate::app::App,
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         rect: Rect,
         elapsed: u128,
@@ -25,9 +29,20 @@ impl Render for Spinner {
         let smallest_dim = std::cmp::min(rect.height(), rect.width()) as usize;
         let mut buf: Vec<u8> = vec![0; smallest_dim * smallest_dim * 4];
 
+        let b = (elapsed.rem(self.period_millis)) as f32
+            * (smallest_dim as f32 / self.period_millis as f32);
+        let cx = smallest_dim / 2;
+        let cy = smallest_dim / 2;
+        let radius: usize = smallest_dim / 2 - 10;
+
         for y in 0..smallest_dim {
             for x in 0..smallest_dim {
-                let blue = (x as f32 / smallest_dim as f32) * 255.0;
+                let _x = x as i32;
+                let _y = y as i32;
+                if (_x - cx as i32).pow(2) + (_y - cy as i32).pow(2) > radius.pow(2) as i32 {
+                    continue;
+                }
+                let blue = (x.abs_diff(b as usize) as f32 / smallest_dim as f32) * 255.0;
 
                 buf[y * (smallest_dim * 4) + (x * 4)] = 0;
                 buf[y * (smallest_dim * 4) + (x * 4) + 1] = 0;
