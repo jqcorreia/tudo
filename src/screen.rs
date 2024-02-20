@@ -19,6 +19,7 @@ use crate::{
     config::Config,
     execute,
     layout::{Container, Layout, Leaf, SizeTypeEnum, Split},
+    layout2::{LayoutBuilder, SplitType},
     sources::SourceItem,
     utils::cache::TextureCache,
 };
@@ -135,9 +136,7 @@ impl Screen for MainScreen {
 }
 
 pub struct SubMenu {
-    text1: Prompt,
-    text2: Prompt,
-    spinner: Spinner,
+    layout: Layout,
 }
 
 impl SubMenu {
@@ -149,20 +148,27 @@ impl SubMenu {
             running: true,
             period_millis: 1000,
         };
-        SubMenu {
-            text1,
-            text2,
-            spinner,
-        }
+        let mut builder = LayoutBuilder::new();
+
+        // builder.add_split(SplitType::Vertical);
+        builder.add_split(SplitType::Horizontal);
+        builder.add(Box::new(text1));
+        builder.add(Box::new(text2));
+        builder.add(Box::new(spinner));
+
+        let layout = builder.build(1000, 500);
+        SubMenu { layout }
     }
 }
 
 impl Screen for SubMenu {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
         for event in events.iter() {
-            self.text1.consume_event(event, app);
-            self.text2.consume_event(event, app);
-            self.spinner.consume_event(event, app);
+            for event in events.iter() {
+                for component in self.layout.components() {
+                    component.consume_event(&event, app);
+                }
+            }
         }
     }
 
@@ -176,29 +182,15 @@ impl Screen for SubMenu {
     ) {
         main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-        self.text1.draw(
-            texture_creator,
-            cache,
-            app,
-            main_canvas,
-            Rect::new(10, 10, 600, 200),
-            elapsed,
-        );
-        self.text2.draw(
-            texture_creator,
-            cache,
-            app,
-            main_canvas,
-            Rect::new(10, 210, 600, 200),
-            elapsed,
-        );
-        self.spinner.draw(
-            texture_creator,
-            cache,
-            app,
-            main_canvas,
-            Rect::new(10, 420, 600, 200),
-            elapsed,
-        );
+        for car in self.layout.components_with_rect() {
+            car.component.draw(
+                &texture_creator,
+                cache,
+                &app,
+                main_canvas,
+                car.rect,
+                elapsed,
+            );
+        }
     }
 }
