@@ -31,11 +31,54 @@ impl LayoutBuilder {
         self
     }
 
-    pub fn add(&mut self, comp: Container) {
-        match self.root {
-            None => self.root = Some(comp),
-            _ => (),
+    pub fn add(&mut self, comp: Box<dyn UIComponent>) {
+        match &mut self.root {
+            None => {
+                self.root = Some(Container::Leaf(Leaf {
+                    size: 100,
+                    size_type: SizeTypeEnum::Percent,
+                    component: comp,
+                }))
+            }
+            Some(root) => {
+                let target_split = LayoutBuilder::get_split(root, self.cur_split_id);
+                let container = Container::Leaf(Leaf {
+                    size: 50,
+                    size_type: SizeTypeEnum::Percent,
+                    component: comp,
+                });
+                match target_split {
+                    Some(Container::HSplit(split)) => split.children.push(container),
+                    Some(Container::VSplit(split)) => split.children.push(container),
+                    _ => (),
+                }
+            }
         };
+    }
+
+    fn get_split(node: &mut Container, id: u32) -> Option<&mut Container> {
+        match node {
+            Container::HSplit(split) => {
+                if split.id == id {
+                    return Some(node);
+                } else {
+                    for child in split.children.iter_mut() {
+                        LayoutBuilder::get_split(child, id);
+                    }
+                }
+            }
+            Container::VSplit(split) => {
+                if split.id == id {
+                    return Some(node);
+                } else {
+                    for child in split.children.iter_mut() {
+                        LayoutBuilder::get_split(child, id);
+                    }
+                }
+            }
+            _ => (),
+        }
+        None
     }
 
     pub fn add_split(&mut self, split_type: SplitType) {
