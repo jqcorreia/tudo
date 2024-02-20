@@ -161,6 +161,7 @@ impl Screen for SubMenu {
         for event in events.iter() {
             self.text1.consume_event(event, app);
             self.text2.consume_event(event, app);
+            self.spinner.consume_event(event, app);
         }
     }
 
