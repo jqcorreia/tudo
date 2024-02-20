@@ -12,6 +12,7 @@ pub enum SizeTypeEnum {
 
 pub struct Split {
     pub children: Vec<Container>,
+    pub id: u32,
 }
 
 pub struct Leaf {
