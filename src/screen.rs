@@ -12,6 +12,7 @@ use crate::{
     app::App,
     components::{
         list::{SelectList, SelectListState},
+        spinner::Spinner,
         text::Prompt,
         traits::{EventConsumer, Render},
     },
@@ -135,13 +136,22 @@ impl Screen for MainScreen {
 pub struct SubMenu {
     text1: Prompt,
     text2: Prompt,
+    spinner: Spinner,
 }
 
 impl SubMenu {
     pub fn new(config: &Config) -> SubMenu {
         let text1 = Prompt::new("t1", config);
         let text2 = Prompt::new("t2", config);
-        SubMenu { text1, text2 }
+        let spinner = Spinner {
+            id: "spinner".to_string(),
+            running: true,
+        };
+        SubMenu {
+            text1,
+            text2,
+            spinner,
+        }
     }
 }
 
@@ -163,20 +173,28 @@ impl Screen for SubMenu {
     ) {
         main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-        self.text1.draw(
+        // self.text1.draw(
+        //     texture_creator,
+        //     cache,
+        //     app,
+        //     main_canvas,
+        //     Rect::new(10, 10, 600, 200),
+        //     elapsed,
+        // );
+        // self.text2.draw(
+        //     texture_creator,
+        //     cache,
+        //     app,
+        //     main_canvas,
+        //     Rect::new(10, 210, 600, 200),
+        //     elapsed,
+        // );
+        self.spinner.draw(
             texture_creator,
             cache,
             app,
             main_canvas,
-            Rect::new(10, 10, 600, 200),
-            elapsed,
-        );
-        self.text2.draw(
-            texture_creator,
-            cache,
-            app,
-            main_canvas,
-            Rect::new(10, 210, 600, 200),
+            Rect::new(10, 420, 600, 200),
             elapsed,
         );
     }
