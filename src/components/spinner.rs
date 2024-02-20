@@ -29,7 +29,15 @@ impl Render for Spinner {
         let smallest_dim = std::cmp::min(rect.height(), rect.width()) as usize;
         let mut buf: Vec<u8> = vec![0; smallest_dim * smallest_dim * 4];
 
-        let b = (elapsed.rem(self.period_millis)) as f32
+        let c = (((elapsed.rem(self.period_millis) as f32 / self.period_millis as f32) as f32
+            * 360.0)
+            .to_radians()
+            .sin()
+            + 1.0)
+            / 2.0
+            * smallest_dim as f32;
+
+        let _b = (elapsed.rem(self.period_millis)) as f32
             * (smallest_dim as f32 / self.period_millis as f32);
         let cx = smallest_dim / 2;
         let cy = smallest_dim / 2;
@@ -42,7 +50,7 @@ impl Render for Spinner {
                 if (_x - cx as i32).pow(2) + (_y - cy as i32).pow(2) > radius.pow(2) as i32 {
                     continue;
                 }
-                let blue = (x.abs_diff(b as usize) as f32 / smallest_dim as f32) * 255.0;
+                let blue = (x.abs_diff(c as usize) as f32 / smallest_dim as f32) * 255.0;
 
                 buf[y * (smallest_dim * 4) + (x * 4)] = 0;
                 buf[y * (smallest_dim * 4) + (x * 4) + 1] = 0;
