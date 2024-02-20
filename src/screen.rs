@@ -55,6 +55,7 @@ impl MainScreen {
         let layout = Layout::new(
             2,
             Container::VSplit(Split {
+                id: 0,
                 children: Vec::from([
                     Container::Leaf(Leaf {
                         size_type: SizeTypeEnum::Fixed,
