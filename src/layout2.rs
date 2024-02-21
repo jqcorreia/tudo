@@ -31,19 +31,8 @@ impl LayoutBuilder {
     pub fn get_split(node: &mut Container, id: u32) -> Option<&mut Container> {
         match node {
             Container {
-                container_type: ContainerType::HSplit(ref mut split),
-                ..
-            } => {
-                if split.id == id {
-                    return Some(node);
-                } else {
-                    for child in split.children.iter_mut() {
-                        LayoutBuilder::get_split(child, id);
-                    }
-                }
-            }
-            Container {
-                container_type: ContainerType::VSplit(ref mut split),
+                container_type:
+                    ContainerType::HSplit(ref mut split) | ContainerType::VSplit(ref mut split),
                 ..
             } => {
                 if split.id == id {
@@ -75,11 +64,8 @@ impl LayoutBuilder {
                 };
                 match target_split.unwrap() {
                     Container {
-                        container_type: ContainerType::HSplit(ref mut split),
-                        ..
-                    } => split.children.push(container),
-                    Container {
-                        container_type: ContainerType::VSplit(ref mut split),
+                        container_type:
+                            ContainerType::HSplit(ref mut split) | ContainerType::VSplit(ref mut split),
                         ..
                     } => split.children.push(container),
                     _ => panic!("Container not found"),
@@ -111,11 +97,8 @@ impl LayoutBuilder {
                 let target_split = LayoutBuilder::get_split(root, self.cur_split_id);
                 match target_split.unwrap() {
                     Container {
-                        container_type: ContainerType::HSplit(ref mut split),
-                        ..
-                    } => split.children.push(container),
-                    Container {
-                        container_type: ContainerType::VSplit(ref mut split),
+                        container_type:
+                            ContainerType::HSplit(ref mut split) | ContainerType::VSplit(ref mut split),
                         ..
                     } => split.children.push(container),
                     _ => panic!("Container not found"),
