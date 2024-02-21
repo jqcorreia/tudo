@@ -1,12 +1,13 @@
 use crate::{
     components::traits::UIComponent,
-    layout::{Container, Layout, Leaf, SizeTypeEnum, Split},
+    layout::{Container, ContainerSize, ContainerType, Layout, Leaf, Split},
 };
 
 pub enum SplitType {
     Horizontal,
     Vertical,
 }
+
 pub struct LayoutBuilder {
     gap: usize,
     root: Option<Container>,
@@ -29,7 +30,10 @@ impl LayoutBuilder {
 
     fn get_split(node: &mut Container, id: u32) -> Option<&mut Container> {
         match node {
-            Container::HSplit(split) => {
+            Container {
+                container_type: ContainerType::HSplit(ref mut split),
+                ..
+            } => {
                 if split.id == id {
                     return Some(node);
                 } else {
@@ -38,7 +42,10 @@ impl LayoutBuilder {
                     }
                 }
             }
-            Container::VSplit(split) => {
+            Container {
+                container_type: ContainerType::VSplit(ref mut split),
+                ..
+            } => {
                 if split.id == id {
                     return Some(node);
                 } else {
@@ -52,51 +59,67 @@ impl LayoutBuilder {
         None
     }
 
-    pub fn add(&mut self, comp: Box<dyn UIComponent>) {
+    pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize) {
         match &mut self.root {
             None => {
-                self.root = Some(Container::Leaf(Leaf {
-                    size: 100,
-                    size_type: SizeTypeEnum::Percent,
-                    component: comp,
-                }))
+                self.root = Some(Container {
+                    size: ContainerSize::Percent(100),
+                    container_type: ContainerType::Leaf(Leaf { component: comp }),
+                })
             }
             Some(root) => {
                 let target_split = LayoutBuilder::get_split(root, self.cur_split_id);
-                let container = Container::Leaf(Leaf {
-                    size: 200,
-                    size_type: SizeTypeEnum::Percent,
-                    component: comp,
-                });
-                match target_split {
-                    Some(Container::HSplit(split)) => split.children.push(container),
-                    Some(Container::VSplit(split)) => split.children.push(container),
+                let container = Container {
+                    size,
+                    container_type: ContainerType::Leaf(Leaf { component: comp }),
+                };
+                match target_split.unwrap() {
+                    Container {
+                        container_type: ContainerType::HSplit(ref mut split),
+                        ..
+                    } => split.children.push(container),
+                    Container {
+                        container_type: ContainerType::VSplit(ref mut split),
+                        ..
+                    } => split.children.push(container),
                     _ => panic!("Container not found"),
                 }
             }
         };
     }
 
-    pub fn add_split(&mut self, split_type: SplitType) {
+    pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize) {
         let prev_split = self.cur_split_id;
         self.cur_split_id += 1;
         let container = match split_type {
-            SplitType::Horizontal => Container::HSplit(Split {
-                id: self.cur_split_id,
-                children: vec![],
-            }),
-            SplitType::Vertical => Container::VSplit(Split {
-                id: self.cur_split_id,
-                children: vec![],
-            }),
+            SplitType::Horizontal => Container {
+                size,
+                container_type: ContainerType::HSplit(Split {
+                    id: self.cur_split_id,
+                    children: vec![],
+                }),
+            },
+            SplitType::Vertical => Container {
+                size,
+                container_type: ContainerType::VSplit(Split {
+                    id: self.cur_split_id,
+                    children: vec![],
+                }),
+            },
         };
         match &mut self.root {
             None => self.root = Some(container),
             Some(root) => {
                 let target_split = LayoutBuilder::get_split(root, prev_split);
-                match target_split {
-                    Some(Container::HSplit(split)) => split.children.push(container),
-                    Some(Container::VSplit(split)) => split.children.push(container),
+                match target_split.unwrap() {
+                    Container {
+                        container_type: ContainerType::HSplit(ref mut split),
+                        ..
+                    } => split.children.push(container),
+                    Container {
+                        container_type: ContainerType::VSplit(ref mut split),
+                        ..
+                    } => split.children.push(container),
                     _ => panic!("Container not found"),
                 }
             }
@@ -110,7 +133,11 @@ impl LayoutBuilder {
 
 #[cfg(test)]
 mod tests {
-    use crate::{components::spinner::Spinner, layout::Container, layout2::LayoutBuilder};
+    use crate::{
+        components::spinner::Spinner,
+        layout::{Container, ContainerSize, ContainerType},
+        layout2::LayoutBuilder,
+    };
 
     use super::SplitType;
 
@@ -118,25 +145,33 @@ mod tests {
     fn test_layout_builder() {
         let mut builder = LayoutBuilder::new();
 
-        builder.add_split(SplitType::Vertical);
-        builder.add(Box::new(Spinner {
-            id: "spin1".to_string(),
-            period_millis: 1000,
-            running: true,
-        }));
-        builder.add(Box::new(Spinner {
-            id: "spin2".to_string(),
-            period_millis: 1000,
-            running: true,
-        }));
-        builder.add_split(SplitType::Horizontal);
-        builder.add(Box::new(Spinner {
-            id: "spin3".to_string(),
-            period_millis: 1000,
-            running: true,
-        }));
+        builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        builder.add(
+            Box::new(Spinner {
+                id: "spin1".to_string(),
+                period_millis: 1000,
+                running: true,
+            }),
+            ContainerSize::Fixed(100),
+        );
+        builder.add(
+            Box::new(Spinner {
+                id: "spin2".to_string(),
+                period_millis: 1000,
+                running: true,
+            }),
+            ContainerSize::Fixed(100),
+        );
+        builder.add(
+            Box::new(Spinner {
+                id: "spin3".to_string(),
+                period_millis: 1000,
+                running: true,
+            }),
+            ContainerSize::Fixed(100),
+        );
 
-        if let Container::VSplit(split) = builder.root.unwrap() {
+        if let ContainerType::VSplit(split) = builder.root.unwrap().container_type {
             dbg!(split.id);
             dbg!(split.children.len());
         }

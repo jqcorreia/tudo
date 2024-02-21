@@ -5,9 +5,9 @@ use sdl2::rect::Rect;
 use crate::components::traits::UIComponent;
 
 #[derive(Debug)]
-pub enum SizeTypeEnum {
-    Percent,
-    Fixed,
+pub enum ContainerSize {
+    Percent(usize),
+    Fixed(usize),
 }
 
 pub struct Split {
@@ -16,15 +16,18 @@ pub struct Split {
 }
 
 pub struct Leaf {
-    pub size: usize,
-    pub size_type: SizeTypeEnum,
     pub component: Box<dyn UIComponent>,
 }
 
-pub enum Container {
+pub enum ContainerType {
     Leaf(Leaf),
     HSplit(Split),
     VSplit(Split),
+}
+
+pub struct Container {
+    pub size: ContainerSize,
+    pub container_type: ContainerType,
 }
 
 pub struct Layout {
@@ -74,8 +77,8 @@ impl Layout {
         h: usize,
     ) -> HashMap<String, LayoutItem> {
         let mut hm: HashMap<String, LayoutItem> = HashMap::new();
-        match node {
-            Container::Leaf(leaf) => {
+        match node.container_type {
+            ContainerType::Leaf(leaf) => {
                 let m = gap;
                 hm.insert(
                     leaf.component.id().clone(),
@@ -90,72 +93,50 @@ impl Layout {
                     },
                 );
             }
-            Container::HSplit(split) => {
+            ContainerType::HSplit(split) => {
                 let mut accum_x = x;
                 let accum_y = y;
 
                 let mut sum_fixed_size: usize = 0;
                 for child in split.children.iter() {
-                    match child {
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Fixed,
-                            size,
-                            ..
-                        }) => sum_fixed_size += size,
+                    match child.size {
+                        ContainerSize::Fixed(size) => sum_fixed_size += size,
                         _ => (),
                     };
                 }
                 let remaining_size = w - sum_fixed_size;
 
                 for n in split.children {
-                    let w_step = match n {
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Fixed,
-                            size,
-                            ..
-                        }) => size.clone(),
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Percent,
-                            size,
-                            ..
-                        }) => (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize,
-                        _ => 0,
+                    let w_step = match n.size {
+                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Percent(size) => {
+                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                        }
                     };
 
                     hm.extend(Self::generate_recur(gap, n, accum_x, accum_y, w_step, h));
                     accum_x += w_step;
                 }
             }
-            Container::VSplit(split) => {
+            ContainerType::VSplit(split) => {
                 let accum_x = x;
                 let mut accum_y = y;
 
                 let mut sum_fixed_size: usize = 0;
                 for child in split.children.iter() {
-                    match child {
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Fixed,
-                            size,
-                            ..
-                        }) => sum_fixed_size += size,
+                    match child.size {
+                        ContainerSize::Fixed(size) => sum_fixed_size += size,
                         _ => (),
                     };
                 }
                 let remaining_size = h - sum_fixed_size;
 
                 for n in split.children {
-                    let h_step = match n {
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Fixed,
-                            size,
-                            ..
-                        }) => size.clone(),
-                        Container::Leaf(Leaf {
-                            size_type: SizeTypeEnum::Percent,
-                            size,
-                            ..
-                        }) => (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize,
-                        _ => 0,
+                    let h_step = match n.size {
+                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Percent(size) => {
+                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                        }
                     };
 
                     hm.extend(Self::generate_recur(gap, n, accum_x, accum_y, w, h_step));
