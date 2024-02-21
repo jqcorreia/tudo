@@ -28,7 +28,7 @@ impl LayoutBuilder {
         self
     }
 
-    fn get_split(node: &mut Container, id: u32) -> Option<&mut Container> {
+    pub fn get_split(node: &mut Container, id: u32) -> Option<&mut Container> {
         match node {
             Container {
                 container_type: ContainerType::HSplit(ref mut split),
@@ -89,28 +89,26 @@ impl LayoutBuilder {
     }
 
     pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize) {
-        let prev_split = self.cur_split_id;
-        self.cur_split_id += 1;
-        let container = match split_type {
-            SplitType::Horizontal => Container {
-                size,
-                container_type: ContainerType::HSplit(Split {
-                    id: self.cur_split_id,
-                    children: vec![],
-                }),
-            },
-            SplitType::Vertical => Container {
-                size,
-                container_type: ContainerType::VSplit(Split {
-                    id: self.cur_split_id,
-                    children: vec![],
-                }),
+        let next_split = self.cur_split_id + 1;
+
+        // Create new split container
+        let split = Split {
+            id: next_split,
+            children: vec![],
+        };
+
+        let container = Container {
+            size,
+            container_type: match split_type {
+                SplitType::Horizontal => ContainerType::HSplit(split),
+                SplitType::Vertical => ContainerType::VSplit(split),
             },
         };
+
         match &mut self.root {
             None => self.root = Some(container),
             Some(root) => {
-                let target_split = LayoutBuilder::get_split(root, prev_split);
+                let target_split = LayoutBuilder::get_split(root, self.cur_split_id);
                 match target_split.unwrap() {
                     Container {
                         container_type: ContainerType::HSplit(ref mut split),
@@ -124,6 +122,7 @@ impl LayoutBuilder {
                 }
             }
         };
+        self.cur_split_id += 1;
     }
 
     pub fn build(self, width: usize, height: usize) -> Layout {
@@ -145,35 +144,38 @@ mod tests {
     fn test_layout_builder() {
         let mut builder = LayoutBuilder::new();
 
-        builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
         builder.add(
             Box::new(Spinner {
                 id: "spin1".to_string(),
                 period_millis: 1000,
                 running: true,
             }),
-            ContainerSize::Fixed(100),
+            ContainerSize::Percent(100),
         );
-        builder.add(
-            Box::new(Spinner {
-                id: "spin2".to_string(),
-                period_millis: 1000,
-                running: true,
-            }),
-            ContainerSize::Fixed(100),
-        );
-        builder.add(
-            Box::new(Spinner {
-                id: "spin3".to_string(),
-                period_millis: 1000,
-                running: true,
-            }),
-            ContainerSize::Fixed(100),
-        );
+        LayoutBuilder::get_split(&mut builder.root.unwrap(), 1);
+        // LayoutBuilder::get_split(&mut builder.root.unwrap(), 2);
+        // builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        // builder.add(
+        //     Box::new(Spinner {
+        //         id: "spin2".to_string(),
+        //         period_millis: 1000,
+        //         running: true,
+        //     }),
+        //     ContainerSize::Fixed(100),
+        // );
+        // builder.add(
+        //     Box::new(Spinner {
+        //         id: "spin3".to_string(),
+        //         period_millis: 1000,
+        //         running: true,
+        //     }),
+        //     ContainerSize::Fixed(100),
+        // );
 
-        if let ContainerType::VSplit(split) = builder.root.unwrap().container_type {
-            dbg!(split.id);
-            dbg!(split.children.len());
-        }
+        // if let ContainerType::VSplit(split) = builder.root.unwrap().container_type {
+        //     dbg!(split.id);
+        //     dbg!(split.children.len());
+        // }
     }
 }
