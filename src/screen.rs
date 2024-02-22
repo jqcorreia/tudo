@@ -18,7 +18,7 @@ use crate::{
     },
     config::Config,
     execute,
-    layout::{Container, ContainerSize, Layout, Leaf, Split},
+    layout::{Container, ContainerSize, ContainerType, Layout, Leaf, Split},
     layout2::{LayoutBuilder, SplitType},
     sources::SourceItem,
     utils::cache::TextureCache,
@@ -54,12 +54,27 @@ impl MainScreen {
         let mut select_list = SelectList::<SourceItem>::new("list");
         select_list.on_select = execute;
 
-        let mut builder = LayoutBuilder::new().with_gap(2);
-        builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
-        builder.add(Box::new(prompt), ContainerSize::Fixed(64));
-        builder.add(Box::new(select_list), ContainerSize::Percent(100));
-        let layout = builder.build(width, height);
+        // let mut builder = LayoutBuilder::new().with_gap(2);
+        // builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        // builder.add(Box::new(prompt), ContainerSize::Fixed(64));
+        // builder.add(Box::new(select_list), ContainerSize::Percent(100));
+        // let layout = builder.build(width, height);
 
+        let layout = Layout::new(
+            2,
+            Container {
+                container_type: ContainerType::Leaf(Leaf {
+                    component: Box::new(Spinner {
+                        id: "spin".to_string(),
+                        running: true,
+                        period_millis: 1000,
+                    }),
+                }),
+                size: ContainerSize::Percent(100),
+            },
+            width,
+            height,
+        );
         MainScreen {
             layout,
             source_items: items,
@@ -134,15 +149,30 @@ impl SubMenu {
             running: true,
             period_millis: 1000,
         };
-        let mut builder = LayoutBuilder::new();
+        // let mut builder = LayoutBuilder::new();
 
-        // builder.add_split(SplitType::Vertical);
-        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
-        builder.add(Box::new(text1), ContainerSize::Fixed(200));
-        builder.add(Box::new(text2), ContainerSize::Fixed(200));
-        builder.add(Box::new(spinner), ContainerSize::Fixed(200));
+        // // builder.add_split(SplitType::Vertical);
+        // builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
+        // builder.add(Box::new(text1), ContainerSize::Fixed(200));
+        // builder.add(Box::new(text2), ContainerSize::Fixed(200));
+        // builder.add(Box::new(spinner), ContainerSize::Fixed(200));
 
-        let layout = builder.build(1000, 500);
+        // let layout = builder.build(1000, 500);
+        let layout = Layout::new(
+            2,
+            Container {
+                container_type: ContainerType::Leaf(Leaf {
+                    component: Box::new(Spinner {
+                        id: "spin".to_string(),
+                        running: true,
+                        period_millis: 1000,
+                    }),
+                }),
+                size: ContainerSize::Percent(100),
+            },
+            1000,
+            500,
+        );
         SubMenu { layout }
     }
 }

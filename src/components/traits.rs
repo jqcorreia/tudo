@@ -1,4 +1,5 @@
 use std::any::Any;
+use std::fmt::Debug;
 
 use crate::app::App;
 use crate::utils::cache::TextureCache;
@@ -62,4 +63,10 @@ pub trait EventConsumer {
 pub trait UIComponent: Render + EventConsumer {
     fn get_state(&self) -> &dyn Any;
     fn set_state(&mut self, state: Box<dyn Any>);
+}
+
+impl Debug for dyn UIComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Id({})", self.id())
+    }
 }
