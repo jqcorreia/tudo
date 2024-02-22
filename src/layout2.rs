@@ -1,4 +1,11 @@
-use crate::{components::traits::UIComponent, layout::Layout};
+use std::collections::HashMap;
+
+use sdl2::rect::Rect;
+
+use crate::{
+    components::traits::UIComponent,
+    layout::{Layout, LayoutItem},
+};
 
 type LayoutIndex = usize;
 
@@ -43,6 +50,12 @@ pub struct LayoutBuilder {
     root: Option<LayoutIndex>,
     cur_split_idx: LayoutIndex,
     arena: Vec<Container2>,
+}
+
+#[derive(Debug)]
+pub struct LayoutItem2 {
+    pub rect: Rect,
+    pub layout_idx: LayoutIndex,
 }
 
 impl LayoutBuilder {
@@ -134,6 +147,89 @@ impl LayoutBuilder {
         self.arena.push(container);
     }
 
+    fn generate_recur(
+        &self,
+        gap: usize,
+        node: &Container2,
+        x: usize,
+        y: usize,
+        w: usize,
+        h: usize,
+    ) -> HashMap<String, LayoutItem> {
+        let mut hm: HashMap<String, LayoutItem> = HashMap::new();
+        match &node.container_type {
+            ContainerType2::Leaf(leaf) => {
+                let m = gap;
+                hm.insert(
+                    leaf.component.id().clone(),
+                    LayoutItem2 {
+                        rect: Rect::new(
+                            (x + m) as i32,
+                            (y + m) as i32,
+                            (w - 2 * m) as u32,
+                            (h - 2 * m) as u32,
+                        ),
+                        layout_idx: leaf.component,
+                    },
+                );
+            }
+            ContainerType2::HSplit(split) => {
+                let mut accum_x = x;
+                let accum_y = y;
+
+                let mut sum_fixed_size: usize = 0;
+                for child_idx in split.children.clone() {
+                    let container = self.arena.get(child_idx).unwrap();
+                    match container.size {
+                        ContainerSize2::Fixed(size) => sum_fixed_size += size,
+                        _ => (),
+                    };
+                }
+                let remaining_size = w - sum_fixed_size;
+
+                for child_idx in split.children {
+                    let container = self.arena.get(child_idx).unwrap();
+                    let w_step = match container.size {
+                        ContainerSize2::Fixed(size) => size.clone(),
+                        ContainerSize2::Percent(size) => {
+                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                        }
+                    };
+
+                    hm.extend(self.generate_recur(gap, container, accum_x, accum_y, w_step, h));
+                    accum_x += w_step;
+                }
+            }
+            ContainerType2::VSplit(split) => {
+                let accum_x = x;
+                let mut accum_y = y;
+
+                let mut sum_fixed_size: usize = 0;
+                for child_idx in split.children {
+                    let container = self.arena.get(child_idx).unwrap();
+                    match container.size {
+                        ContainerSize2::Fixed(size) => sum_fixed_size += size,
+                        _ => (),
+                    };
+                }
+                let remaining_size = h - sum_fixed_size;
+
+                for child_idx in split.children {
+                    let container = self.arena.get(child_idx).unwrap();
+                    let h_step = match container.size {
+                        ContainerSize2::Fixed(size) => size.clone(),
+                        ContainerSize2::Percent(size) => {
+                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                        }
+                    };
+
+                    hm.extend(self.generate_recur(gap, container, accum_x, accum_y, w, h_step));
+                    accum_y += h_step;
+                }
+            }
+        };
+        hm
+    }
     // pub fn build(self, width: usize, height: usize) -> Layout {
     //     Layout::new(
     //         self.gap,
