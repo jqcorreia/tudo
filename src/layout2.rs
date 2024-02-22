@@ -246,7 +246,7 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
-    pub fn generate(&self, w: usize, h: usize) {
+    pub fn generate(&mut self, w: usize, h: usize) {
         self.items = self.generate_recur(*self.root.as_ref().unwrap(), 0, 0, w, h)
     }
 
