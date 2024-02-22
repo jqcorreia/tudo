@@ -2,10 +2,7 @@ use std::collections::HashMap;
 
 use sdl2::rect::Rect;
 
-use crate::{
-    components::traits::UIComponent,
-    layout::{Layout, LayoutItem},
-};
+use crate::components::traits::UIComponent;
 
 type LayoutIndex = usize;
 
@@ -50,6 +47,7 @@ pub struct LayoutBuilder {
     root: Option<LayoutIndex>,
     cur_split_idx: LayoutIndex,
     arena: Vec<Container2>,
+    items: HashMap<String, LayoutItem2>,
 }
 
 #[derive(Debug)]
@@ -66,6 +64,7 @@ impl LayoutBuilder {
             arena: vec![],
 
             gap: 0,
+            items: HashMap::new(),
         }
     }
 
@@ -149,17 +148,17 @@ impl LayoutBuilder {
 
     fn generate_recur(
         &self,
-        gap: usize,
-        node: &Container2,
+        node: LayoutIndex,
         x: usize,
         y: usize,
         w: usize,
         h: usize,
-    ) -> HashMap<String, LayoutItem> {
-        let mut hm: HashMap<String, LayoutItem> = HashMap::new();
-        match &node.container_type {
+    ) -> HashMap<String, LayoutItem2> {
+        let mut hm: HashMap<String, LayoutItem2> = HashMap::new();
+        let container = self.arena.get(node).unwrap();
+        match &container.container_type {
             ContainerType2::Leaf(leaf) => {
-                let m = gap;
+                let m = self.gap;
                 hm.insert(
                     leaf.component.id().clone(),
                     LayoutItem2 {
@@ -169,7 +168,7 @@ impl LayoutBuilder {
                             (w - 2 * m) as u32,
                             (h - 2 * m) as u32,
                         ),
-                        layout_idx: leaf.component,
+                        layout_idx: node,
                     },
                 );
             }
@@ -187,7 +186,7 @@ impl LayoutBuilder {
                 }
                 let remaining_size = w - sum_fixed_size;
 
-                for child_idx in split.children {
+                for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let w_step = match container.size {
                         ContainerSize2::Fixed(size) => size.clone(),
@@ -196,7 +195,7 @@ impl LayoutBuilder {
                         }
                     };
 
-                    hm.extend(self.generate_recur(gap, container, accum_x, accum_y, w_step, h));
+                    hm.extend(self.generate_recur(child_idx, accum_x, accum_y, w_step, h));
                     accum_x += w_step;
                 }
             }
@@ -205,7 +204,7 @@ impl LayoutBuilder {
                 let mut accum_y = y;
 
                 let mut sum_fixed_size: usize = 0;
-                for child_idx in split.children {
+                for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     match container.size {
                         ContainerSize2::Fixed(size) => sum_fixed_size += size,
@@ -214,7 +213,7 @@ impl LayoutBuilder {
                 }
                 let remaining_size = h - sum_fixed_size;
 
-                for child_idx in split.children {
+                for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let h_step = match container.size {
                         ContainerSize2::Fixed(size) => size.clone(),
@@ -223,23 +222,42 @@ impl LayoutBuilder {
                         }
                     };
 
-                    hm.extend(self.generate_recur(gap, container, accum_x, accum_y, w, h_step));
+                    hm.extend(self.generate_recur(child_idx, accum_x, accum_y, w, h_step));
                     accum_y += h_step;
                 }
             }
         };
         hm
     }
-    // pub fn build(self, width: usize, height: usize) -> Layout {
-    //     Layout::new(
-    //         self.gap,
-    //         Container {
-    //             container_type: ContainerType::Leaf(arena.get_mut(0)),
-    //             size: ContainerSize::Percent(100),
-    //         },
-    //         width,
-    //         height,
-    //     )
+    pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
+        for cell in self.arena.iter_mut() {
+            match cell {
+                Container2 {
+                    container_type: ContainerType2::Leaf(Leaf2 { component: comp }),
+                    ..
+                } => {
+                    if comp.id() == name {
+                        return comp;
+                    }
+                }
+                _ => (),
+            }
+        }
+        panic!("Component not found")
+    }
+
+    pub fn generate(&self, w: usize, h: usize) {
+        self.items = self.generate_recur(*self.root.as_ref().unwrap(), 0, 0, w, h)
+    }
+
+    pub fn components_with_rect(
+        &mut self,
+    ) -> std::collections::hash_map::ValuesMut<'_, String, LayoutItem2> {
+        self.items.values_mut()
+    }
+
+    // pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
+    //     self.items.values_mut().map(|i| &mut i.component).collect()
     // }
 }
 
@@ -264,7 +282,7 @@ mod tests {
                 period_millis: 1000,
                 running: true,
             }),
-            ContainerSize2::Percent(100),
+            ContainerSize2::Percent(50),
         );
         builder.add(
             Box::new(Spinner {
@@ -272,9 +290,14 @@ mod tests {
                 period_millis: 1000,
                 running: true,
             }),
-            ContainerSize2::Percent(100),
+            ContainerSize2::Percent(50),
         );
         builder.get_split(1);
-        dbg!(builder);
+
+        builder.generate(1000, 1000);
+
+        dbg!(&builder);
+        dbg!(&builder.items);
+        dbg!(builder.by_name("spin1".to_string()));
     }
 }
