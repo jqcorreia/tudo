@@ -1,6 +1,6 @@
 use sdl2::rect::Rect;
 
-use crate::components::traits::UIComponent;
+use crate::ui::components::traits::UIComponent;
 
 type LayoutIndex = usize;
 
@@ -11,33 +11,33 @@ pub enum SplitType {
 }
 
 #[derive(Debug)]
-pub enum ContainerSize2 {
+pub enum ContainerSize {
     Percent(usize),
     Fixed(usize),
 }
 
 #[derive(Debug)]
-pub struct Container2 {
-    pub size: ContainerSize2,
-    pub container_type: ContainerType2,
+pub struct Container {
+    pub size: ContainerSize,
+    pub container_type: ContainerType,
 }
 
 #[derive(Debug)]
-pub struct Split2 {
+pub struct Split {
     pub children: Vec<usize>,
 }
 
 #[derive(Debug)]
-pub struct Leaf2 {
+pub struct Leaf {
     pub component: Box<dyn UIComponent>,
     pub rect: Option<Rect>,
 }
 
 #[derive(Debug)]
-pub enum ContainerType2 {
-    Leaf(Leaf2),
-    HSplit(Split2),
-    VSplit(Split2),
+pub enum ContainerType {
+    Leaf(Leaf),
+    HSplit(Split),
+    VSplit(Split),
 }
 
 #[derive(Debug)]
@@ -45,13 +45,7 @@ pub struct LayoutBuilder {
     gap: usize,
     root: Option<LayoutIndex>,
     cur_split_idx: LayoutIndex,
-    arena: Vec<Container2>,
-}
-
-#[derive(Debug)]
-pub struct LayoutItem2 {
-    pub rect: Rect,
-    pub layout_idx: LayoutIndex,
+    arena: Vec<Container>,
 }
 
 impl LayoutBuilder {
@@ -70,20 +64,20 @@ impl LayoutBuilder {
         self
     }
 
-    pub fn get_split(&mut self, id: usize) -> Option<&mut Container2> {
+    pub fn get_split(&mut self, id: usize) -> Option<&mut Container> {
         self.arena.get_mut(id)
     }
 
-    pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize2) {
+    pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize) {
         let idx = self.arena.len();
         let split_idx = self.cur_split_idx;
 
         match &mut self.root {
             None => {
                 self.root = Some(idx);
-                self.arena.push(Container2 {
-                    size: ContainerSize2::Percent(100),
-                    container_type: ContainerType2::Leaf(Leaf2 {
+                self.arena.push(Container {
+                    size: ContainerSize::Percent(100),
+                    container_type: ContainerType::Leaf(Leaf {
                         component: comp,
                         rect: None,
                     }),
@@ -91,18 +85,17 @@ impl LayoutBuilder {
             }
             Some(_) => {
                 let target_split = self.get_split(split_idx);
-                let container = Container2 {
+                let container = Container {
                     size,
-                    container_type: ContainerType2::Leaf(Leaf2 {
+                    container_type: ContainerType::Leaf(Leaf {
                         component: comp,
                         rect: None,
                     }),
                 };
                 match target_split.unwrap() {
-                    Container2 {
+                    Container {
                         container_type:
-                            ContainerType2::HSplit(ref mut split)
-                            | ContainerType2::VSplit(ref mut split),
+                            ContainerType::HSplit(ref mut split) | ContainerType::VSplit(ref mut split),
                         ..
                     } => {
                         split.children.push(idx);
@@ -114,18 +107,18 @@ impl LayoutBuilder {
         };
     }
 
-    pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize2) -> LayoutIndex {
+    pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize) -> LayoutIndex {
         let idx = self.arena.len();
         self.cur_split_idx = idx;
 
         // Create new split container
-        let split = Split2 { children: vec![] };
+        let split = Split { children: vec![] };
 
-        let container = Container2 {
+        let container = Container {
             size,
             container_type: match split_type {
-                SplitType::Horizontal => ContainerType2::HSplit(split),
-                SplitType::Vertical => ContainerType2::VSplit(split),
+                SplitType::Horizontal => ContainerType::HSplit(split),
+                SplitType::Vertical => ContainerType::VSplit(split),
             },
         };
 
@@ -134,10 +127,9 @@ impl LayoutBuilder {
             Some(_) => {
                 let target_split = self.get_split(self.cur_split_idx);
                 match target_split.unwrap() {
-                    Container2 {
+                    Container {
                         container_type:
-                            ContainerType2::HSplit(ref mut split)
-                            | ContainerType2::VSplit(ref mut split),
+                            ContainerType::HSplit(ref mut split) | ContainerType::VSplit(ref mut split),
                         ..
                     } => {
                         split.children.push(idx);
@@ -161,7 +153,7 @@ impl LayoutBuilder {
         let mut vec: Vec<(LayoutIndex, Rect)> = Vec::new();
         let container = self.arena.get(node).unwrap();
         match &container.container_type {
-            ContainerType2::Leaf(_) => {
+            ContainerType::Leaf(_) => {
                 let m = self.gap;
                 let rect = Rect::new(
                     (x + m) as i32,
@@ -171,7 +163,7 @@ impl LayoutBuilder {
                 );
                 vec.push((node, rect));
             }
-            ContainerType2::HSplit(split) => {
+            ContainerType::HSplit(split) => {
                 let mut accum_x = x;
                 let accum_y = y;
 
@@ -179,7 +171,7 @@ impl LayoutBuilder {
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     match container.size {
-                        ContainerSize2::Fixed(size) => sum_fixed_size += size,
+                        ContainerSize::Fixed(size) => sum_fixed_size += size,
                         _ => (),
                     };
                 }
@@ -188,8 +180,8 @@ impl LayoutBuilder {
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let w_step = match container.size {
-                        ContainerSize2::Fixed(size) => size.clone(),
-                        ContainerSize2::Percent(size) => {
+                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Percent(size) => {
                             (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
                         }
                     };
@@ -198,7 +190,7 @@ impl LayoutBuilder {
                     accum_x += w_step;
                 }
             }
-            ContainerType2::VSplit(split) => {
+            ContainerType::VSplit(split) => {
                 let accum_x = x;
                 let mut accum_y = y;
 
@@ -206,7 +198,7 @@ impl LayoutBuilder {
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     match container.size {
-                        ContainerSize2::Fixed(size) => sum_fixed_size += size,
+                        ContainerSize::Fixed(size) => sum_fixed_size += size,
                         _ => (),
                     };
                 }
@@ -215,8 +207,8 @@ impl LayoutBuilder {
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let h_step = match container.size {
-                        ContainerSize2::Fixed(size) => size.clone(),
-                        ContainerSize2::Percent(size) => {
+                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Percent(size) => {
                             (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
                         }
                     };
@@ -231,9 +223,9 @@ impl LayoutBuilder {
     pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
             match cell {
-                Container2 {
+                Container {
                     container_type:
-                        ContainerType2::Leaf(Leaf2 {
+                        ContainerType::Leaf(Leaf {
                             component: comp, ..
                         }),
                     ..
@@ -255,8 +247,8 @@ impl LayoutBuilder {
             let container = self.arena.get_mut(idx).unwrap();
 
             match container {
-                Container2 {
-                    container_type: ContainerType2::Leaf(leaf),
+                Container {
+                    container_type: ContainerType::Leaf(leaf),
                     ..
                 } => leaf.rect = Some(r),
                 _ => (),
@@ -268,8 +260,8 @@ impl LayoutBuilder {
         self.arena
             .iter_mut()
             .filter_map(|container| match container {
-                Container2 {
-                    container_type: ContainerType2::Leaf(Leaf2 { component, rect }),
+                Container {
+                    container_type: ContainerType::Leaf(Leaf { component, rect }),
                     ..
                 } => Some((rect.unwrap(), component)),
                 _ => None,
@@ -281,8 +273,8 @@ impl LayoutBuilder {
         self.arena
             .iter_mut()
             .filter_map(|container| match container {
-                Container2 {
-                    container_type: ContainerType2::Leaf(Leaf2 { component, .. }),
+                Container {
+                    container_type: ContainerType::Leaf(Leaf { component, .. }),
                     ..
                 } => Some(component),
                 _ => None,
@@ -294,9 +286,7 @@ impl LayoutBuilder {
 #[cfg(test)]
 mod tests {
     use crate::{
-        components::spinner::Spinner,
-        layout2::LayoutBuilder,
-        layout2::{Container2, ContainerSize2, ContainerType2},
+        ui::components::spinner::Spinner, ui::layout::ContainerSize, ui::layout::LayoutBuilder,
     };
 
     use super::SplitType;
@@ -305,14 +295,14 @@ mod tests {
     fn test_layout_builder() {
         let mut builder = LayoutBuilder::new();
 
-        builder.add_split(SplitType::Horizontal, ContainerSize2::Percent(100));
+        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
         builder.add(
             Box::new(Spinner {
                 id: "spin1".to_string(),
                 period_millis: 1000,
                 running: true,
             }),
-            ContainerSize2::Percent(50),
+            ContainerSize::Percent(50),
         );
         builder.add(
             Box::new(Spinner {
@@ -320,7 +310,7 @@ mod tests {
                 period_millis: 1000,
                 running: true,
             }),
-            ContainerSize2::Percent(50),
+            ContainerSize::Percent(50),
         );
         builder.get_split(1);
         dbg!(&builder);

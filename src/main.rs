@@ -1,12 +1,12 @@
 pub mod animation;
 pub mod app;
-pub mod components;
 pub mod config;
 pub mod execute;
-pub mod layout2;
 pub mod screen;
 pub mod sources;
 pub mod utils;
+
+pub mod ui;
 
 use std::collections::HashMap;
 use std::process::Command;

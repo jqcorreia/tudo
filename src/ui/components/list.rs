@@ -6,8 +6,8 @@ use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
-use crate::components::traits::{EventConsumer, Render};
 use crate::sources::SourceItem;
+use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string, draw_string_texture};
 use crate::utils::fuzzy::basic_contains;

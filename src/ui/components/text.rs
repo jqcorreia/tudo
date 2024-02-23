@@ -4,8 +4,8 @@ use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Window};
 
 use crate::app::App;
-use crate::components::traits::{EventConsumer, Render};
 use crate::config::Config;
+use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::draw_string_texture;
 

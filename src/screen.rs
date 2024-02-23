@@ -9,15 +9,15 @@ use sdl2::{
 
 use crate::{
     app::App,
-    components::{
+    config::Config,
+    execute,
+    sources::SourceItem,
+    ui::components::{
         list::{SelectList, SelectListState},
         spinner::Spinner,
         text::Prompt,
     },
-    config::Config,
-    execute,
-    layout2::{ContainerSize2, LayoutBuilder, SplitType},
-    sources::SourceItem,
+    ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::cache::TextureCache,
 };
 
@@ -52,9 +52,9 @@ impl MainScreen {
         select_list.on_select = execute;
 
         let mut builder = LayoutBuilder::new().with_gap(2);
-        builder.add_split(SplitType::Vertical, ContainerSize2::Percent(100));
-        builder.add(Box::new(prompt), ContainerSize2::Fixed(64));
-        builder.add(Box::new(select_list), ContainerSize2::Percent(100));
+        builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        builder.add(Box::new(prompt), ContainerSize::Fixed(64));
+        builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.generate(width, height);
 
         MainScreen {
@@ -132,10 +132,10 @@ impl SubMenu {
         let mut builder = LayoutBuilder::new();
 
         // builder.add_split(SplitType::Vertical);
-        builder.add_split(SplitType::Horizontal, ContainerSize2::Percent(100));
-        builder.add(Box::new(text1), ContainerSize2::Fixed(200));
-        builder.add(Box::new(text2), ContainerSize2::Fixed(200));
-        builder.add(Box::new(spinner), ContainerSize2::Fixed(200));
+        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
+        builder.add(Box::new(text1), ContainerSize::Fixed(200));
+        builder.add(Box::new(text2), ContainerSize::Fixed(200));
+        builder.add(Box::new(spinner), ContainerSize::Fixed(200));
 
         builder.generate(1000, 500);
         SubMenu { layout: builder }
