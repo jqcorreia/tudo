@@ -54,7 +54,7 @@ impl MainScreen {
 
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
-        let top_split = builder.add_split(SplitType::Horizontal, ContainerSize::Fixed(64));
+        let _top_split = builder.add_split(SplitType::Horizontal, ContainerSize::Fixed(64));
         builder.add(Box::new(prompt), ContainerSize::Percent(100));
         builder.add(Box::new(spinner), ContainerSize::Fixed(64));
         builder.set_cur_split(main_split);

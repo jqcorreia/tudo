@@ -55,9 +55,10 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Lua based configuration (very early but promising)
 - [x] Migrate to mlua, due to serde support
 - [x] Support for multiple screens
-- [ ] ! Implement component focus (which will receive events)
-- [ ] ! Layout builder and simplified component access
+- [x] ! Layout builder and simplified component access
 - [x] Component get_state and set_state
+- [x] Use a new component spinner to sinalize sources loading
+- [ ] ! Implement component focus (which will receive events)
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
 - [ ] Prompt window available to actions

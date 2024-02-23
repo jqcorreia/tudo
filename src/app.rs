@@ -23,7 +23,6 @@ pub struct App {
 }
 
 fn already_running(lock_path: &String) -> bool {
-    return false;
     match std::fs::read(lock_path.clone()) {
         Ok(_) => true,
         Err(_) => {
