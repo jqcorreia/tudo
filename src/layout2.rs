@@ -32,6 +32,7 @@ pub struct Split2 {
 #[derive(Debug)]
 pub struct Leaf2 {
     pub component: Box<dyn UIComponent>,
+    pub rect: Option<Rect>,
 }
 
 #[derive(Debug)]
@@ -47,7 +48,6 @@ pub struct LayoutBuilder {
     root: Option<LayoutIndex>,
     cur_split_idx: LayoutIndex,
     arena: Vec<Container2>,
-    items: HashMap<String, LayoutItem2>,
 }
 
 #[derive(Debug)]
@@ -64,7 +64,6 @@ impl LayoutBuilder {
             arena: vec![],
 
             gap: 0,
-            items: HashMap::new(),
         }
     }
 
@@ -86,14 +85,20 @@ impl LayoutBuilder {
                 self.root = Some(idx);
                 self.arena.push(Container2 {
                     size: ContainerSize2::Percent(100),
-                    container_type: ContainerType2::Leaf(Leaf2 { component: comp }),
+                    container_type: ContainerType2::Leaf(Leaf2 {
+                        component: comp,
+                        rect: None,
+                    }),
                 });
             }
-            Some(root) => {
+            Some(_) => {
                 let target_split = self.get_split(split_idx);
                 let container = Container2 {
                     size,
-                    container_type: ContainerType2::Leaf(Leaf2 { component: comp }),
+                    container_type: ContainerType2::Leaf(Leaf2 {
+                        component: comp,
+                        rect: None,
+                    }),
                 };
                 match target_split.unwrap() {
                     Container2 {
@@ -111,7 +116,7 @@ impl LayoutBuilder {
         };
     }
 
-    pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize2) {
+    pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize2) -> LayoutIndex {
         let idx = self.arena.len();
         self.cur_split_idx = idx;
 
@@ -144,6 +149,7 @@ impl LayoutBuilder {
             }
         };
         self.arena.push(container);
+        idx
     }
 
     fn generate_recur(
@@ -153,24 +159,19 @@ impl LayoutBuilder {
         y: usize,
         w: usize,
         h: usize,
-    ) -> HashMap<String, LayoutItem2> {
-        let mut hm: HashMap<String, LayoutItem2> = HashMap::new();
+    ) -> Vec<(LayoutIndex, Rect)> {
+        let mut vec: Vec<(LayoutIndex, Rect)> = Vec::new();
         let container = self.arena.get(node).unwrap();
         match &container.container_type {
-            ContainerType2::Leaf(leaf) => {
+            ContainerType2::Leaf(_) => {
                 let m = self.gap;
-                hm.insert(
-                    leaf.component.id().clone(),
-                    LayoutItem2 {
-                        rect: Rect::new(
-                            (x + m) as i32,
-                            (y + m) as i32,
-                            (w - 2 * m) as u32,
-                            (h - 2 * m) as u32,
-                        ),
-                        layout_idx: node,
-                    },
+                let rect = Rect::new(
+                    (x + m) as i32,
+                    (y + m) as i32,
+                    (w - 2 * m) as u32,
+                    (h - 2 * m) as u32,
                 );
+                vec.push((node, rect));
             }
             ContainerType2::HSplit(split) => {
                 let mut accum_x = x;
@@ -195,7 +196,7 @@ impl LayoutBuilder {
                         }
                     };
 
-                    hm.extend(self.generate_recur(child_idx, accum_x, accum_y, w_step, h));
+                    vec.extend(self.generate_recur(child_idx, accum_x, accum_y, w_step, h));
                     accum_x += w_step;
                 }
             }
@@ -222,18 +223,21 @@ impl LayoutBuilder {
                         }
                     };
 
-                    hm.extend(self.generate_recur(child_idx, accum_x, accum_y, w, h_step));
+                    vec.extend(self.generate_recur(child_idx, accum_x, accum_y, w, h_step));
                     accum_y += h_step;
                 }
             }
         };
-        hm
+        vec
     }
     pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
             match cell {
                 Container2 {
-                    container_type: ContainerType2::Leaf(Leaf2 { component: comp }),
+                    container_type:
+                        ContainerType2::Leaf(Leaf2 {
+                            component: comp, ..
+                        }),
                     ..
                 } => {
                     if comp.id() == name {
@@ -247,18 +251,46 @@ impl LayoutBuilder {
     }
 
     pub fn generate(&mut self, w: usize, h: usize) {
-        self.items = self.generate_recur(*self.root.as_ref().unwrap(), 0, 0, w, h)
+        let rects = self.generate_recur(*self.root.as_ref().unwrap(), 0, 0, w, h);
+
+        for (idx, r) in rects {
+            let container = self.arena.get_mut(idx).unwrap();
+
+            match container {
+                Container2 {
+                    container_type: ContainerType2::Leaf(leaf),
+                    ..
+                } => leaf.rect = Some(r),
+                _ => (),
+            }
+        }
     }
 
-    pub fn components_with_rect(
-        &mut self,
-    ) -> std::collections::hash_map::ValuesMut<'_, String, LayoutItem2> {
-        self.items.values_mut()
+    pub fn components_with_rect(&mut self) -> Vec<(Rect, &mut Box<dyn UIComponent>)> {
+        self.arena
+            .iter_mut()
+            .filter_map(|container| match container {
+                Container2 {
+                    container_type: ContainerType2::Leaf(Leaf2 { component, rect }),
+                    ..
+                } => Some((rect.unwrap(), component)),
+                _ => None,
+            })
+            .collect()
     }
 
-    // pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
-    //     self.items.values_mut().map(|i| &mut i.component).collect()
-    // }
+    pub fn components(&mut self) -> Vec<&mut Box<dyn UIComponent>> {
+        self.arena
+            .iter_mut()
+            .filter_map(|container| match container {
+                Container2 {
+                    container_type: ContainerType2::Leaf(Leaf2 { component, .. }),
+                    ..
+                } => Some(component),
+                _ => None,
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -293,11 +325,12 @@ mod tests {
             ContainerSize2::Percent(50),
         );
         builder.get_split(1);
-
-        builder.generate(1000, 1000);
-
         dbg!(&builder);
-        dbg!(&builder.items);
+        builder.generate(1000, 1000);
+        dbg!(&builder);
         dbg!(builder.by_name("spin1".to_string()));
+        dbg!(builder.components());
+        dbg!(builder.components_with_rect());
+        assert!(builder.components().len() == 2);
     }
 }

@@ -19,7 +19,7 @@ use crate::{
     config::Config,
     execute,
     layout::{Container, ContainerSize, ContainerType, Layout, Leaf, Split},
-    layout2::{LayoutBuilder, SplitType},
+    layout2::{ContainerSize2, LayoutBuilder, SplitType},
     sources::SourceItem,
     utils::cache::TextureCache,
 };
@@ -39,7 +39,7 @@ pub trait Screen {
 }
 
 pub struct MainScreen {
-    layout: Layout,
+    layout: LayoutBuilder,
     source_items: Arc<Mutex<Vec<SourceItem>>>,
 }
 
@@ -54,29 +54,14 @@ impl MainScreen {
         let mut select_list = SelectList::<SourceItem>::new("list");
         select_list.on_select = execute;
 
-        // let mut builder = LayoutBuilder::new().with_gap(2);
-        // builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
-        // builder.add(Box::new(prompt), ContainerSize::Fixed(64));
-        // builder.add(Box::new(select_list), ContainerSize::Percent(100));
-        // let layout = builder.build(width, height);
+        let mut builder = LayoutBuilder::new().with_gap(2);
+        builder.add_split(SplitType::Vertical, ContainerSize2::Percent(100));
+        builder.add(Box::new(prompt), ContainerSize2::Fixed(64));
+        builder.add(Box::new(select_list), ContainerSize2::Percent(100));
+        let layout = builder.generate(width, height);
 
-        let layout = Layout::new(
-            2,
-            Container {
-                container_type: ContainerType::Leaf(Leaf {
-                    component: Box::new(Spinner {
-                        id: "spin".to_string(),
-                        running: true,
-                        period_millis: 1000,
-                    }),
-                }),
-                size: ContainerSize::Percent(100),
-            },
-            width,
-            height,
-        );
         MainScreen {
-            layout,
+            layout: builder,
             source_items: items,
         }
     }
@@ -86,7 +71,6 @@ impl Screen for MainScreen {
         let ps: String = self
             .layout
             .by_name("prompt".to_string())
-            .component
             .get_state()
             .downcast_ref::<String>()
             .unwrap()
@@ -94,7 +78,6 @@ impl Screen for MainScreen {
 
         self.layout
             .by_name("list".to_string())
-            .component
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
                 prompt: ps,
@@ -123,13 +106,13 @@ impl Screen for MainScreen {
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 
-        for car in self.layout.components_with_rect() {
-            car.component.draw(
+        for (rect, component) in self.layout.components_with_rect() {
+            component.draw(
                 &texture_creator,
                 &mut cache,
                 &app,
                 main_canvas,
-                car.rect,
+                rect,
                 elapsed,
             );
         }
@@ -137,7 +120,7 @@ impl Screen for MainScreen {
 }
 
 pub struct SubMenu {
-    layout: Layout,
+    layout: LayoutBuilder,
 }
 
 impl SubMenu {
@@ -149,31 +132,16 @@ impl SubMenu {
             running: true,
             period_millis: 1000,
         };
-        // let mut builder = LayoutBuilder::new();
+        let mut builder = LayoutBuilder::new();
 
-        // // builder.add_split(SplitType::Vertical);
-        // builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
-        // builder.add(Box::new(text1), ContainerSize::Fixed(200));
-        // builder.add(Box::new(text2), ContainerSize::Fixed(200));
-        // builder.add(Box::new(spinner), ContainerSize::Fixed(200));
+        // builder.add_split(SplitType::Vertical);
+        builder.add_split(SplitType::Horizontal, ContainerSize2::Percent(100));
+        builder.add(Box::new(text1), ContainerSize2::Fixed(200));
+        builder.add(Box::new(text2), ContainerSize2::Fixed(200));
+        builder.add(Box::new(spinner), ContainerSize2::Fixed(200));
 
-        // let layout = builder.build(1000, 500);
-        let layout = Layout::new(
-            2,
-            Container {
-                container_type: ContainerType::Leaf(Leaf {
-                    component: Box::new(Spinner {
-                        id: "spin".to_string(),
-                        running: true,
-                        period_millis: 1000,
-                    }),
-                }),
-                size: ContainerSize::Percent(100),
-            },
-            1000,
-            500,
-        );
-        SubMenu { layout }
+        builder.generate(1000, 500);
+        SubMenu { layout: builder }
     }
 }
 
@@ -198,15 +166,8 @@ impl Screen for SubMenu {
     ) {
         main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-        for car in self.layout.components_with_rect() {
-            car.component.draw(
-                &texture_creator,
-                cache,
-                &app,
-                main_canvas,
-                car.rect,
-                elapsed,
-            );
+        for (rect, component) in self.layout.components_with_rect() {
+            component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
         }
     }
 }
