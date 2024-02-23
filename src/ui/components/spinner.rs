@@ -10,6 +10,15 @@ pub struct Spinner {
     pub period_millis: u128,
 }
 
+impl Spinner {
+    pub fn new(id: String) -> Spinner {
+        Spinner {
+            id,
+            running: true,
+            period_millis: 1000,
+        }
+    }
+}
 impl Render for Spinner {
     fn id(&self) -> String {
         self.id.clone()
@@ -92,5 +101,8 @@ impl UIComponent for Spinner {
     fn get_state(&self) -> &dyn std::any::Any {
         return &self.running;
     }
-    fn set_state(&mut self, _state: Box<dyn std::any::Any>) {}
+
+    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
+        self.running = *state.downcast_ref::<bool>().unwrap();
+    }
 }

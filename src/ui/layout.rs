@@ -68,6 +68,10 @@ impl LayoutBuilder {
         self.arena.get_mut(id)
     }
 
+    pub fn set_cur_split(&mut self, split_idx: usize) {
+        self.cur_split_idx = split_idx;
+    }
+
     pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize) {
         let idx = self.arena.len();
         let split_idx = self.cur_split_idx;
@@ -109,7 +113,6 @@ impl LayoutBuilder {
 
     pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize) -> LayoutIndex {
         let idx = self.arena.len();
-        self.cur_split_idx = idx;
 
         // Create new split container
         let split = Split { children: vec![] };
@@ -139,6 +142,7 @@ impl LayoutBuilder {
             }
         };
         self.arena.push(container);
+        self.cur_split_idx = idx;
         idx
     }
 

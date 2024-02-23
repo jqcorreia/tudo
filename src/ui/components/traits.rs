@@ -9,8 +9,6 @@ use sdl2::rect::Rect;
 use sdl2::render::{Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 
-// struct RenderContext<'a> {}
-
 pub trait Render {
     fn id(&self) -> String;
     fn render(

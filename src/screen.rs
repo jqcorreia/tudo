@@ -50,10 +50,14 @@ impl MainScreen {
         let prompt = Prompt::new("prompt", config);
         let mut select_list = SelectList::<SourceItem>::new("list");
         select_list.on_select = execute;
+        let spinner = Spinner::new("spinner".to_string());
 
         let mut builder = LayoutBuilder::new().with_gap(2);
-        builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
-        builder.add(Box::new(prompt), ContainerSize::Fixed(64));
+        let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        let top_split = builder.add_split(SplitType::Horizontal, ContainerSize::Fixed(64));
+        builder.add(Box::new(prompt), ContainerSize::Percent(100));
+        builder.add(Box::new(spinner), ContainerSize::Fixed(64));
+        builder.set_cur_split(main_split);
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.generate(width, height);
 
@@ -84,6 +88,10 @@ impl Screen for MainScreen {
                 component.consume_event(&event, app);
             }
         }
+
+        self.layout
+            .by_name("spinner".to_string())
+            .set_state(Box::new(app.loading))
     }
 
     fn render(
@@ -94,11 +102,7 @@ impl Screen for MainScreen {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     ) {
-        let clear_color = if app.loading {
-            Color::RGBA(200, 0, 0, 255)
-        } else {
-            Color::RGBA(50, 50, 50, 255)
-        };
+        let clear_color = Color::RGBA(50, 50, 50, 255);
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
