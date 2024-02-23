@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use sdl2::rect::Rect;
 
 use crate::components::traits::UIComponent;
@@ -133,7 +131,7 @@ impl LayoutBuilder {
 
         match &mut self.root {
             None => self.root = Some(idx),
-            Some(root) => {
+            Some(_) => {
                 let target_split = self.get_split(self.cur_split_idx);
                 match target_split.unwrap() {
                     Container2 {

@@ -77,7 +77,7 @@ impl Render for Spinner {
     }
 }
 impl EventConsumer for Spinner {
-    fn consume_event(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App) {
+    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {
         // match event {
         //     sdl2::event::Event::KeyDown {
         //         keycode: Some(Keycode::F4),
@@ -92,5 +92,5 @@ impl UIComponent for Spinner {
     fn get_state(&self) -> &dyn std::any::Any {
         return &self.running;
     }
-    fn set_state(&mut self, state: Box<dyn std::any::Any>) {}
+    fn set_state(&mut self, _state: Box<dyn std::any::Any>) {}
 }

@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 use sdl2::{
     event::Event,
     pixels::Color,
-    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -14,11 +13,9 @@ use crate::{
         list::{SelectList, SelectListState},
         spinner::Spinner,
         text::Prompt,
-        traits::{EventConsumer, Render},
     },
     config::Config,
     execute,
-    layout::{Container, ContainerSize, ContainerType, Layout, Leaf, Split},
     layout2::{ContainerSize2, LayoutBuilder, SplitType},
     sources::SourceItem,
     utils::cache::TextureCache,
@@ -58,7 +55,7 @@ impl MainScreen {
         builder.add_split(SplitType::Vertical, ContainerSize2::Percent(100));
         builder.add(Box::new(prompt), ContainerSize2::Fixed(64));
         builder.add(Box::new(select_list), ContainerSize2::Percent(100));
-        let layout = builder.generate(width, height);
+        builder.generate(width, height);
 
         MainScreen {
             layout: builder,
@@ -148,10 +145,8 @@ impl SubMenu {
 impl Screen for SubMenu {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
         for event in events.iter() {
-            for event in events.iter() {
-                for component in self.layout.components() {
-                    component.consume_event(&event, app);
-                }
+            for component in self.layout.components() {
+                component.consume_event(&event, app);
             }
         }
     }
