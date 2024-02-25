@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use sdl2::{
     event::Event,
     pixels::Color,
+    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -18,7 +19,7 @@ use crate::{
         text::Prompt,
     },
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::cache::TextureCache,
+    utils::{cache::TextureCache, draw::draw_rounded_rect},
 };
 
 pub trait Screen {
@@ -165,8 +166,15 @@ impl Screen for SubMenu {
     ) {
         main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
         main_canvas.clear();
-        for (rect, component) in self.layout.components_with_rect() {
-            component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
-        }
+        // for (rect, component) in self.layout.components_with_rect() {
+        //     component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
+        // }
+
+        draw_rounded_rect(
+            main_canvas,
+            Rect::new(10, 100, 200, 200),
+            20,
+            Color::RGBA(0, 0, 255, 255),
+        );
     }
 }
