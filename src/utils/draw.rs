@@ -137,3 +137,35 @@ pub fn draw_circle_quadrants(
         y -= 1;
     }
 }
+
+pub trait DrawExtensions {
+    fn draw_circle(&mut self, cx: i32, cy: i32, radius: i32);
+    fn draw_circle_quadrants(
+        &mut self,
+        cx: i32,
+        cy: i32,
+        radius: i32,
+        quadrants: Option<Vec<usize>>,
+    );
+    fn draw_rounded_rect(&mut self, rect: Rect, radius: i32);
+}
+
+impl DrawExtensions for Canvas<Window> {
+    fn draw_circle(&mut self, cx: i32, cy: i32, radius: i32) {
+        draw_circle(self, cx, cy, radius, self.draw_color())
+    }
+
+    fn draw_circle_quadrants(
+        &mut self,
+        cx: i32,
+        cy: i32,
+        radius: i32,
+        quadrants: Option<Vec<usize>>,
+    ) {
+        draw_circle_quadrants(self, cx, cy, radius, self.draw_color(), quadrants)
+    }
+
+    fn draw_rounded_rect(&mut self, rect: Rect, radius: i32) {
+        draw_rounded_rect(self, rect, radius, self.draw_color())
+    }
+}

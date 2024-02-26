@@ -7,7 +7,7 @@ use crate::app::App;
 use crate::config::Config;
 use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
-use crate::utils::draw::draw_string_texture;
+use crate::utils::draw::{draw_string_texture, DrawExtensions};
 
 use super::traits::UIComponent;
 
@@ -113,9 +113,7 @@ impl Render for Prompt {
         }
 
         canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-        canvas
-            .draw_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2))
-            .unwrap();
+        canvas.draw_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 10);
         canvas.copy(&texture, None, Some(text_rect)).unwrap();
     }
 }
