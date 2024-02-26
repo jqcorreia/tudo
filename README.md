@@ -58,6 +58,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] ! Layout builder and simplified component access
 - [x] Component get_state and set_state
 - [x] Use a new component spinner to sinalize sources loading
+- [x] Extend canvas drawing functions implementing more complex shapes (rounded rect, circle, quadrants, ...) 
 - [ ] ! Implement component focus (which will receive events)
 - [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe

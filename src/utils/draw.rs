@@ -95,6 +95,8 @@ pub fn draw_circle_quadrants(
     // ...............
     //        |
     //   2    |   3
+    //TODO(quadrado): Using draw_point for now which is slow. Change this to byte buffer and
+    //texture
     let mut x = cx + radius;
     let mut y = cy;
 
@@ -139,6 +141,49 @@ pub fn draw_circle_quadrants(
         }
         y -= 1;
     }
+}
+
+pub fn draw_filled_circle_quadrants(
+    canvas: &mut Canvas<Window>,
+    cx: i32,
+    cy: i32,
+    radius: i32,
+    color: Color,
+    quadrants: Option<Vec<usize>>,
+) {
+    let rw = radius * 2;
+    let rh = radius * 2;
+    let _cx = radius;
+    let _cy = radius;
+    let mut buf: Vec<u8> = vec![0; rw as usize * rh as usize * 4];
+
+    for y in 0..rh {
+        for x in 0..rw {
+            let _x = x;
+            let _y = y;
+            if (_x - _cx).pow(2) + (_y - _cy).pow(2) <= radius.pow(2) {
+                buf[y as usize * (rw as usize * 4) + (x as usize * 4)] = color.r;
+                buf[y as usize * (rw as usize * 4) + (x as usize * 4) + 1] = color.g;
+                buf[y as usize * (rw as usize * 4) + (x as usize * 4) + 2] = color.b;
+                buf[y as usize * (rw as usize * 4) + (x as usize * 4) + 3] = color.a;
+            }
+        }
+    }
+
+    let tc = canvas.texture_creator();
+    let mut tex = tc
+        .create_texture_target(PixelFormatEnum::RGBA32, rw as u32, rh as u32)
+        .unwrap();
+    tex.set_blend_mode(BlendMode::Blend);
+    tex.update(None, buf.as_slice(), rw as usize * 4).unwrap();
+
+    canvas
+        .copy(
+            &tex,
+            None,
+            Rect::new(cx - rw / 2, cy - rh / 2, rw as u32, rh as u32),
+        )
+        .unwrap();
 }
 
 pub trait DrawExtensions {

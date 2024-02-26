@@ -21,7 +21,10 @@ use crate::{
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::{
         cache::TextureCache,
-        draw::{draw_circle, draw_circle_quadrants, draw_rounded_rect},
+        draw::{
+            draw_circle, draw_circle_quadrants, draw_filled_circle_quadrants, draw_rounded_rect,
+            DrawExtensions,
+        },
     },
 };
 
@@ -106,7 +109,7 @@ impl Screen for MainScreen {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     ) {
-        let clear_color = Color::RGBA(50, 50, 50, 255);
+        let clear_color = Color::RGBA(0, 0, 0, 255);
         // Set draw color and clear
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
@@ -167,18 +170,16 @@ impl Screen for SubMenu {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     ) {
-        main_canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+        main_canvas.set_draw_color(Color::RGBA(30, 30, 30, 255));
         main_canvas.clear();
         // for (rect, component) in self.layout.components_with_rect() {
         //     component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
         // }
 
-        draw_rounded_rect(
-            main_canvas,
-            Rect::new(10, 100, 200, 200),
-            20,
-            Color::RGBA(0, 0, 255, 255),
-        );
+        main_canvas.set_draw_color(Color::RGBA(0, 255, 0, 255));
+        main_canvas.draw_rounded_rect(Rect::new(10, 100, 200, 200), 20);
+
+        draw_filled_circle_quadrants(main_canvas, 300, 200, 50, Color::RGBA(255, 0, 0, 255), None);
         // let c = Color::RGBA(255, 255, 255, 255);
         // // draw_circle_quadrants(main_canvas, 200, 20, 20, c, Some(vec![0]));
         // draw_circle_quadrants(main_canvas, 300, 20, 20, c, Some(vec![1]));

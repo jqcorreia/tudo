@@ -6,7 +6,7 @@ use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::rect::Rect;
-use sdl2::render::{Canvas, TextureCreator};
+use sdl2::render::{BlendMode, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 
 pub trait Render {
@@ -37,6 +37,7 @@ pub trait Render {
                 component_rect.height(),
             )
             .unwrap();
+        tex.set_blend_mode(BlendMode::Blend);
         main_canvas
             .with_texture_canvas(&mut tex, |c| {
                 self.render(
