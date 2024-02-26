@@ -9,7 +9,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 use crate::sources::SourceItem;
 use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
-use crate::utils::draw::{draw_string, draw_string_texture};
+use crate::utils::draw::{draw_string, draw_string_texture, DrawExtensions};
 use crate::utils::fuzzy::basic_contains;
 use crate::App;
 
@@ -270,10 +270,8 @@ impl Render for SelectList<SourceItem> {
                     )
                     .unwrap();
                 if idx == self.selected_index {
-                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-                    canvas
-                        .draw_rect(Rect::new(0, y as i32, rect.width(), row_height))
-                        .unwrap();
+                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
+                    canvas.draw_rounded_rect(Rect::new(0, y as i32, rect.width(), row_height), 5)
                 }
 
                 y += row_height;

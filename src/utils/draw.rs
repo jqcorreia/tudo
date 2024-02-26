@@ -1,7 +1,7 @@
 use sdl2::{
     pixels::{Color, PixelFormatEnum},
     rect::Rect,
-    render::{Canvas, Texture, TextureCreator},
+    render::{BlendMode, Canvas, Texture, TextureCreator},
     ttf::Font,
     video::{Window, WindowContext},
 };
@@ -51,8 +51,11 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
         .create_texture_target(PixelFormatEnum::RGBA32, rw as u32, rh as u32)
         .unwrap();
 
+    tex.set_blend_mode(BlendMode::Blend);
     canvas
         .with_texture_canvas(&mut tex, |c| {
+            c.set_draw_color(Color::RGBA(0, 0, 0, 0));
+            c.clear();
             c.set_draw_color(color);
             for line in rect_lines {
                 let (sx, sy, ex, ey) = line;
