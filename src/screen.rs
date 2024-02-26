@@ -19,7 +19,10 @@ use crate::{
         text::Prompt,
     },
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::{cache::TextureCache, draw::draw_rounded_rect},
+    utils::{
+        cache::TextureCache,
+        draw::{draw_circle, draw_circle_quadrants, draw_rounded_rect},
+    },
 };
 
 pub trait Screen {
@@ -170,11 +173,33 @@ impl Screen for SubMenu {
         //     component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
         // }
 
-        draw_rounded_rect(
-            main_canvas,
-            Rect::new(10, 100, 200, 200),
-            20,
-            Color::RGBA(0, 0, 255, 255),
-        );
+        // draw_rounded_rect(
+        //     main_canvas,
+        //     Rect::new(10, 100, 200, 200),
+        //     20,
+        //     Color::RGBA(0, 0, 255, 255),
+        // );
+        let c = Color::RGBA(255, 255, 255, 255);
+        // draw_circle_quadrants(main_canvas, 200, 20, 20, c, Some(vec![0]));
+        // draw_circle_quadrants(main_canvas, 300, 20, 20, c, Some(vec![1]));
+        // draw_circle_quadrants(main_canvas, 400, 20, 20, c, Some(vec![2]));
+        draw_circle_quadrants(main_canvas, 500, 30, 20, c, None);
+        // draw_circle_quadrants(main_canvas, 40, 70, 20, c, None);
     }
 }
+// // Printing the generated point and its reflection
+//         // in the other octants after translation
+//         cout << "(" << x + x_centre << ", " << y + y_centre << ") ";
+//         cout << "(" << -x + x_centre << ", " << y + y_centre << ") ";
+//         cout << "(" << x + x_centre << ", " << -y + y_centre << ") ";
+//         cout << "(" << -x + x_centre << ", " << -y + y_centre << ")\n";
+
+//         // If the generated point is on the line x = y then
+//         // the perimeter points have already been printed
+//         if (x != y)
+//         {
+//             cout << "(" << y + x_centre << ", " << x + y_centre << ") ";
+//             cout << "(" << -y + x_centre << ", " << x + y_centre << ") ";
+//             cout << "(" << y + x_centre << ", " << -x + y_centre << ") ";
+//             cout << "(" << -y + x_centre << ", " << -x + y_centre << ")\n";
+//         }
