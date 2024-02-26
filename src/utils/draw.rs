@@ -33,9 +33,9 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
     let rh = rect.h;
 
     let corners = [
-        (radius, radius, 0),
-        (radius, rh - radius - 1, 0),
-        (rw - radius - 1, rh - radius - 1, 0),
+        (radius, radius, 1),
+        (radius, rh - radius - 1, 2),
+        (rw - radius - 1, rh - radius - 1, 3),
         (rw - radius - 1, radius, 0),
     ];
 
@@ -54,11 +54,11 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
     canvas
         .with_texture_canvas(&mut tex, |c| {
             c.set_draw_color(color);
-            // for line in rect_lines {
-            //     let (sx, sy, ex, ey) = line;
-            //     c.draw_line((sx as i32, sy as i32), (ex as i32, ey as i32))
-            //         .unwrap();
-            // }
+            for line in rect_lines {
+                let (sx, sy, ex, ey) = line;
+                c.draw_line((sx as i32, sy as i32), (ex as i32, ey as i32))
+                    .unwrap();
+            }
             for (cx, cy, quadrant) in corners {
                 draw_circle_quadrants(c, cx, cy, radius, color, Some(vec![quadrant]));
             }
@@ -107,34 +107,24 @@ pub fn draw_circle_quadrants(
     while dx.abs() > dy.abs() {
         dx = x - cx;
         dy = y - cy;
-        let dx2 = dx * 2;
-        let dy2 = dy * 2;
 
-        canvas.draw_point((x, y)).unwrap();
-        canvas.draw_point((x - 2 * dx, y)).unwrap();
-        canvas.draw_point((x - 2 * dx, y - 2 * dy)).unwrap();
-        canvas.draw_point((x, y - 2 * dy)).unwrap();
-
-        canvas.draw_point((x - y - dy, x - y - dx)).unwrap();
-        // canvas.draw_point((x - dx2, y)).unwrap();
-        // // Every quadrant is composed of the two octants
-        // if qtd.contains(&0) {
-        //     canvas.draw_point((x, y)).unwrap();
-        //     canvas.draw_point((y - dy2, x - dx2)).unwrap();
-        // }
-        // if qtd.contains(&1) {
-        //     canvas.draw_point((x - dx2, y)).unwrap();
-        //     canvas.draw_point((y, x - dx2)).unwrap();
-        // }
-
-        // if qtd.contains(&2) {
-        //     canvas.draw_point((x - dx2, y - dy2)).unwrap();
-        //     canvas.draw_point((y, x)).unwrap();
-        // }
-        // if qtd.contains(&3) {
-        //     canvas.draw_point((x, y - dy2)).unwrap();
-        //     canvas.draw_point((y - dy2, x)).unwrap();
-        // }
+        // Every quadrant is composed of the two octants
+        if qtd.contains(&0) {
+            canvas.draw_point((cx + dx, cy + dy)).unwrap();
+            canvas.draw_point((cx - dy, cy - dx)).unwrap();
+        }
+        if qtd.contains(&1) {
+            canvas.draw_point((cx - dx, cy + dy)).unwrap();
+            canvas.draw_point((cx + dy, cy - dx)).unwrap();
+        }
+        if qtd.contains(&2) {
+            canvas.draw_point((cx - dx, cy - dy)).unwrap();
+            canvas.draw_point((cx + dy, cy + dx)).unwrap();
+        }
+        if qtd.contains(&3) {
+            canvas.draw_point((cx + dx, cy - dy)).unwrap();
+            canvas.draw_point((cx - dy, cy + dx)).unwrap();
+        }
 
         // Use error radius to decide if x should move or not
         // Keep in mind we are using the (0, r) going clockwise octant as reference so the y always
