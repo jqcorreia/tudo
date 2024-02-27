@@ -17,8 +17,8 @@ use std::time::Instant;
 use app::App;
 
 use execute::execute;
-use screen::MainScreen;
-use screen::SubMenu;
+use screen::debug_screen::DebugScreen;
+use screen::main_screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
 use sources::Source;
@@ -26,6 +26,7 @@ use sources::Source;
 use screen::Screen;
 use sdl2::pixels::Color;
 use sources::apps::DesktopApplications;
+use sources::dummy::DummySource;
 use sources::lua::LuaSource;
 use sources::secrets::Secrets;
 use sources::tmux::Tmux;
@@ -82,6 +83,7 @@ fn main() {
         Box::new(Secrets::new()),
         Box::new(Tmux::new()),
         Box::new(LuaSource::new("plugins/vlad.lua".to_string())),
+        Box::new(DummySource::new()),
     ];
 
     // Get number of sources before consuming them
@@ -119,11 +121,11 @@ fn main() {
         items.clone(),
     );
 
-    let submenu = SubMenu::new(&app.config);
+    let debug = DebugScreen::new(&app.config);
 
     let mut screen_map: HashMap<String, Box<dyn Screen>> = HashMap::new();
     screen_map.insert("main".to_string(), Box::new(main_screen));
-    screen_map.insert("submenu".to_string(), Box::new(submenu));
+    screen_map.insert("debug".to_string(), Box::new(debug));
 
     while app.running {
         let current_screen = screen_map.get_mut(&app.current_screen_id).unwrap();

@@ -157,11 +157,28 @@ pub fn draw_filled_circle_quadrants(
     let _cy = radius;
     let mut buf: Vec<u8> = vec![0; rw as usize * rh as usize * 4];
 
+    let qtd = match quadrants {
+        Some(list) => list,
+        None => vec![0, 1, 2, 3],
+    };
+
     for y in 0..rh {
         for x in 0..rw {
             let _x = x;
             let _y = y;
-            if (_x - _cx).pow(2) + (_y - _cy).pow(2) <= radius.pow(2) {
+            let mut draw_point = false;
+            // Every quadrant is composed of the two octants
+            if qtd.contains(&0) && (_x < _cx && _y < _cy) {
+                draw_point = true;
+            } else if qtd.contains(&1) && (_x < _cx && _y >= _cy) {
+                draw_point = true;
+            } else if qtd.contains(&2) && (_x >= _cx && _y >= _cy) {
+                draw_point = true;
+            } else if qtd.contains(&3) && (_x >= _cx && _y < _cy) {
+                draw_point = true;
+            }
+
+            if (_x - _cx).pow(2) + (_y - _cy).pow(2) <= radius.pow(2) && draw_point {
                 buf[y as usize * (rw as usize * 4) + (x as usize * 4)] = color.r;
                 buf[y as usize * (rw as usize * 4) + (x as usize * 4) + 1] = color.g;
                 buf[y as usize * (rw as usize * 4) + (x as usize * 4) + 2] = color.b;

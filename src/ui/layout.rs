@@ -72,7 +72,7 @@ impl LayoutBuilder {
         self.cur_split_idx = split_idx;
     }
 
-    pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize) {
+    pub fn add(&mut self, comp: Box<dyn UIComponent>, size: ContainerSize) -> LayoutIndex {
         let idx = self.arena.len();
         let split_idx = self.cur_split_idx;
 
@@ -109,6 +109,7 @@ impl LayoutBuilder {
                 }
             }
         };
+        idx
     }
 
     pub fn add_split(&mut self, split_type: SplitType, size: ContainerSize) -> LayoutIndex {
@@ -159,6 +160,9 @@ impl LayoutBuilder {
         match &container.container_type {
             ContainerType::Leaf(_) => {
                 let m = self.gap;
+                if w == 0 || h == 0 {
+                    return vec;
+                }
                 let rect = Rect::new(
                     (x + m) as i32,
                     (y + m) as i32,

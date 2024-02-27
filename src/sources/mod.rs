@@ -2,6 +2,7 @@ use self::actions::Action;
 
 pub mod actions;
 pub mod apps;
+pub mod dummy;
 pub mod lua;
 pub mod secrets;
 pub mod tmux;

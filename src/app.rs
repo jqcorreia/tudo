@@ -106,7 +106,7 @@ impl App {
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::F3),
                     ..
-                } => self.current_screen_id = "submenu".to_string(),
+                } => self.current_screen_id = "debug".to_string(),
                 sdl2::event::Event::Quit { .. } => self.running = false,
                 _ => (),
             }

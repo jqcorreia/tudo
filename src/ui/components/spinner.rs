@@ -85,16 +85,9 @@ impl Render for Spinner {
             .unwrap();
     }
 }
+
 impl EventConsumer for Spinner {
-    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {
-        // match event {
-        //     sdl2::event::Event::KeyDown {
-        //         keycode: Some(Keycode::F4),
-        //         ..
-        //     } => self.running = !self.running,
-        //     _ => (),
-        // }
-    }
+    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {}
 }
 
 impl UIComponent for Spinner {
