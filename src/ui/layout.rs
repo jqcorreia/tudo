@@ -64,7 +64,7 @@ impl LayoutBuilder {
         self
     }
 
-    pub fn get_split(&mut self, id: usize) -> Option<&mut Container> {
+    pub fn get_container(&mut self, id: usize) -> Option<&mut Container> {
         self.arena.get_mut(id)
     }
 
@@ -88,7 +88,7 @@ impl LayoutBuilder {
                 });
             }
             Some(_) => {
-                let target_split = self.get_split(split_idx);
+                let target_split = self.get_container(split_idx);
                 let container = Container {
                     size,
                     container_type: ContainerType::Leaf(Leaf {
@@ -129,7 +129,7 @@ impl LayoutBuilder {
         match &mut self.root {
             None => self.root = Some(idx),
             Some(_) => {
-                let target_split = self.get_split(self.cur_split_idx);
+                let target_split = self.get_container(self.cur_split_idx);
                 match target_split.unwrap() {
                     Container {
                         container_type:
@@ -290,6 +290,21 @@ impl LayoutBuilder {
             })
             .collect()
     }
+
+    pub fn by_coordinates(&mut self, x: i32, y: i32) -> &mut Box<dyn UIComponent> {
+        self.arena
+            .iter_mut()
+            .filter_map(|container| match container {
+                Container {
+                    container_type: ContainerType::Leaf(Leaf { component, rect }),
+                    ..
+                } => Some((rect.unwrap(), component)),
+                _ => None,
+            })
+            .find(|(r, _c)| x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h)
+            .unwrap()
+            .1
+    }
 }
 
 #[cfg(test)]
@@ -321,7 +336,7 @@ mod tests {
             }),
             ContainerSize::Percent(50),
         );
-        builder.get_split(1);
+        builder.get_container(1);
         dbg!(&builder);
         builder.generate(1000, 1000);
         dbg!(&builder);
@@ -329,5 +344,7 @@ mod tests {
         dbg!(builder.components());
         dbg!(builder.components_with_rect());
         assert!(builder.components().len() == 2);
+
+        dbg!(builder.by_coordinates(500, 10));
     }
 }

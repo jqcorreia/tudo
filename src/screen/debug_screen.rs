@@ -13,7 +13,7 @@ use crate::{
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::{
         cache::TextureCache,
-        draw::{draw_filled_circle_quadrants, DrawExtensions},
+        draw::{draw_filled_circle_quadrants, draw_filled_rounded_rect, DrawExtensions},
     },
 };
 
@@ -69,7 +69,6 @@ impl Screen for DebugScreen {
         // }
 
         main_canvas.set_draw_color(Color::RGBA(0, 255, 0, 255));
-        main_canvas.draw_rounded_rect(Rect::new(10, 100, 200, 200), 20);
 
         draw_filled_circle_quadrants(
             main_canvas,
@@ -78,6 +77,13 @@ impl Screen for DebugScreen {
             50,
             Color::RGBA(255, 0, 0, 255),
             Some(vec![0]),
+        );
+
+        draw_filled_rounded_rect(
+            main_canvas,
+            Rect::new(10, 50, 200, 100),
+            10,
+            Color::RGBA(0, 255, 255, 255),
         );
     }
 }

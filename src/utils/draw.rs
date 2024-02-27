@@ -168,13 +168,13 @@ pub fn draw_filled_circle_quadrants(
             let _y = y;
             let mut draw_point = false;
             // Every quadrant is composed of the two octants
-            if qtd.contains(&0) && (_x < _cx && _y < _cy) {
+            if qtd.contains(&1) && (_x < _cx && _y < _cy) {
                 draw_point = true;
-            } else if qtd.contains(&1) && (_x < _cx && _y >= _cy) {
+            } else if qtd.contains(&2) && (_x < _cx && _y >= _cy) {
                 draw_point = true;
-            } else if qtd.contains(&2) && (_x >= _cx && _y >= _cy) {
+            } else if qtd.contains(&3) && (_x >= _cx && _y >= _cy) {
                 draw_point = true;
-            } else if qtd.contains(&3) && (_x >= _cx && _y < _cy) {
+            } else if qtd.contains(&0) && (_x >= _cx && _y < _cy) {
                 draw_point = true;
             }
 
@@ -201,6 +201,68 @@ pub fn draw_filled_circle_quadrants(
             Rect::new(cx - rw / 2, cy - rh / 2, rw as u32, rh as u32),
         )
         .unwrap();
+}
+pub fn draw_filled_rounded_rect(
+    canvas: &mut Canvas<Window>,
+    rect: Rect,
+    radius: i32,
+    color: Color,
+) {
+    let rw = rect.w;
+    let rh = rect.h;
+
+    let corners = [
+        (radius, radius, 1),
+        (radius, rh - radius - 1, 2),
+        (rw - radius - 1, rh - radius - 1, 3),
+        (rw - radius - 1, radius, 0),
+    ];
+
+    let rect_lines = [
+        (0, radius, 0, rh - radius),
+        (radius, rh - 1, rw - radius, rh - 1),
+        (rw - 1, radius, rw - 1, rh - radius - 1),
+        (radius, 0, rw - radius, 0),
+    ];
+
+    let tc = canvas.texture_creator();
+    let mut tex = tc
+        .create_texture_target(PixelFormatEnum::RGBA32, rw as u32, rh as u32)
+        .unwrap();
+
+    tex.set_blend_mode(BlendMode::Blend);
+    canvas
+        .with_texture_canvas(&mut tex, |c| {
+            c.set_draw_color(Color::RGBA(0, 0, 0, 0));
+            c.clear();
+            c.set_draw_color(color);
+            // for line in rect_lines {
+            //     let (sx, sy, ex, ey) = line;
+            //     c.draw_line((sx as i32, sy as i32), (ex as i32, ey as i32))
+            //         .unwrap();
+            // }
+            c.fill_rect(Rect::new(
+                0,
+                radius,
+                rw as u32,
+                rh as u32 - 2 * radius as u32,
+            ))
+            .unwrap();
+            c.fill_rect(Rect::new(
+                radius,
+                0,
+                rw as u32 - 2 * radius as u32,
+                rh as u32,
+            ))
+            .unwrap();
+            // c.draw_rect(Rect::new(0, radius, rw as u32, rh as u32))
+            //     .unwrap();
+            for (cx, cy, quadrant) in corners {
+                draw_filled_circle_quadrants(c, cx, cy, radius, color, Some(vec![quadrant]));
+            }
+        })
+        .unwrap();
+    canvas.copy(&tex, None, rect).unwrap();
 }
 
 pub trait DrawExtensions {

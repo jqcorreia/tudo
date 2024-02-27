@@ -88,7 +88,7 @@ impl Screen for MainScreen {
 
         // Hide spinner if not loading
         if !app.loading {
-            let container = self.layout.get_split(self.spinner_idx).unwrap();
+            let container = self.layout.get_container(self.spinner_idx).unwrap();
             match container {
                 Container { ref mut size, .. } => *size = ContainerSize::Fixed(0),
             }
