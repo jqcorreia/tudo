@@ -202,8 +202,4 @@ fn main() {
             .unwrap()
             .stdout;
     }
-
-    // Remove run lock
-    //FIXME(quadrado): impl Drop in App perhaps?
-    let _ = std::fs::remove_file(app.lock_path);
 }

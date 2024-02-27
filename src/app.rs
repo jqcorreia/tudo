@@ -113,3 +113,12 @@ impl App {
         }
     }
 }
+
+impl Drop for App {
+    fn drop(&mut self) {
+        // App destructor
+
+        // Remove lock file
+        let _ = std::fs::remove_file(self.lock_path.clone());
+    }
+}
