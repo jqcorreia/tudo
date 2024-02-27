@@ -160,6 +160,7 @@ impl LayoutBuilder {
         match &container.container_type {
             ContainerType::Leaf(_) => {
                 let m = self.gap;
+                // In case some of these values are zero, for instance while hiding a container
                 if w == 0 || h == 0 {
                     return vec;
                 }
