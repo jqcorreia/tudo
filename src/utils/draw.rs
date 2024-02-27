@@ -236,11 +236,13 @@ pub fn draw_filled_rounded_rect(
             c.set_draw_color(Color::RGBA(0, 0, 0, 0));
             c.clear();
             c.set_draw_color(color);
-            // for line in rect_lines {
-            //     let (sx, sy, ex, ey) = line;
-            //     c.draw_line((sx as i32, sy as i32), (ex as i32, ey as i32))
-            //         .unwrap();
-            // }
+
+            // Draw corner quadrants
+            for (cx, cy, quadrant) in corners {
+                draw_filled_circle_quadrants(c, cx, cy, radius, color, Some(vec![quadrant]));
+            }
+
+            // Draw filled rectangle filling the gaps
             c.fill_rect(Rect::new(
                 0,
                 radius,
@@ -255,11 +257,6 @@ pub fn draw_filled_rounded_rect(
                 rh as u32,
             ))
             .unwrap();
-            // c.draw_rect(Rect::new(0, radius, rw as u32, rh as u32))
-            //     .unwrap();
-            for (cx, cy, quadrant) in corners {
-                draw_filled_circle_quadrants(c, cx, cy, radius, color, Some(vec![quadrant]));
-            }
         })
         .unwrap();
     canvas.copy(&tex, None, rect).unwrap();
