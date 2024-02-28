@@ -51,7 +51,7 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
         .create_texture_target(PixelFormatEnum::RGBA32, rw as u32, rh as u32)
         .unwrap();
 
-    tex.set_blend_mode(BlendMode::Blend);
+    // tex.set_blend_mode(BlendMode::Blend);
     canvas
         .with_texture_canvas(&mut tex, |c| {
             c.set_draw_color(Color::RGBA(0, 0, 0, 0));

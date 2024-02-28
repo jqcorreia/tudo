@@ -19,6 +19,7 @@ pub struct Prompt {
     pub cursor_x: i32,
     pub last_cursor_move: u128,
     pub blink: bool,
+    pub last_blink: Option<u128>,
 }
 
 impl Prompt {
@@ -30,6 +31,7 @@ impl Prompt {
             cursor_x: 0,
             last_cursor_move: 0,
             blink: config.cursor_blink,
+            last_blink: None,
         }
     }
     pub fn with_text(mut self, text: String) -> Self {
@@ -87,6 +89,9 @@ impl Render for Prompt {
                 self.foreground_color,
             ),
         };
+        if self.last_blink.is_none() {
+            self.last_blink = Some(elapsed);
+        }
 
         let query = texture.query();
         let (w, h) = (query.width as i32, query.height as i32);
@@ -96,25 +101,25 @@ impl Render for Prompt {
 
         let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
 
-        if draw_cursor {
-            let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - h) / 2, 5, h as u32);
-            let alpha = match self.blink {
-                true => ((((elapsed as f32 / 100.0) as f32).sin() + 1.0) / 2.0) * 255.0,
-                false => 255.0,
-            };
-
-            canvas.set_blend_mode(sdl2::render::BlendMode::Blend);
-
-            canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
-            if draw_cursor {
-                canvas.fill_rect(cursor_rect).unwrap();
-            }
-            canvas.set_blend_mode(sdl2::render::BlendMode::None);
-        }
-
         canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
         canvas.draw_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 10);
         canvas.copy(&texture, None, Some(text_rect)).unwrap();
+
+        if draw_cursor {
+            let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - h) / 2, 5, h as u32);
+            let alpha = match self.blink {
+                true => {
+                    (((((elapsed - self.last_blink.unwrap()) as f32 / 100.0) as f32).sin() + 1.0)
+                        / 2.0)
+                        * 255.0
+                }
+                false => 255.0,
+            };
+
+            canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
+
+            canvas.fill_rect(cursor_rect).unwrap();
+        }
     }
 }
 
