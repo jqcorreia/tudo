@@ -218,13 +218,6 @@ pub fn draw_filled_rounded_rect(
         (rw - radius - 1, radius, 0),
     ];
 
-    let rect_lines = [
-        (0, radius, 0, rh - radius),
-        (radius, rh - 1, rw - radius, rh - 1),
-        (rw - 1, radius, rw - 1, rh - radius - 1),
-        (radius, 0, rw - radius, 0),
-    ];
-
     let tc = canvas.texture_creator();
     let mut tex = tc
         .create_texture_target(PixelFormatEnum::RGBA32, rw as u32, rh as u32)

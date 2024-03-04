@@ -230,6 +230,9 @@ impl Render for SelectList<SourceItem> {
         let font = cache.fonts.get_font("normal-20");
         let font2 = cache.fonts.get_font("normal-16");
 
+        canvas.set_draw_color(Color::BLACK);
+
+        canvas.draw_filled_rounded_rect(rect, 7);
         if self.items.len() == 0 {
             draw_string(
                 "No items found".to_string(),
