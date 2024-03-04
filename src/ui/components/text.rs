@@ -1,5 +1,6 @@
 use sdl2::keyboard::Keycode;
-use sdl2::render::TextureCreator;
+use sdl2::pixels::PixelFormatEnum;
+use sdl2::render::{BlendMode, TextureCreator};
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Window};
 
@@ -20,6 +21,7 @@ pub struct Prompt {
     pub last_cursor_move: u128,
     pub blink: bool,
     pub last_blink: Option<u128>,
+    pub input_hint: Option<String>,
 }
 
 impl Prompt {
@@ -32,7 +34,12 @@ impl Prompt {
             last_cursor_move: 0,
             blink: config.cursor_blink,
             last_blink: None,
+            input_hint: None,
         }
+    }
+    pub fn with_input_hint(mut self, input_hint: String) -> Self {
+        self.input_hint = Some(input_hint);
+        self
     }
     pub fn with_text(mut self, text: String) -> Self {
         self.text = text;
@@ -73,15 +80,18 @@ impl Render for Prompt {
     ) {
         let font = cache.fonts.get_font("normal-20");
 
-        let draw_cursor = self.text.len() > 0;
+        let draw_cursor = self.text.len() > 0 || self.input_hint.is_none();
 
-        let texture = match self.text.len() {
-            0 => draw_string_texture(
-                "Write something".to_string(),
+        let texture = match (self.text.len(), &self.input_hint) {
+            (0, Some(hint)) => draw_string_texture(
+                hint.to_string(),
                 &texture_creator,
                 font,
                 Color::RGBA(100, 100, 100, 255),
             ),
+            (0, None) => texture_creator
+                .create_texture_target(PixelFormatEnum::RGBA8888, 1, 20) //FIXME(quadrado) just add a minimal size texture
+                .unwrap(),
             _ => draw_string_texture(
                 self.text.clone(),
                 &texture_creator,
@@ -89,6 +99,7 @@ impl Render for Prompt {
                 self.foreground_color,
             ),
         };
+
         if self.last_blink.is_none() {
             self.last_blink = Some(elapsed);
         }
@@ -101,8 +112,9 @@ impl Render for Prompt {
 
         let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
 
-        canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
-        canvas.draw_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 10);
+        canvas.set_blend_mode(BlendMode::Blend);
+        canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+        canvas.draw_filled_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 7);
         canvas.copy(&texture, None, Some(text_rect)).unwrap();
 
         if draw_cursor {
@@ -117,7 +129,6 @@ impl Render for Prompt {
             };
 
             canvas.set_draw_color(Color::RGBA(0, 0, 255, alpha as u8));
-
             canvas.fill_rect(cursor_rect).unwrap();
         }
     }

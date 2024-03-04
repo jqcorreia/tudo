@@ -272,6 +272,7 @@ pub trait DrawExtensions {
         quadrants: Option<Vec<usize>>,
     );
     fn draw_rounded_rect(&mut self, rect: Rect, radius: i32);
+    fn draw_filled_rounded_rect(&mut self, rect: Rect, radius: i32);
 }
 
 impl DrawExtensions for Canvas<Window> {
@@ -291,5 +292,8 @@ impl DrawExtensions for Canvas<Window> {
 
     fn draw_rounded_rect(&mut self, rect: Rect, radius: i32) {
         draw_rounded_rect(self, rect, radius, self.draw_color())
+    }
+    fn draw_filled_rounded_rect(&mut self, rect: Rect, radius: i32) {
+        draw_filled_rounded_rect(self, rect, radius, self.draw_color())
     }
 }
