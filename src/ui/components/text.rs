@@ -9,6 +9,7 @@ use crate::config::Config;
 use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string_texture, DrawExtensions};
+use crate::utils::font::FontConfig;
 
 use super::traits::UIComponent;
 
@@ -73,52 +74,62 @@ impl Render for Prompt {
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
         cache: &mut TextureCache,
-        _app: &App,
+        app: &App,
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
     ) {
-        let font = cache.fonts.get_font("normal-20");
+        // Draw outline and set transparency
+        canvas.set_blend_mode(BlendMode::Blend);
+        canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+        canvas.draw_filled_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 7);
+
+        cache.fonts.load_font(FontConfig {
+            alias: "normal-24".to_string(),
+            path: app.config.font_file.clone(),
+            point_size: 24,
+        });
+        let font = cache.fonts.get_font("normal-24");
+        let (_fw, fh) = font.size_of(" ").unwrap();
 
         let draw_cursor = self.text.len() > 0 || self.input_hint.is_none();
-
         let texture = match (self.text.len(), &self.input_hint) {
-            (0, Some(hint)) => draw_string_texture(
+            (0, Some(hint)) => Some(draw_string_texture(
                 hint.to_string(),
                 &texture_creator,
                 font,
                 Color::RGBA(100, 100, 100, 255),
-            ),
-            (0, None) => texture_creator
-                .create_texture_target(PixelFormatEnum::RGBA8888, 1, 20) //FIXME(quadrado) just add a minimal size texture
-                .unwrap(),
-            _ => draw_string_texture(
+            )),
+            (0, None) => None,
+            _ => Some(draw_string_texture(
                 self.text.clone(),
                 &texture_creator,
                 font,
                 self.foreground_color,
-            ),
+            )),
         };
 
         if self.last_blink.is_none() {
             self.last_blink = Some(elapsed);
         }
 
-        let query = texture.query();
-        let (w, h) = (query.width as i32, query.height as i32);
+        match texture {
+            Some(tex) => {
+                let query = tex.query();
+                let (w, h) = (query.width as i32, query.height as i32);
 
-        self.last_cursor_move = elapsed;
-        self.cursor_x = w;
+                self.last_cursor_move = elapsed;
+                self.cursor_x = w;
 
-        let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
+                let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
 
-        canvas.set_blend_mode(BlendMode::Blend);
-        canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
-        canvas.draw_filled_rounded_rect(Rect::new(1, 1, rect.width() - 2, rect.height() - 2), 7);
-        canvas.copy(&texture, None, Some(text_rect)).unwrap();
+                canvas.copy(&tex, None, Some(text_rect)).unwrap();
+            }
+            None => self.cursor_x = 0,
+        };
 
         if draw_cursor {
-            let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - h) / 2, 5, h as u32);
+            let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - fh as i32) / 2, 5, fh);
             let alpha = match self.blink {
                 true => {
                     (((((elapsed - self.last_blink.unwrap()) as f32 / 100.0) as f32).sin() + 1.0)

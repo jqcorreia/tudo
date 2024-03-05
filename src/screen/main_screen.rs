@@ -107,8 +107,8 @@ impl Screen for MainScreen {
 
         self.layout.generate(width as usize, height as usize);
 
-        let clear_color = Color::RGBA(40, 40, 54, 255);
         // Set draw color and clear
+        let clear_color = Color::RGBA(24, 24, 33, 255);
         main_canvas.set_draw_color(clear_color);
         main_canvas.clear();
 

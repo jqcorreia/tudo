@@ -60,6 +60,11 @@ fn main() {
 
     // Load initial fonts
     cache.fonts.load_font(FontConfig {
+        alias: "normal-28".to_string(),
+        path: app.config.font_file.clone(),
+        point_size: 28,
+    });
+    cache.fonts.load_font(FontConfig {
         alias: "normal-20".to_string(),
         path: app.config.font_file.clone(),
         point_size: 20,

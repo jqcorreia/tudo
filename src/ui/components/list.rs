@@ -25,6 +25,7 @@ trait RenderItem<T> {
         canvas: &mut Canvas<Window>,
         rect: Rect,
         elapsed: u128,
+        is_selected: bool,
     ) -> Texture;
 }
 
@@ -53,6 +54,7 @@ pub struct SelectList<T> {
     pub selected_index: usize,
     pub viewport: Viewport,
     pub on_select: fn(&T, &mut App),
+    pub vertical_bar_width: u32,
 }
 
 impl UIComponent for SelectList<SourceItem> {
@@ -150,6 +152,7 @@ impl<T: PartialEq> SelectList<T> {
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
             viewport: Viewport(0, 10),
+            vertical_bar_width: 5,
             on_select: |_, _| (),
         }
     }
@@ -232,7 +235,7 @@ impl Render for SelectList<SourceItem> {
 
         canvas.set_draw_color(Color::BLACK);
 
-        canvas.draw_filled_rounded_rect(rect, 7);
+        canvas.draw_filled_rounded_rect(Rect::new(0, 0, rect.w as u32, rect.h as u32), 7);
         if self.items.len() == 0 {
             draw_string(
                 "No items found".to_string(),
@@ -264,6 +267,7 @@ impl Render for SelectList<SourceItem> {
                     canvas,
                     Rect::new(0, 0, rect.w as u32, row_height as u32),
                     elapsed,
+                    idx == self.selected_index,
                 );
                 canvas
                     .copy(
@@ -272,10 +276,6 @@ impl Render for SelectList<SourceItem> {
                         Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
                     )
                     .unwrap();
-                if idx == self.selected_index {
-                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
-                    canvas.draw_rounded_rect(Rect::new(0, y as i32, rect.width(), row_height), 5)
-                }
 
                 y += row_height;
             }
@@ -329,6 +329,7 @@ impl Render for SelectList<String> {
                     canvas,
                     Rect::new(0, 0, rect.w as u32, row_height as u32),
                     elapsed,
+                    idx == self.selected_index,
                 );
                 canvas
                     .copy(
@@ -337,12 +338,6 @@ impl Render for SelectList<String> {
                         Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
                     )
                     .unwrap();
-                if idx == self.selected_index {
-                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-                    canvas
-                        .draw_rect(Rect::new(0, y as i32, rect.width(), row_height))
-                        .unwrap();
-                }
 
                 y += row_height + 1;
             }
@@ -360,6 +355,7 @@ impl RenderItem<String> for SelectList<String> {
         canvas: &mut Canvas<Window>,
         rect: Rect,
         _elapsed: u128,
+        is_selected: bool,
     ) -> Texture {
         let mut tex = texture_creator
             .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
@@ -368,6 +364,12 @@ impl RenderItem<String> for SelectList<String> {
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
                 draw_string(item.clone(), canvas, font, self.foreground_color, 0, 0);
+                if is_selected {
+                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
+                    canvas
+                        .draw_rect(Rect::new(0, 0 as i32, rect.width(), rect.height()))
+                        .unwrap();
+                }
             })
             .unwrap();
         tex
@@ -384,18 +386,27 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         canvas: &mut Canvas<Window>,
         rect: Rect,
         _elapsed: u128,
+        is_selected: bool,
     ) -> Texture {
         let mut tex = texture_creator
             .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
             .unwrap();
 
+        let vertical_bar_width = self.vertical_bar_width as i32;
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
-                // Assess if current idx is inside the viewport
                 // Draw icon
-                // canvas.set_draw_color(Color::RGBA(30, 44, 66, 255));
-                canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+                canvas.set_draw_color(Color::RGBA(0, 0, 0, 200));
                 canvas.clear();
+
+                canvas.set_draw_color(Color::BLUE);
+                if is_selected {
+                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
+                    canvas
+                        .fill_rect(Rect::new(0, 0, self.vertical_bar_width, rect.h as u32))
+                        .unwrap();
+                }
+
                 let icon_height: u32 = 32;
                 if item.icon.is_some() {
                     let icon_texture = cache
@@ -405,7 +416,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .copy(
                             &icon_texture,
                             None,
-                            Rect::new(0, 0, icon_height, icon_height),
+                            Rect::new(vertical_bar_width, 0, icon_height, icon_height),
                         )
                         .unwrap();
                 }
@@ -422,7 +433,11 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                     let (w, h) = (query.width, query.height);
                     let hpad = (rect.height() - h) / 2;
                     canvas
-                        .copy(&text_texture, None, Some(Rect::new(34, hpad as i32, w, h)))
+                        .copy(
+                            &text_texture,
+                            None,
+                            Some(Rect::new(vertical_bar_width + 34, hpad as i32, w, h)),
+                        )
                         .unwrap();
                 }
 
@@ -448,6 +463,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         tex
     }
 }
+
 impl<T: PartialEq> EventConsumer for SelectList<T> {
     fn consume_event(&mut self, event: &Event, app: &mut App) {
         match event {

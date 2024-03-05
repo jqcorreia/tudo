@@ -20,6 +20,7 @@ pub struct App {
     pub current_screen_id: String,
     pub config: Config,
     pub lock_path: String,
+    pub layout_debug: bool,
 }
 
 fn already_running(lock_path: &String) -> bool {
@@ -75,6 +76,7 @@ impl App {
                 current_screen_id: "main".to_string(),
                 config,
                 lock_path,
+                layout_debug: false,
             },
             canvas,
         )

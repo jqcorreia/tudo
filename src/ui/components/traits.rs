@@ -30,6 +30,10 @@ pub trait Render {
         component_rect: Rect,
         elapsed: u128,
     ) {
+        if app.layout_debug {
+            main_canvas.draw_rect(component_rect).unwrap();
+        }
+
         let mut tex = texture_creator
             .create_texture_target(
                 PixelFormatEnum::RGBA8888,
