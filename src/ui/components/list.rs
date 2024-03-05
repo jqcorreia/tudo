@@ -2,7 +2,7 @@ use std::usize;
 
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
-use sdl2::render::{Texture, TextureCreator};
+use sdl2::render::{BlendMode, Texture, TextureCreator};
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
@@ -392,11 +392,14 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
             .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
             .unwrap();
 
-        let vertical_bar_width = self.vertical_bar_width as i32;
+        let padding = 3;
+        let vertical_bar_spacing = self.vertical_bar_width as i32 + padding;
+
+        tex.set_blend_mode(BlendMode::Blend);
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
-                // Draw icon
-                canvas.set_draw_color(Color::RGBA(0, 0, 0, 200));
+                // canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
+                canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
                 canvas.clear();
 
                 canvas.set_draw_color(Color::BLUE);
@@ -407,6 +410,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .unwrap();
                 }
 
+                // Draw icon
                 let icon_height: u32 = 32;
                 if item.icon.is_some() {
                     let icon_texture = cache
@@ -416,7 +420,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .copy(
                             &icon_texture,
                             None,
-                            Rect::new(vertical_bar_width, 0, icon_height, icon_height),
+                            Rect::new(vertical_bar_spacing, 0, icon_height, icon_height),
                         )
                         .unwrap();
                 }
@@ -436,7 +440,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .copy(
                             &text_texture,
                             None,
-                            Some(Rect::new(vertical_bar_width + 34, hpad as i32, w, h)),
+                            Some(Rect::new(vertical_bar_spacing + 34, hpad as i32, w, h)),
                         )
                         .unwrap();
                 }
