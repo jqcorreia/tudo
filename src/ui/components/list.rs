@@ -398,16 +398,18 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         tex.set_blend_mode(BlendMode::Blend);
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
-                // canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
-                canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
-                canvas.clear();
-
                 canvas.set_draw_color(Color::BLUE);
                 if is_selected {
+                    canvas.set_draw_color(Color::RGBA(20, 20, 50, 255));
+                    canvas.clear();
+
                     canvas.set_draw_color(Color::RGBA(0, 0, 255, 255));
                     canvas
                         .fill_rect(Rect::new(0, 0, self.vertical_bar_width, rect.h as u32))
                         .unwrap();
+                } else {
+                    canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+                    canvas.clear();
                 }
 
                 // Draw icon
