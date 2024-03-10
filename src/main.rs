@@ -18,6 +18,7 @@ use app::App;
 
 use execute::execute;
 use screen::debug_screen::DebugScreen;
+use screen::info_screen::InfoScreen;
 use screen::main_screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
@@ -127,10 +128,12 @@ fn main() {
     );
 
     let debug = DebugScreen::new(&app.config);
+    let info_screen = InfoScreen::new(&app.config);
 
     let mut screen_map: HashMap<String, Box<dyn Screen>> = HashMap::new();
     screen_map.insert("main".to_string(), Box::new(main_screen));
     screen_map.insert("debug".to_string(), Box::new(debug));
+    screen_map.insert("info".to_string(), Box::new(info_screen));
 
     while app.running {
         let current_screen = screen_map.get_mut(&app.current_screen_id).unwrap();

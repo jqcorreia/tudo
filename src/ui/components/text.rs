@@ -1,5 +1,4 @@
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{BlendMode, TextureCreator};
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Window};

@@ -7,6 +7,7 @@ use sdl2::{
 use crate::{app::App, utils::cache::TextureCache};
 
 pub mod debug_screen;
+pub mod info_screen;
 pub mod main_screen;
 
 pub trait Screen {
