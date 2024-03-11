@@ -26,6 +26,7 @@ trait RenderItem<T> {
         rect: Rect,
         elapsed: u128,
         is_selected: bool,
+        index: usize,
     ) -> Texture;
 }
 
@@ -268,6 +269,7 @@ impl Render for SelectList<SourceItem> {
                     Rect::new(0, 0, rect.w as u32, row_height as u32),
                     elapsed,
                     idx == self.selected_index,
+                    idx,
                 );
                 canvas
                     .copy(
@@ -330,6 +332,7 @@ impl Render for SelectList<String> {
                     Rect::new(0, 0, rect.w as u32, row_height as u32),
                     elapsed,
                     idx == self.selected_index,
+                    idx,
                 );
                 canvas
                     .copy(
@@ -356,6 +359,7 @@ impl RenderItem<String> for SelectList<String> {
         rect: Rect,
         _elapsed: u128,
         is_selected: bool,
+        idx: usize,
     ) -> Texture {
         let mut tex = texture_creator
             .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
@@ -387,6 +391,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         rect: Rect,
         _elapsed: u128,
         is_selected: bool,
+        index: usize,
     ) -> Texture {
         let mut tex = texture_creator
             .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
@@ -407,8 +412,11 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                     canvas
                         .fill_rect(Rect::new(0, 0, self.vertical_bar_width, rect.h as u32))
                         .unwrap();
-                } else {
+                } else if index % 2 == 0 {
                     canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
+                    canvas.clear();
+                } else {
+                    canvas.set_draw_color(Color::RGBA(20, 20, 20, 255));
                     canvas.clear();
                 }
 
