@@ -416,7 +416,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                     canvas.set_draw_color(Color::RGBA(0, 0, 0, 255));
                     canvas.clear();
                 } else {
-                    canvas.set_draw_color(Color::RGBA(20, 20, 20, 255));
+                    canvas.set_draw_color(Color::RGBA(10, 10, 10, 255));
                     canvas.clear();
                 }
 
