@@ -6,6 +6,7 @@ use sdl2::render::{BlendMode, Texture, TextureCreator};
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, video::Window};
 
+use crate::animation::{Animation, AnimationType};
 use crate::sources::SourceItem;
 use crate::ui::components::traits::{EventConsumer, Render};
 use crate::utils::cache::TextureCache;
@@ -31,6 +32,7 @@ trait RenderItem<T> {
 }
 
 pub struct Viewport(pub usize, pub usize);
+pub struct RenderViewport(pub i32, pub i32, pub i32);
 
 impl Viewport {
     pub fn down(&mut self, amount: usize) {
@@ -54,8 +56,11 @@ pub struct SelectList<T> {
     pub foreground_color: Color,
     pub selected_index: usize,
     pub viewport: Viewport,
+    pub render_viewport: RenderViewport,
     pub on_select: fn(&T, &mut App),
     pub vertical_bar_width: u32,
+    pub row_height: u32,
+    pub ss_anim: Animation,
 }
 
 impl UIComponent for SelectList<SourceItem> {
@@ -135,16 +140,6 @@ impl UIComponent for SelectList<SourceItem> {
     }
 }
 
-impl UIComponent for SelectList<String> {
-    fn get_state(&self) -> &dyn std::any::Any {
-        &self.items
-    }
-
-    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
-        self.items = state.downcast_ref::<Vec<String>>().unwrap().to_vec();
-    }
-}
-
 impl<T: PartialEq> SelectList<T> {
     pub fn new(id: impl AsRef<str>) -> SelectList<T> {
         SelectList {
@@ -153,8 +148,11 @@ impl<T: PartialEq> SelectList<T> {
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
             viewport: Viewport(0, 10),
+            render_viewport: RenderViewport(0, 100, 0),
             vertical_bar_width: 5,
             on_select: |_, _| (),
+            row_height: 34, // Make this the same height as the font
+            ss_anim: Animation::new(0, 0, AnimationType::EaseOut),
         }
     }
     pub fn select_up(&mut self) {
@@ -185,6 +183,7 @@ impl<T: PartialEq> SelectList<T> {
         self.items = new_list;
         self.set_selected_index(0);
         self.viewport = Viewport(0, 10); // The bottom setting dynamic, this 10 is irrelevant
+        self.render_viewport = RenderViewport(0, 10, 0); // The bottom setting dynamic, this 10 is irrelevant
     }
 
     pub fn get_selected_item(&self) -> Option<&T> {
@@ -230,7 +229,6 @@ impl Render for SelectList<SourceItem> {
         rect: Rect,
         elapsed: u128,
     ) {
-        let mut y: u32 = 0;
         let font = cache.fonts.get_font("normal-20");
         let font2 = cache.fonts.get_font("normal-16");
 
@@ -243,20 +241,44 @@ impl Render for SelectList<SourceItem> {
                 canvas,
                 font,
                 self.foreground_color,
-                20,
-                y as i32,
+                10,
+                10,
             );
         } else {
-            let row_height: u32 = 34;
+            let mut y: u32 = 0;
+
+            let mut all_rows = texture_creator
+                .create_texture_target(
+                    PixelFormatEnum::RGBA8888,
+                    rect.w as u32,
+                    self.items.len() as u32 * self.row_height,
+                )
+                .unwrap();
 
             // Setting the bottom of viewport is either janky or we don't need viewport bottom at
             // all. Veredict is still ongoing
-            self.viewport.1 = self.viewport.0 + (rect.h / row_height as i32 - 2) as usize;
+            // self.viewport.1 = self.viewport.0 + (rect.h / self.row_height as i32 - 2) as usize;
+            //
+            // self.render_viewport.0 = self.ss_anim.tick(elapsed) as i32;
+            self.render_viewport.1 = self.render_viewport.0 + rect.h;
+
+            // if self.render_viewport.2 < self.render_viewport.0 {
+            //     self.render_viewport.2 += 10;
+            // }
+            // if self.render_viewport.2 > self.render_viewport.0 {
+            //     self.render_viewport.2 -= 10;
+            // }
+
             for (idx, item) in self.items.as_slice().iter().enumerate() {
-                if idx < self.viewport.0 || idx > self.viewport.1 {
-                    continue;
-                }
-                if y as i32 > rect.h {
+                // if idx < self.viewport.0 || idx > self.viewport.1 {
+                //     continue;
+                // }
+
+                let _y = y as i32;
+                if _y < self.render_viewport.0 as i32 - self.row_height as i32
+                    || y >= self.render_viewport.0 as u32 + rect.h as u32
+                {
+                    y += self.row_height;
                     continue;
                 }
 
@@ -266,117 +288,35 @@ impl Render for SelectList<SourceItem> {
                     cache,
                     font2,
                     canvas,
-                    Rect::new(0, 0, rect.w as u32, row_height as u32),
+                    Rect::new(0, 0, rect.w as u32, self.row_height as u32),
                     elapsed,
                     idx == self.selected_index,
                     idx,
                 );
                 canvas
-                    .copy(
-                        &row_texture,
-                        None,
-                        Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
-                    )
-                    .unwrap();
-
-                y += row_height;
-            }
-        }
-    }
-}
-
-impl Render for SelectList<String> {
-    fn id(&self) -> String {
-        String::from("select")
-    }
-
-    fn render(
-        &mut self,
-        texture_creator: &TextureCreator<WindowContext>,
-        cache: &mut TextureCache,
-        _app: &App,
-        canvas: &mut Canvas<Window>,
-        rect: Rect,
-        elapsed: u128,
-    ) {
-        let mut y: u32 = 0;
-        let font = &cache.fonts.get_font("normal-20");
-
-        //FIXME(quadrado): drawing routines should be abstracted
-        if self.items.len() == 0 {
-            draw_string(
-                "No items found".to_string(),
-                canvas,
-                font,
-                self.foreground_color,
-                20,
-                y as i32,
-            );
-        } else {
-            for (idx, item) in self.items.as_slice().iter().enumerate() {
-                // FIXME(jqcorreia): This could be abstracted
-                if idx < self.viewport.0 || idx > self.viewport.1 {
-                    continue;
-                }
-                if y as i32 > rect.h {
-                    continue;
-                }
-
-                let row_height: u32 = 34;
-                let row_texture = self.render_row(
-                    item,
-                    texture_creator,
-                    cache,
-                    font,
-                    canvas,
-                    Rect::new(0, 0, rect.w as u32, row_height as u32),
-                    elapsed,
-                    idx == self.selected_index,
-                    idx,
-                );
-                canvas
-                    .copy(
-                        &row_texture,
-                        None,
-                        Some(Rect::new(0, y as i32, rect.w as u32, row_height)),
-                    )
-                    .unwrap();
-
-                y += row_height + 1;
-            }
-        }
-    }
-}
-
-impl RenderItem<String> for SelectList<String> {
-    fn render_row<'a>(
-        &'a self,
-        item: &String,
-        texture_creator: &'a TextureCreator<WindowContext>,
-        _cache: &TextureCache,
-        font: &Font,
-        canvas: &mut Canvas<Window>,
-        rect: Rect,
-        _elapsed: u128,
-        is_selected: bool,
-        idx: usize,
-    ) -> Texture {
-        let mut tex = texture_creator
-            .create_texture_target(PixelFormatEnum::RGBA8888, rect.w as u32, rect.h as u32)
-            .unwrap();
-
-        canvas
-            .with_texture_canvas(&mut tex, |canvas| {
-                draw_string(item.clone(), canvas, font, self.foreground_color, 0, 0);
-                if is_selected {
-                    canvas.set_draw_color(Color::RGBA(0, 0, 255, 0));
-                    canvas
-                        .draw_rect(Rect::new(0, 0 as i32, rect.width(), rect.height()))
+                    .with_texture_canvas(&mut all_rows, |c| {
+                        c.copy(
+                            &row_texture,
+                            None,
+                            Some(Rect::new(0, y as i32, rect.w as u32, self.row_height)),
+                        )
                         .unwrap();
-                }
-            })
-            .unwrap();
-        tex
+                    })
+                    .unwrap();
+
+                y += self.row_height;
+            }
+            let source_rect = Rect::new(
+                0,
+                self.render_viewport.0 as i32,
+                rect.w as u32,
+                std::cmp::min(rect.h as u32, y),
+            );
+            let destination_rect = Rect::new(0, 0, rect.w as u32, std::cmp::min(y, rect.h as u32));
+            canvas
+                .copy(&all_rows, Some(source_rect), Some(destination_rect))
+                .unwrap();
+        }
     }
 }
 
@@ -509,9 +449,11 @@ impl<T: PartialEq> EventConsumer for SelectList<T> {
             } => self.select_down(),
             sdl2::event::Event::MouseWheel { y, .. } => {
                 if *y == 1 {
-                    self.move_viewport_up();
+                    self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 20)
                 } else {
-                    self.move_viewport_down();
+                    if self.render_viewport.1 < self.items.len() as i32 * self.row_height as i32 {
+                        self.render_viewport.0 += 20;
+                    }
                 }
             }
             sdl2::event::Event::MouseButtonDown { x, y, .. } => {
