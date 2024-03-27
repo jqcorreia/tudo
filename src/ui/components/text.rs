@@ -5,7 +5,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Windo
 
 use crate::app::App;
 use crate::config::Config;
-use crate::ui::components::traits::{EventConsumer, Render};
+use crate::ui::components::traits::{Render, Updatable};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string_texture, DrawExtensions};
 use crate::utils::font::FontConfig;
@@ -62,9 +62,6 @@ impl UIComponent for Prompt {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.text = state.downcast_ref::<String>().unwrap().to_string();
     }
-}
-
-impl Render for Prompt {
     fn id(&self) -> String {
         self.id.clone()
     }
@@ -142,10 +139,7 @@ impl Render for Prompt {
             canvas.fill_rect(cursor_rect).unwrap();
         }
     }
-}
-
-impl EventConsumer for Prompt {
-    fn consume_event(&mut self, event: &Event, _: &mut App) {
+    fn update(&mut self, event: &Event, _: &mut App, elapsed: u128) {
         match event {
             sdl2::event::Event::TextInput { text, .. } => {
                 self.text += &text;

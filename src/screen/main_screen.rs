@@ -61,7 +61,7 @@ impl MainScreen {
 }
 
 impl Screen for MainScreen {
-    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
         let ps: String = self
             .layout
             .by_name("prompt".to_string())
@@ -78,7 +78,7 @@ impl Screen for MainScreen {
             }));
         for event in events.iter() {
             for component in self.layout.components() {
-                component.consume_event(&event, app);
+                component.update(&event, app, elapsed);
             }
         }
 

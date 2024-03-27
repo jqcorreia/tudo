@@ -8,7 +8,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 
 use crate::animation::{Animation, AnimationType};
 use crate::sources::SourceItem;
-use crate::ui::components::traits::{EventConsumer, Render};
+use crate::ui::components::traits::{Render, Updatable};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string, draw_string_texture, DrawExtensions};
 use crate::utils::fuzzy::basic_contains;
@@ -64,6 +64,10 @@ pub struct SelectList<T> {
 }
 
 impl UIComponent for SelectList<SourceItem> {
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
     fn get_state(&self) -> &dyn std::any::Any {
         &self.items
     }
@@ -137,6 +141,138 @@ impl UIComponent for SelectList<SourceItem> {
         // Sort by title
         final_list.sort_by(|this, other| this.title.cmp(&other.title));
         self.set_list(final_list);
+    }
+    fn render(
+        &mut self,
+        texture_creator: &TextureCreator<WindowContext>,
+        cache: &mut TextureCache,
+        _app: &App,
+        canvas: &mut Canvas<Window>,
+        rect: Rect,
+        elapsed: u128,
+    ) {
+        let font = cache.fonts.get_font("normal-20");
+        let font2 = cache.fonts.get_font("normal-16");
+
+        canvas.set_draw_color(Color::BLACK);
+
+        canvas.draw_filled_rounded_rect(Rect::new(0, 0, rect.w as u32, rect.h as u32), 7);
+        if self.items.len() == 0 {
+            draw_string(
+                "No items found".to_string(),
+                canvas,
+                font,
+                self.foreground_color,
+                10,
+                10,
+            );
+        } else {
+            let mut y: u32 = 0;
+
+            let mut all_rows = texture_creator
+                .create_texture_target(
+                    PixelFormatEnum::RGBA8888,
+                    rect.w as u32,
+                    self.items.len() as u32 * self.row_height,
+                )
+                .unwrap();
+
+            self.render_viewport.1 = self.render_viewport.0 + rect.h;
+            let rv0 = self.ss_anim.tick(elapsed);
+
+            for (idx, item) in self.items.as_slice().iter().enumerate() {
+                // if idx < self.viewport.0 || idx > self.viewport.1 {
+                //     continue;
+                // }
+
+                let _y = y as i32;
+                if _y < rv0 as i32 - self.row_height as i32 || y >= rv0 as u32 + rect.h as u32 {
+                    y += self.row_height;
+                    continue;
+                }
+
+                let row_texture = self.render_row(
+                    item,
+                    texture_creator,
+                    cache,
+                    font2,
+                    canvas,
+                    Rect::new(0, 0, rect.w as u32, self.row_height as u32),
+                    elapsed,
+                    idx == self.selected_index,
+                    idx,
+                );
+                canvas
+                    .with_texture_canvas(&mut all_rows, |c| {
+                        c.copy(
+                            &row_texture,
+                            None,
+                            Some(Rect::new(0, y as i32, rect.w as u32, self.row_height)),
+                        )
+                        .unwrap();
+                    })
+                    .unwrap();
+
+                y += self.row_height;
+            }
+            let source_rect = Rect::new(
+                0,
+                rv0 as i32,
+                rect.w as u32,
+                std::cmp::min(rect.h as u32, y),
+            );
+            let destination_rect = Rect::new(0, 0, rect.w as u32, std::cmp::min(y, rect.h as u32));
+            canvas
+                .copy(&all_rows, Some(source_rect), Some(destination_rect))
+                .unwrap();
+        }
+    }
+    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128) {
+        match event {
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Return),
+                ..
+            } => {
+                if self.get_selected_item().as_ref().is_some() {
+                    (self.on_select)(self.get_selected_item().as_ref().unwrap(), app)
+                }
+            }
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::P),
+                keymod: sdl2::keyboard::Mod::LCTRLMOD,
+                ..
+            } => self.select_up(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::N),
+                keymod: sdl2::keyboard::Mod::LCTRLMOD,
+                ..
+            } => self.select_down(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Up),
+                ..
+            } => self.select_up(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Down),
+                ..
+            } => self.select_down(),
+            sdl2::event::Event::MouseWheel { y, .. } => {
+                if *y == 1 {
+                    self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 40);
+                    self.ss_anim
+                        .set_target(self.render_viewport.0 as u32, Some(elapsed))
+                } else {
+                    if self.render_viewport.1 < self.items.len() as i32 * self.row_height as i32 {
+                        self.render_viewport.0 += 40;
+                    }
+                    self.ss_anim
+                        .set_target(self.render_viewport.0 as u32, Some(elapsed))
+                }
+            }
+            sdl2::event::Event::MouseButtonDown { x, y, .. } => {
+                println!("{} {}", x, y)
+            }
+            _ => (),
+        }
     }
 }
 
@@ -215,110 +351,7 @@ impl<T: PartialEq> SelectList<T> {
     }
 }
 
-impl Render for SelectList<SourceItem> {
-    fn id(&self) -> String {
-        self.id.clone()
-    }
-
-    fn render(
-        &mut self,
-        texture_creator: &TextureCreator<WindowContext>,
-        cache: &mut TextureCache,
-        _app: &App,
-        canvas: &mut Canvas<Window>,
-        rect: Rect,
-        elapsed: u128,
-    ) {
-        let font = cache.fonts.get_font("normal-20");
-        let font2 = cache.fonts.get_font("normal-16");
-
-        canvas.set_draw_color(Color::BLACK);
-
-        canvas.draw_filled_rounded_rect(Rect::new(0, 0, rect.w as u32, rect.h as u32), 7);
-        if self.items.len() == 0 {
-            draw_string(
-                "No items found".to_string(),
-                canvas,
-                font,
-                self.foreground_color,
-                10,
-                10,
-            );
-        } else {
-            let mut y: u32 = 0;
-
-            let mut all_rows = texture_creator
-                .create_texture_target(
-                    PixelFormatEnum::RGBA8888,
-                    rect.w as u32,
-                    self.items.len() as u32 * self.row_height,
-                )
-                .unwrap();
-
-            // Setting the bottom of viewport is either janky or we don't need viewport bottom at
-            // all. Veredict is still ongoing
-            // self.viewport.1 = self.viewport.0 + (rect.h / self.row_height as i32 - 2) as usize;
-            //
-            // self.render_viewport.0 = self.ss_anim.tick(elapsed) as i32;
-            self.render_viewport.1 = self.render_viewport.0 + rect.h;
-
-            // if self.render_viewport.2 < self.render_viewport.0 {
-            //     self.render_viewport.2 += 10;
-            // }
-            // if self.render_viewport.2 > self.render_viewport.0 {
-            //     self.render_viewport.2 -= 10;
-            // }
-
-            for (idx, item) in self.items.as_slice().iter().enumerate() {
-                // if idx < self.viewport.0 || idx > self.viewport.1 {
-                //     continue;
-                // }
-
-                let _y = y as i32;
-                if _y < self.render_viewport.0 as i32 - self.row_height as i32
-                    || y >= self.render_viewport.0 as u32 + rect.h as u32
-                {
-                    y += self.row_height;
-                    continue;
-                }
-
-                let row_texture = self.render_row(
-                    item,
-                    texture_creator,
-                    cache,
-                    font2,
-                    canvas,
-                    Rect::new(0, 0, rect.w as u32, self.row_height as u32),
-                    elapsed,
-                    idx == self.selected_index,
-                    idx,
-                );
-                canvas
-                    .with_texture_canvas(&mut all_rows, |c| {
-                        c.copy(
-                            &row_texture,
-                            None,
-                            Some(Rect::new(0, y as i32, rect.w as u32, self.row_height)),
-                        )
-                        .unwrap();
-                    })
-                    .unwrap();
-
-                y += self.row_height;
-            }
-            let source_rect = Rect::new(
-                0,
-                self.render_viewport.0 as i32,
-                rect.w as u32,
-                std::cmp::min(rect.h as u32, y),
-            );
-            let destination_rect = Rect::new(0, 0, rect.w as u32, std::cmp::min(y, rect.h as u32));
-            canvas
-                .copy(&all_rows, Some(source_rect), Some(destination_rect))
-                .unwrap();
-        }
-    }
-}
+impl Render for SelectList<SourceItem> {}
 
 impl RenderItem<SourceItem> for SelectList<SourceItem> {
     fn render_row<'a>(
@@ -415,51 +448,5 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
             })
             .unwrap();
         tex
-    }
-}
-
-impl<T: PartialEq> EventConsumer for SelectList<T> {
-    fn consume_event(&mut self, event: &Event, app: &mut App) {
-        match event {
-            sdl2::event::Event::KeyDown {
-                keycode: Some(Keycode::Return),
-                ..
-            } => {
-                if self.get_selected_item().as_ref().is_some() {
-                    (self.on_select)(self.get_selected_item().as_ref().unwrap(), app)
-                }
-            }
-            sdl2::event::Event::KeyDown {
-                keycode: Some(Keycode::P),
-                keymod: sdl2::keyboard::Mod::LCTRLMOD,
-                ..
-            } => self.select_up(),
-            sdl2::event::Event::KeyDown {
-                keycode: Some(Keycode::N),
-                keymod: sdl2::keyboard::Mod::LCTRLMOD,
-                ..
-            } => self.select_down(),
-            sdl2::event::Event::KeyDown {
-                keycode: Some(Keycode::Up),
-                ..
-            } => self.select_up(),
-            sdl2::event::Event::KeyDown {
-                keycode: Some(Keycode::Down),
-                ..
-            } => self.select_down(),
-            sdl2::event::Event::MouseWheel { y, .. } => {
-                if *y == 1 {
-                    self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 20)
-                } else {
-                    if self.render_viewport.1 < self.items.len() as i32 * self.row_height as i32 {
-                        self.render_viewport.0 += 20;
-                    }
-                }
-            }
-            sdl2::event::Event::MouseButtonDown { x, y, .. } => {
-                println!("{} {}", x, y)
-            }
-            _ => (),
-        }
     }
 }

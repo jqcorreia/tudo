@@ -1,13 +1,8 @@
-use std::{ops::Rem, usize};
-
-use sdl2::{
-    pixels::{Color, PixelFormatEnum},
-    rect::Rect,
-};
+use sdl2::{pixels::Color, rect::Rect};
 
 use crate::utils::draw::draw_string_texture;
 
-use super::traits::{EventConsumer, Render, UIComponent};
+use super::traits::UIComponent;
 
 pub struct Label {
     pub id: String,
@@ -20,7 +15,7 @@ impl Label {
     }
 }
 
-impl Render for Label {
+impl UIComponent for Label {
     fn id(&self) -> String {
         self.id.clone()
     }
@@ -41,13 +36,7 @@ impl Render for Label {
 
         canvas.copy(&texture, None, Rect::new(0, 0, w, h)).unwrap();
     }
-}
-
-impl EventConsumer for Label {
-    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {}
-}
-
-impl UIComponent for Label {
+    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, elapsed: u128) {}
     fn get_state(&self) -> &dyn std::any::Any {
         return &self.text;
     }
