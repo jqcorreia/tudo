@@ -1,5 +1,4 @@
-fn ease_out(a: &mut Animation, tick: u128) {
-    let duration = 125.0;
+fn ease_out(a: &mut Animation, tick: u128, duration: f32) {
     let distance = a.target as i32 - a.start_value as i32;
 
     let elapsed_percent = ((tick - a.start_tick) as f32 / duration).clamp(0.0, 1.0);
@@ -9,8 +8,7 @@ fn ease_out(a: &mut Animation, tick: u128) {
     a.value = (a.start_value as i32 + (distance as f32 * alpha) as i32) as u32;
 }
 
-fn linear(a: &mut Animation, tick: u128) {
-    let duration = 100.0;
+fn linear(a: &mut Animation, tick: u128, duration: f32) {
     let distance = a.target as i32 - a.start_value as i32;
 
     let elapsed_percent = ((tick - a.start_tick) as f32 / duration).clamp(0.0, 1.0);
@@ -24,7 +22,7 @@ pub enum AnimationType {
 }
 
 impl AnimationType {
-    pub fn func(&self) -> fn(&mut Animation, u128) {
+    pub fn func(&self) -> fn(&mut Animation, u128, f32) {
         match self {
             Self::Linear => linear,
             Self::EaseOut => ease_out,
@@ -73,7 +71,7 @@ impl Animation {
     }
 
     pub fn tick(&mut self, tick: u128) -> u32 {
-        (self.animation_type.func())(self, tick);
+        (self.animation_type.func())(self, tick, 100.0);
         return self.value;
     }
 }

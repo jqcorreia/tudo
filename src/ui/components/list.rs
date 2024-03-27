@@ -261,11 +261,12 @@ impl UIComponent for SelectList<SourceItem> {
                     self.ss_anim
                         .set_target(self.render_viewport.0 as u32, Some(elapsed))
                 } else {
-                    if self.render_viewport.1 < self.items.len() as i32 * self.row_height as i32 {
-                        self.render_viewport.0 += 40;
+                    let tex_h = self.items.len() as i32 * self.row_height as i32;
+                    if self.render_viewport.1 < tex_h {
+                        self.render_viewport.0 += std::cmp::min(tex_h - self.render_viewport.1, 40);
+                        self.ss_anim
+                            .set_target(self.render_viewport.0 as u32, Some(elapsed))
                     }
-                    self.ss_anim
-                        .set_target(self.render_viewport.0 as u32, Some(elapsed))
                 }
             }
             sdl2::event::Event::MouseButtonDown { x, y, .. } => {
