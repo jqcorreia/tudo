@@ -9,7 +9,11 @@ use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 
-pub trait Render {
+pub trait Render {}
+
+pub trait Updatable {}
+
+pub trait UIComponent {
     fn id(&self) -> String;
     fn render(
         &mut self,
@@ -21,6 +25,8 @@ pub trait Render {
         elapsed: u128,
     );
 
+    // Standard function that sets the texture based on the rect and copies it to the main canvas
+    // in the correct position and with the correct size
     fn draw(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
@@ -57,13 +63,8 @@ pub trait Render {
 
         main_canvas.copy(&tex, None, component_rect).unwrap();
     }
-}
+    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128);
 
-pub trait EventConsumer {
-    fn consume_event(&mut self, event: &Event, app: &mut App);
-}
-
-pub trait UIComponent: Render + EventConsumer {
     fn get_state(&self) -> &dyn Any;
     fn set_state(&mut self, state: Box<dyn Any>);
 }
