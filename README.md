@@ -41,13 +41,13 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - TODO: Browser tabs (this one is a challenge)
 
 ## Keybindings
-<kbd>Ctrl</kbd> + <kbd>P</kbd> - Move selection up
-<kbd>Ctrl</kbd> + <kbd>N</kbd> - Move selection down
-<kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Do selected action
+<kbd>Ctrl</kbd> + <kbd>P</kbd> - Move selection up  
+<kbd>Ctrl</kbd> + <kbd>N</kbd> - Move selection down  
+<kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Do selected action  
 
-<kbd>F1</kbd> - Show frames per second
-<kbd>F2</kbd> - Toggle 60fps framelock
-<kbd>F3</kbd> - Debug screen, mostly giberish
+<kbd>F1</kbd> - Show frames per second  
+<kbd>F2</kbd> - Toggle 60fps framelock  
+<kbd>F3</kbd> - Debug screen, mostly giberish  
 
 ## Rolling Dev Notes
 - [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
