@@ -76,9 +76,6 @@ fn main() {
         point_size: 16,
     });
 
-    // Event pump, for now just sits in the main loop
-    let mut event_pump = app.sdl.event_pump().unwrap();
-
     // Generate items list from all sources
     let items: Arc<Mutex<Vec<SourceItem>>> = Arc::new(Mutex::new(Vec::new()));
     let completed_threads: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
@@ -152,7 +149,8 @@ fn main() {
         let elapsed = initial_instant.elapsed().as_millis();
 
         // Consume events and process them
-        let cur_events = event_pump
+        let cur_events = app
+            .event_pump
             .poll_iter()
             .map(|event| misc::ignore_numlock(&event))
             .collect::<Vec<Event>>();

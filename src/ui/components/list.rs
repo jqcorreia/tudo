@@ -61,6 +61,7 @@ pub struct SelectList<T> {
     pub vertical_bar_width: u32,
     pub row_height: u32,
     pub ss_anim: Animation,
+    pub last_mouse_y: i32,
 }
 
 impl UIComponent for SelectList<SourceItem> {
@@ -232,7 +233,8 @@ impl UIComponent for SelectList<SourceItem> {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
                 ..
-            } => {
+            }
+            | sdl2::event::Event::MouseButtonDown { .. } => {
                 if self.get_selected_item().as_ref().is_some() {
                     (self.on_select)(self.get_selected_item().as_ref().unwrap(), app)
                 }
@@ -269,11 +271,14 @@ impl UIComponent for SelectList<SourceItem> {
                     }
                 }
             }
-            sdl2::event::Event::MouseButtonDown { x, y, .. } => {
-                println!("{} {}", x, y)
+            sdl2::event::Event::MouseMotion { y, .. } => {
+                self.last_mouse_y = *y;
             }
             _ => (),
         }
+        self.set_selected_index(
+            ((self.render_viewport.0 + self.last_mouse_y) / self.row_height as i32) as usize,
+        );
     }
 }
 
@@ -290,6 +295,7 @@ impl<T: PartialEq> SelectList<T> {
             on_select: |_, _| (),
             row_height: 34, // Make this the same height as the font
             ss_anim: Animation::new(0, 0, AnimationType::EaseOut),
+            last_mouse_y: 0,
         }
     }
     pub fn select_up(&mut self) {
@@ -409,25 +415,23 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .unwrap();
                 }
 
-                {
-                    // Draw text
-                    let text_texture = draw_string_texture(
-                        item.title.clone(),
-                        texture_creator,
-                        font,
-                        self.foreground_color,
-                    );
-                    let query = text_texture.query();
-                    let (w, h) = (query.width, query.height);
-                    let hpad = (rect.height() - h) / 2;
-                    canvas
-                        .copy(
-                            &text_texture,
-                            None,
-                            Some(Rect::new(vertical_bar_spacing + 34, hpad as i32, w, h)),
-                        )
-                        .unwrap();
-                }
+                // Draw text
+                let text_texture = draw_string_texture(
+                    item.title.clone(),
+                    texture_creator,
+                    font,
+                    self.foreground_color,
+                );
+                let query = text_texture.query();
+                let (w, h) = (query.width, query.height);
+                let hpad = (rect.height() - h) / 2;
+                canvas
+                    .copy(
+                        &text_texture,
+                        None,
+                        Some(Rect::new(vertical_bar_spacing + 34, hpad as i32, w, h)),
+                    )
+                    .unwrap();
 
                 // Draw tag
                 let tag_texture = draw_string_texture(

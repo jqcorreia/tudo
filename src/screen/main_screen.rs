@@ -20,7 +20,7 @@ use crate::{
         },
         layout::{Container, ContainerSize, ContainerType, LayoutBuilder, SplitType},
     },
-    utils::cache::TextureCache,
+    utils::{cache::TextureCache, misc::localize_mouse_event},
 };
 
 use super::Screen;
@@ -77,8 +77,23 @@ impl Screen for MainScreen {
                 prompt: ps,
             }));
         for event in events.iter() {
-            for component in self.layout.components() {
-                component.update(&event, app, elapsed);
+            // If it's a mouse event then we need to localize it and send it to the apropriate
+            // component
+            // FIXME(quadrado): Do this per component?
+            match event {
+                sdl2::event::Event::MouseMotion { .. } => {
+                    for (rect, component) in self.layout.components_with_rect() {
+                        let (_event, contains) = localize_mouse_event(event, rect);
+                        if contains {
+                            component.update(&_event, app, elapsed);
+                        }
+                    }
+                }
+                _ => {
+                    for component in self.layout.components() {
+                        component.update(&event, app, elapsed);
+                    }
+                }
             }
         }
 
