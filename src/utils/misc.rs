@@ -1,4 +1,8 @@
-use sdl2::{event::Event, keyboard::Mod};
+use sdl2::{
+    event::Event,
+    keyboard::Mod,
+    rect::{Point, Rect},
+};
 
 pub fn ignore_numlock(event: &Event) -> Event {
     let _event = match event {
@@ -25,4 +29,34 @@ pub fn ignore_numlock(event: &Event) -> Event {
         _ => event.clone(),
     };
     _event
+}
+
+pub fn localize_mouse_event(event: &Event, rect: Rect) -> (Event, bool) {
+    let (_event, contains) = match event {
+        sdl2::event::Event::MouseMotion {
+            timestamp,
+            window_id,
+            which,
+            mousestate,
+            x,
+            y,
+            xrel,
+            yrel,
+        } => (
+            sdl2::event::Event::MouseMotion {
+                timestamp: *timestamp,
+                window_id: *window_id,
+                which: *which,
+                mousestate: *mousestate,
+                x: *x - rect.x,
+                y: *y - rect.y,
+                xrel: *xrel,
+                yrel: *yrel,
+            },
+            rect.contains_point(Point::new(*x, *y)),
+        ),
+        _ => (event.clone(), false),
+    };
+
+    (_event, contains)
 }
