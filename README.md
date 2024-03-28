@@ -40,6 +40,15 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - TODO: Notion Notes
 - TODO: Browser tabs (this one is a challenge)
 
+## Keybindings
+<kbd>Ctrl</kbd> + <kbd>P</kbd> - Move selection up
+<kbd>Ctrl</kbd> + <kbd>N</kbd> - Move selection down
+<kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Do selected action
+
+<kbd>F1</kbd> - Show frames per second
+<kbd>F2</kbd> - Toggle 60fps framelock
+<kbd>F3</kbd> - Debug screen, mostly giberish
+
 ## Rolling Dev Notes
 - [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
 - [x] action tags and search for action (:run, :window, :secret, etc)
@@ -59,8 +68,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Component get_state and set_state
 - [x] Use a new component spinner to sinalize sources loading
 - [x] Extend canvas drawing functions implementing more complex shapes (rounded rect, circle, quadrants, ...) 
+- [x] Mouse coords translation to local component coords and list item click
 - [ ] ! Implement component focus (which will receive events)
-- [ ] Mouse coords translation to local component coords and list item click
 - [ ] Get system default font, maybe
 - [ ] Prompt window available to actions
 - [ ] More prettier  
