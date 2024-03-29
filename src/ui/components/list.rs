@@ -273,12 +273,13 @@ impl UIComponent for SelectList<SourceItem> {
             }
             sdl2::event::Event::MouseMotion { y, .. } => {
                 self.last_mouse_y = *y;
+                self.set_selected_index(
+                    ((self.ss_anim.value as i32 + self.last_mouse_y) / self.row_height as i32)
+                        as usize,
+                );
             }
             _ => (),
         }
-        self.set_selected_index(
-            ((self.render_viewport.0 + self.last_mouse_y) / self.row_height as i32) as usize,
-        );
     }
 }
 
