@@ -70,17 +70,19 @@ pub fn generate_map() -> HashMap<String, String> {
     let mut theme = "default";
     let mut themes: Vec<String> = Vec::new();
 
-    let mut ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
-    loop {
-        match ini.get("Icon Theme").unwrap().get("Inherits") {
-            Some(th) => {
-                themes.push(th.to_string().clone());
-                theme = th;
-            }
-            None => break,
-        }
-        ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
-    }
+    //FIXME(quadrado): This is buggy and not being used right now. Revisit this
+    // Commenting because Inherits field can have a comma separated list of values.
+    //let mut ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+    //loop {
+    //    match ini.get("Icon Theme").unwrap().get("Inherits") {
+    //        Some(th) => {
+    //            themes.push(th.to_string().clone());
+    //            theme = th;
+    //        }
+    //        None => break,
+    //    }
+    //    ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
+    //}
 
     themes = vec!["hicolor".to_string()];
     for theme in themes {
