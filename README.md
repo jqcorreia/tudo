@@ -71,3 +71,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [ ] Submenus for some actions
 
 ! - means ongoing
+
+## Wayland support
+
+Just add `SDL_VIDEODRIVER=wayland` to your environment variables
+
