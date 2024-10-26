@@ -18,7 +18,7 @@ use crate::{
             spinner::Spinner,
             text::Prompt,
         },
-        layout::{Container, ContainerSize, ContainerType, LayoutBuilder, SplitType},
+        layout::{Container, ContainerSize, LayoutBuilder, SplitType},
     },
     utils::cache::TextureCache,
 };

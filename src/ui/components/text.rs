@@ -1,3 +1,5 @@
+use std::process::Command;
+
 use sdl2::keyboard::Keycode;
 use sdl2::render::{BlendMode, TextureCreator};
 use sdl2::video::WindowContext;
@@ -145,8 +147,19 @@ impl Render for Prompt {
 }
 
 impl EventConsumer for Prompt {
-    fn consume_event(&mut self, event: &Event, _: &mut App) {
+    fn consume_event(&mut self, event: &Event, ctx: &mut App) {
         match event {
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Return),
+                ..
+            } => {
+                if self.text.starts_with("!") {
+                    let t = self.text.replace("!", "");
+                    let args = vec!["-c", &t];
+                    let _cmd = Command::new("sh").args(args).spawn();
+                    ctx.running = false;
+                }
+            }
             sdl2::event::Event::TextInput { text, .. } => {
                 self.text += &text;
             }
