@@ -48,7 +48,7 @@ local function get_systems(token)
 end
 
 local function get_components(token)
-	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/componentsv2?page_size=1000", {
+	local a = http_get("https://kong-api.prd.worten.net/vlad2/latest/components?page_size=1000", {
 		Authorization = "Bearer " .. token,
 	})
 

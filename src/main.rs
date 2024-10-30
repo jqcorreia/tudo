@@ -61,6 +61,11 @@ fn main() {
 
     // Load initial fonts
     cache.fonts.load_font(FontConfig {
+        alias: "normal-30".to_string(),
+        path: app.config.font_file.clone(),
+        point_size: 30,
+    });
+    cache.fonts.load_font(FontConfig {
         alias: "normal-28".to_string(),
         path: app.config.font_file.clone(),
         point_size: 28,
@@ -73,7 +78,7 @@ fn main() {
     cache.fonts.load_font(FontConfig {
         alias: "normal-16".to_string(),
         path: app.config.font_file.clone(),
-        point_size: 16,
+        point_size: 14,
     });
 
     // Event pump, for now just sits in the main loop

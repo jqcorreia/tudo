@@ -14,6 +14,7 @@ use crate::{
     sources::SourceItem,
     ui::{
         components::{
+            clock::Clock,
             list::{SelectList, SelectListState},
             spinner::Spinner,
             text::Prompt,
@@ -42,6 +43,7 @@ impl MainScreen {
         let mut select_list = SelectList::<SourceItem>::new("list");
         select_list.on_select = execute;
         let spinner = Spinner::new("spinner".to_string());
+        let clock = Clock::new("clock".to_string());
 
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
@@ -50,6 +52,7 @@ impl MainScreen {
         let spinner_idx = builder.add(Box::new(spinner), ContainerSize::Fixed(64));
         builder.set_cur_split(main_split);
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
+        builder.add(Box::new(clock), ContainerSize::Fixed(32));
         builder.generate(width, height);
 
         MainScreen {
