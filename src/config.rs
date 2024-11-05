@@ -74,7 +74,7 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            font_file: "/usr/share/fonts/noto/NotoSans-Regular.ttf".to_string(),
+            font_file: "/nix/store/c1hkk5csjfysag135gim8w8w9knjd1ss-noto-fonts-24.3.1/share/fonts/noto/NotoSans-Italic[wdth,wght].ttf".to_string(),
             cursor_blink: true,
             prompt_color: Color::RGBA(255, 255, 255, 255),
         }

@@ -22,10 +22,12 @@ impl Source for DesktopApplications {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let icon_finder = IconFinder::new();
-        for path in [
-            "/usr/share/applications",
-            "/home/jqcorreia/.local/share/applications", // FIXME(quadrado): Generalize this path
-        ] {
+        let paths =  match std::env::var("XDG_DATA_DIRS") {
+            Ok(dirs) => dirs.split(":").map(|x| format!("{}/applications", x)).collect::<Vec<String>>(),
+            Err(_) => vec!()
+        };
+
+        for path in paths {
             let desktop_files = match fs::read_dir(path) {
                 Ok(entries) => entries
                     .filter(|entry| {

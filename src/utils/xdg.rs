@@ -37,7 +37,11 @@ impl IconFinder {
 }
 
 pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> {
-    let contents = String::from_utf8(std::fs::read(path).unwrap()).unwrap();
+    let contents = match std::fs::read(path) {
+        Ok(c) => String::from_utf8(c).unwrap(),
+        Err(_) => return HashMap::new()
+    };
+    // String::from_utf8(std::fs::read(path).unwrap()).unwrap();
 
     let mut header_title = "";
     let mut res: HashMap<String, HashMap<String, String>> = HashMap::new();
@@ -66,7 +70,7 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
 
 pub fn generate_map() -> HashMap<String, String> {
     let mut map: HashMap<String, String> = HashMap::new();
-    let base_folder = "/usr/share/icons";
+    let base_folder = "/run/current-system/sw/share/icons";
     let mut theme = "default";
     let mut themes: Vec<String> = Vec::new();
 
