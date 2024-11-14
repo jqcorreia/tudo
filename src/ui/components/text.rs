@@ -87,7 +87,7 @@ impl Render for Prompt {
 
         cache.fonts.load_font(FontConfig {
             alias: "normal-24".to_string(),
-            path: app.config.font_file.clone(),
+            family: app.config.font_family.clone(),
             point_size: 24,
         });
         let font = cache.fonts.get_font("normal-24");
