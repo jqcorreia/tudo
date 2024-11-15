@@ -41,7 +41,6 @@ impl<'a> FontManager<'_> {
                 file_map.insert(family.trim().to_string(), path.to_string());
             }
         }
-        dbg!(&file_map);
         FontManager {
             file_map,
             ttf,

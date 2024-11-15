@@ -22,14 +22,21 @@ impl Source for DesktopApplications {
         let mut res: Vec<SourceItem> = Vec::new();
 
         let icon_finder = IconFinder::new();
-        let paths =  match std::env::var("XDG_DATA_DIRS") {
-            Ok(dirs) => dirs.split(":").map(|x| format!("{}/applications", x)).collect::<Vec<String>>(),
-            Err(_) => vec!()
+        let home = std::env::var("HOME").unwrap();
+        let paths = match std::env::var("XDG_DATA_DIRS") {
+            Ok(dirs) => dirs
+                .split(":")
+                .map(|x| format!("{}/applications", x))
+                .collect::<Vec<String>>(),
+            Err(_) => vec![
+                "/usr/share/applications".to_string(),
+                format!("/home/{}/.local/share/applications", home).to_string(),
+            ],
         };
 
         for path in paths {
             let desktop_files = match fs::read_dir(path) {
-                Ok(entries) => entries
+                Ok(entries) => dbg!(entries)
                     .filter(|entry| {
                         entry
                             .as_ref()
