@@ -10,6 +10,7 @@ pub mod ui;
 
 use std::collections::HashMap;
 use std::process::Command;
+use std::sync::mpsc::channel;
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
@@ -22,6 +23,8 @@ use screen::info_screen::InfoScreen;
 use screen::main_screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
+use sdl2::libc::SIGUSR2;
+use signal_hook::iterator::Signals;
 use sources::Source;
 
 use screen::Screen;
@@ -39,7 +42,42 @@ use utils::draw::draw_string;
 use utils::font::FontConfig;
 use utils::misc;
 
+const PID_FILE: &str = "/run/user/1000/todo.pid";
+
+fn check_running_state() -> bool {
+    match std::fs::exists(PID_FILE) {
+        Ok(true) => {
+            let pid = String::from_utf8(std::fs::read(PID_FILE).unwrap()).unwrap();
+            println!("Running PID: {}", pid);
+            println!("Opening existing tudo session");
+            let cmd =
+                dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
+            return true;
+        }
+        _ => {
+            return false;
+        }
+    };
+}
+
 fn main() {
+    if check_running_state() {
+        return;
+    };
+
+    std::fs::write(PID_FILE, std::process::id().to_string()).unwrap();
+
+    // Control channel for signalling handling
+    let (tx, rx) = channel::<i32>();
+
+    let mut signals = Signals::new([SIGUSR2]).unwrap();
+
+    thread::spawn(move || {
+        for sig in signals.forever() {
+            tx.send(sig).unwrap();
+        }
+    });
+
     // First measurement and initial state
     let initial_instant = Instant::now();
     let mut first_render = true;
@@ -147,6 +185,11 @@ fn main() {
         // We need to drop here in order to yield the lock
         drop(ct);
 
+        if let Ok(sig) = rx.try_recv() {
+            dbg!(sig);
+            main_canvas.window_mut().show();
+        }
+
         // Sometime elapsed time is 0 and we need to account for that
         if tick_time.elapsed().as_millis() > 0 {
             fps = 1000 / tick_time.elapsed().as_millis();
@@ -164,6 +207,10 @@ fn main() {
 
         // Handle application global events
         app.handle_global_events(&cur_events);
+        if app.should_hide {
+            main_canvas.window_mut().hide();
+            app.should_hide = false;
+        }
 
         // Screen update
         current_screen.update(&mut app, &cur_events, elapsed);
@@ -203,6 +250,7 @@ fn main() {
             );
         }
     }
+    std::fs::remove_file(PID_FILE).unwrap();
 
     if app.clipboard.is_some() {
         let _out = Command::new("sh")

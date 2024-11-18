@@ -15,6 +15,7 @@ serde = { version = "1.0.196", features = ["derive"] }
 dyn-clone = "1.0.16"
 ureq = { version = "2.9.5", features = ["json"] }
 chrono = "0.4.38"
+signal-hook = "0.3.17"
 
 [[bin]]
 name = "tudo"

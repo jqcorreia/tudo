@@ -1,6 +1,7 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
+use sdl2::video;
 use sdl2::video::Window;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
@@ -21,6 +22,7 @@ pub struct App {
     pub config: Config,
     pub lock_path: String,
     pub layout_debug: bool,
+    pub should_hide: bool,
 }
 
 fn already_running(lock_path: &String) -> bool {
@@ -77,6 +79,7 @@ impl App {
                 config,
                 lock_path,
                 layout_debug: false,
+                should_hide: false,
             },
             canvas,
         )
@@ -100,7 +103,8 @@ impl App {
                     ..
                 } => {
                     if &self.current_screen_id == "main" {
-                        self.running = false
+                        // self.running = false
+                        self.should_hide = true;
                     } else {
                         self.current_screen_id = "main".to_string()
                     }
