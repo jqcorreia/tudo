@@ -39,7 +39,7 @@ impl Action for PassSecretAction {
         } else {
             ctx.clipboard = Some(ot);
         }
-        ctx.running = false;
+        ctx.should_hide = true;
     }
     fn tags(&self) -> Vec<String> {
         vec!["secret".to_string()]
@@ -66,7 +66,7 @@ impl Action for RunAction {
         }
 
         if self.exit_after {
-            ctx.running = false;
+            ctx.should_hide = true;
         }
     }
     fn tags(&self) -> Vec<String> {
@@ -87,7 +87,7 @@ impl Action for WindowSwitchAction {
         let _ = switch_to_window(&conn, &self.window, &root);
 
         if self.exit_after {
-            ctx.running = false;
+            ctx.should_hide = true;
         }
     }
     fn tags(&self) -> Vec<String> {
@@ -106,7 +106,7 @@ impl Action for TmuxAction {
             .args(["-c", &format!("alacritty -e tmux new -As {}", self.session)])
             .spawn()
             .unwrap();
-        ctx.running = false;
+        ctx.should_hide = true;
     }
     fn tags(&self) -> Vec<String> {
         vec!["tmux".to_string()]

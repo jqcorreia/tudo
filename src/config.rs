@@ -17,6 +17,8 @@ pub struct Config {
     #[serde(serialize_with = "serialize_color")]
     #[serde(deserialize_with = "deserialize_color")]
     pub prompt_color: Color,
+    pub fast_start: bool,
+    pub pid_file: String,
 }
 
 fn serialize_color<S>(color: &Color, serializer: S) -> Result<S::Ok, S::Error>
@@ -78,6 +80,8 @@ impl Default for Config {
             font_family: "JetBrainsMono Nerd Font".to_string(),
             cursor_blink: true,
             prompt_color: Color::RGBA(255, 255, 255, 255),
+            fast_start: true,
+            pid_file: String::from("/run/user/1000/todo.pid"),
         }
     }
 }

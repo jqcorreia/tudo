@@ -42,7 +42,8 @@ use utils::draw::draw_string;
 use utils::font::FontConfig;
 use utils::misc;
 
-const PID_FILE: &str = "/run/user/1000/todo.pid";
+const PID_FILE: &str = "/run/user/1000/todo.pid"; //TODO(quadrado): Use configuration value instead
+                                                  //of this one.
 
 fn check_running_state() -> bool {
     match std::fs::exists(PID_FILE) {

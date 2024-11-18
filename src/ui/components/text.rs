@@ -157,7 +157,7 @@ impl EventConsumer for Prompt {
                     let t = self.text.replace("!", "");
                     let args = vec!["-c", &t];
                     let _cmd = Command::new("sh").args(args).spawn();
-                    ctx.running = false;
+                    ctx.should_hide = true;
                 }
             }
             sdl2::event::Event::TextInput { text, .. } => {
