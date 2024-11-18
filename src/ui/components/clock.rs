@@ -1,10 +1,9 @@
 use chrono::prelude::*;
-use sdl2::rect::Rect;
+use sdl2::{event::Event, rect::Rect};
 
-use super::{
-    label::Label,
-    traits::{EventConsumer, Render, UIComponent},
-};
+use crate::app::App;
+
+use super::{label::Label, traits::UIComponent};
 
 pub struct Clock {
     pub id: String,
@@ -20,7 +19,7 @@ impl Clock {
     }
 }
 
-impl Render for Clock {
+impl UIComponent for Clock {
     fn id(&self) -> String {
         self.id.clone()
     }
@@ -38,13 +37,6 @@ impl Render for Clock {
         self.label
             .render(texture_creator, cache, _app, canvas, rect, elapsed);
     }
-}
-
-impl EventConsumer for Clock {
-    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {}
-}
-
-impl UIComponent for Clock {
     fn get_state(&self) -> &dyn std::any::Any {
         return self.label.get_state();
     }
@@ -52,4 +44,5 @@ impl UIComponent for Clock {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.label.set_state(state);
     }
+    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128) {}
 }
