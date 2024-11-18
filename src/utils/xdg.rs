@@ -71,7 +71,7 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
 pub fn generate_map() -> HashMap<String, String> {
     let mut map: HashMap<String, String> = HashMap::new();
     let base_folder = "/run/current-system/sw/share/icons";
-    let mut theme = "default";
+    let theme = "default";
     let mut themes: Vec<String> = Vec::new();
 
     //FIXME(quadrado): This is buggy and not being used right now. Revisit this

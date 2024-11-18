@@ -7,7 +7,6 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Windo
 
 use crate::app::App;
 use crate::config::Config;
-use crate::ui::components::traits::{Render, Updatable};
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string_texture, DrawExtensions};
 use crate::utils::font::FontConfig;

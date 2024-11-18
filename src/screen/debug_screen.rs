@@ -13,7 +13,7 @@ use crate::{
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::{
         cache::TextureCache,
-        draw::{draw_filled_circle_quadrants, draw_filled_rounded_rect, DrawExtensions},
+        draw::{draw_filled_circle_quadrants, draw_filled_rounded_rect},
     },
 };
 

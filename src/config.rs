@@ -8,7 +8,6 @@ use serde::{
     ser::SerializeMap,
     Deserialize, Deserializer, Serialize, Serializer,
 };
-use xcb::x::FontDraw;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {

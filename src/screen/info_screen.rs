@@ -1,7 +1,6 @@
 use sdl2::{
     event::Event,
     pixels::Color,
-    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -9,12 +8,9 @@ use sdl2::{
 use crate::{
     app::App,
     config::Config,
-    ui::components::{label::Label, spinner::Spinner, text::Prompt},
+    ui::components::label::Label,
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::{
-        cache::TextureCache,
-        draw::{draw_filled_circle_quadrants, draw_filled_rounded_rect, DrawExtensions},
-    },
+    utils::cache::TextureCache,
 };
 
 use super::Screen;

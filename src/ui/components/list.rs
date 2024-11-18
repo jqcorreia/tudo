@@ -8,7 +8,7 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 
 use crate::animation::{Animation, AnimationType};
 use crate::sources::SourceItem;
-use crate::ui::components::traits::{Render, Updatable};
+use crate::ui::components::traits::Render;
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string, draw_string_texture, DrawExtensions};
 use crate::utils::fuzzy::basic_contains;
