@@ -20,10 +20,10 @@ pub struct InfoScreen {
 }
 
 impl InfoScreen {
-    pub fn new(config: &Config) -> InfoScreen {
+    pub fn new(_config: &Config) -> InfoScreen {
         let mut builder = LayoutBuilder::new();
 
-        let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        let _main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
         for s in [String::from("foo"), String::from("bar")] {
             builder.add(
                 Box::new(Label::new(s.clone(), s.clone())),

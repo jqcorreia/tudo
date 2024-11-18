@@ -39,7 +39,7 @@ impl IconFinder {
 pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> {
     let contents = match std::fs::read(path) {
         Ok(c) => String::from_utf8(c).unwrap(),
-        Err(_) => return HashMap::new()
+        Err(_) => return HashMap::new(),
     };
     // String::from_utf8(std::fs::read(path).unwrap()).unwrap();
 
@@ -71,7 +71,7 @@ pub fn parse_ini_file(path: String) -> HashMap<String, HashMap<String, String>> 
 pub fn generate_map() -> HashMap<String, String> {
     let mut map: HashMap<String, String> = HashMap::new();
     let base_folder = "/run/current-system/sw/share/icons";
-    let theme = "default";
+    let _theme = "default";
     let mut themes: Vec<String> = Vec::new();
 
     //FIXME(quadrado): This is buggy and not being used right now. Revisit this
