@@ -141,7 +141,7 @@ impl UIComponent for Prompt {
             canvas.fill_rect(cursor_rect).unwrap();
         }
     }
-    fn update(&mut self, event: &Event, ctx: &mut App, elapsed: u128) {
+    fn update(&mut self, event: &Event, ctx: &mut App, _: u128) {
         match event {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
