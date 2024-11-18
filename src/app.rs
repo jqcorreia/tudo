@@ -1,7 +1,6 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
-use sdl2::video;
 use sdl2::video::Window;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
@@ -20,19 +19,8 @@ pub struct App {
     pub loading: bool,
     pub current_screen_id: String,
     pub config: Config,
-    pub lock_path: String,
     pub layout_debug: bool,
     pub should_hide: bool,
-}
-
-fn already_running(lock_path: &String) -> bool {
-    match std::fs::read(lock_path.clone()) {
-        Ok(_) => true,
-        Err(_) => {
-            std::fs::write(lock_path, Vec::new()).unwrap();
-            false
-        }
-    }
 }
 
 fn check_config_folder() -> String {
@@ -59,11 +47,6 @@ impl App {
         let base_folder = check_config_folder();
         let config = load_config(format!("{}/config.lua", base_folder));
         let canvas = window.into_canvas().build().unwrap();
-        let lock_path = format!("{}/run-lock", base_folder);
-
-        if already_running(&lock_path) {
-            panic!("Tudo is already running!");
-        }
 
         (
             App {
@@ -77,7 +60,6 @@ impl App {
                 loading: true,
                 current_screen_id: "main".to_string(),
                 config,
-                lock_path,
                 layout_debug: false,
                 should_hide: false,
             },
@@ -127,8 +109,5 @@ impl App {
 impl Drop for App {
     fn drop(&mut self) {
         // App destructor
-
-        // Remove lock file
-        let _ = std::fs::remove_file(self.lock_path.clone());
     }
 }
