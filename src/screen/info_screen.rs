@@ -1,7 +1,6 @@
 use sdl2::{
     event::Event,
     pixels::Color,
-    rect::Rect,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
 };
@@ -9,12 +8,9 @@ use sdl2::{
 use crate::{
     app::App,
     config::Config,
-    ui::components::{label::Label, spinner::Spinner, text::Prompt},
+    ui::components::label::Label,
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::{
-        cache::TextureCache,
-        draw::{draw_filled_circle_quadrants, draw_filled_rounded_rect, DrawExtensions},
-    },
+    utils::cache::TextureCache,
 };
 
 use super::Screen;
@@ -24,10 +20,10 @@ pub struct InfoScreen {
 }
 
 impl InfoScreen {
-    pub fn new(config: &Config) -> InfoScreen {
+    pub fn new(_config: &Config) -> InfoScreen {
         let mut builder = LayoutBuilder::new();
 
-        let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
+        let _main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
         for s in [String::from("foo"), String::from("bar")] {
             builder.add(
                 Box::new(Label::new(s.clone(), s.clone())),
@@ -40,10 +36,10 @@ impl InfoScreen {
 }
 
 impl Screen for InfoScreen {
-    fn update(&mut self, app: &mut App, events: &Vec<Event>, _elapsed: u128) {
+    fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
         for event in events.iter() {
             for component in self.layout.components() {
-                component.consume_event(&event, app);
+                component.update(&event, app, elapsed);
             }
         }
     }

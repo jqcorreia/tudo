@@ -2,7 +2,7 @@ use std::{ops::Rem, usize};
 
 use sdl2::{pixels::PixelFormatEnum, rect::Rect};
 
-use super::traits::{EventConsumer, Render, UIComponent};
+use super::traits::UIComponent;
 
 pub struct Spinner {
     pub id: String,
@@ -19,7 +19,7 @@ impl Spinner {
         }
     }
 }
-impl Render for Spinner {
+impl UIComponent for Spinner {
     fn id(&self) -> String {
         self.id.clone()
     }
@@ -84,13 +84,9 @@ impl Render for Spinner {
             )
             .unwrap();
     }
-}
 
-impl EventConsumer for Spinner {
-    fn consume_event(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App) {}
-}
+    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, elapsed: u128) {}
 
-impl UIComponent for Spinner {
     fn get_state(&self) -> &dyn std::any::Any {
         return &self.running;
     }

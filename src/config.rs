@@ -8,7 +8,6 @@ use serde::{
     ser::SerializeMap,
     Deserialize, Deserializer, Serialize, Serializer,
 };
-use xcb::x::FontDraw;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -19,6 +18,7 @@ pub struct Config {
     pub prompt_color: Color,
     pub fast_start: bool,
     pub pid_file: String,
+    pub frame_lock: bool,
 }
 
 fn serialize_color<S>(color: &Color, serializer: S) -> Result<S::Ok, S::Error>
@@ -82,6 +82,7 @@ impl Default for Config {
             prompt_color: Color::RGBA(255, 255, 255, 255),
             fast_start: true,
             pid_file: String::from("/run/user/1000/todo.pid"),
+            frame_lock: false,
         }
     }
 }

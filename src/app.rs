@@ -2,6 +2,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::EventPump;
 use sdl2::Sdl;
 use sdl2::VideoSubsystem;
 
@@ -11,6 +12,7 @@ use crate::config::Config;
 pub struct App {
     pub sdl: Sdl,
     pub video: VideoSubsystem,
+    pub event_pump: EventPump,
 
     pub clipboard: Option<String>,
     pub running: bool,
@@ -35,6 +37,7 @@ impl App {
     pub fn init() -> (App, Canvas<Window>) {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
+        let event_pump = sdl.event_pump().unwrap();
 
         let window = video
             .window("tudo", 1024, 768)
@@ -53,9 +56,10 @@ impl App {
                 sdl,
                 clipboard: None,
                 video,
+                event_pump,
 
                 running: true,
-                frame_lock: true,
+                frame_lock: config.frame_lock,
                 draw_fps: false,
                 loading: true,
                 current_screen_id: "main".to_string(),
