@@ -1,6 +1,7 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
+use sdl2::sys::KeyCode;
 use sdl2::video::Window;
 use sdl2::EventPump;
 use sdl2::Sdl;
@@ -23,6 +24,7 @@ pub struct App {
     pub config: Config,
     pub layout_debug: bool,
     pub should_hide: bool,
+    pub ctrl_pressed: bool,
 }
 
 fn check_config_folder() -> String {
@@ -66,6 +68,7 @@ impl App {
                 config,
                 layout_debug: false,
                 should_hide: false,
+                ctrl_pressed: false,
             },
             canvas,
         )
@@ -75,7 +78,21 @@ impl App {
         for event in events.iter() {
             // Deal with main loop events
             // Things like app quit and global window mouse events
+            // if event.is_keyboard() || event.is_text() {
+            //     dbg!(&event);
+            // }
             match event {
+                // Trap ctrl in order to bypass a bug in SDL2 and wayland
+                // Set it on the application state so other components can react to it
+                // Text components need this to ignore TextInput events when Ctrl is pressed
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::LCtrl),
+                    ..
+                } => self.ctrl_pressed = true,
+                sdl2::event::Event::KeyUp {
+                    keycode: Some(Keycode::LCtrl),
+                    ..
+                } => self.ctrl_pressed = false,
                 sdl2::event::Event::KeyDown {
                     keycode: Some(Keycode::F1),
                     ..

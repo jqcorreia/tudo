@@ -154,7 +154,9 @@ impl UIComponent for Prompt {
                 }
             }
             sdl2::event::Event::TextInput { text, .. } => {
-                self.text += &text;
+                if !ctx.ctrl_pressed {
+                    self.text += &text;
+                }
             }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Backspace),
