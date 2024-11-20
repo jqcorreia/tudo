@@ -40,6 +40,7 @@ use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::draw::draw_string;
 use utils::font::FontConfig;
+use utils::hyprland::open_hyprland_socket_1;
 use utils::misc;
 
 const PID_FILE: &str = "/run/user/1000/todo.pid"; //TODO(quadrado): Use configuration value instead
@@ -62,6 +63,7 @@ fn check_running_state() -> bool {
 }
 
 fn main() {
+    open_hyprland_socket_1();
     if check_running_state() {
         return;
     };

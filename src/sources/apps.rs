@@ -36,7 +36,7 @@ impl Source for DesktopApplications {
 
         for path in paths {
             let desktop_files = match fs::read_dir(path) {
-                Ok(entries) => dbg!(entries)
+                Ok(entries) => entries
                     .filter(|entry| {
                         entry
                             .as_ref()
@@ -61,7 +61,7 @@ impl Source for DesktopApplications {
             };
 
             for file in desktop_files.iter() {
-                let desk_entry = parse_ini_file(file.to_string());
+                let desk_entry = parse_ini_file(file.to_string()).unwrap();
 
                 let title = desk_entry.get("Desktop Entry").unwrap().get("Name");
                 let action = desk_entry.get("Desktop Entry").unwrap().get("Exec");
