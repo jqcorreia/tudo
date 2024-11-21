@@ -18,6 +18,7 @@ use crate::{
             list::{SelectList, SelectListState},
             spinner::Spinner,
             text::Prompt,
+            workspaces::{self, Workspaces},
         },
         layout::{Container, ContainerSize, LayoutBuilder, SplitType},
     },
@@ -44,6 +45,7 @@ impl MainScreen {
         select_list.on_select = execute;
         let spinner = Spinner::new("spinner".to_string());
         let clock = Clock::new("clock".to_string());
+        let workspaces = Workspaces::new("workspaces".to_string());
 
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
@@ -53,6 +55,7 @@ impl MainScreen {
         builder.set_cur_split(main_split);
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.add(Box::new(clock), ContainerSize::Fixed(32));
+        builder.add(Box::new(workspaces), ContainerSize::Fixed(32));
         builder.generate(width, height);
 
         MainScreen {

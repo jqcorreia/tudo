@@ -131,8 +131,8 @@ fn main() {
         Box::new(WindowSource::new()),
         Box::new(Secrets::new()),
         Box::new(Tmux::new()),
-        Box::new(LuaSource::new("plugins/vlad.lua".to_string())),
-        Box::new(DummySource::new()),
+        // Box::new(LuaSource::new("plugins/vlad.lua".to_string())),
+        // Box::new(DummySource::new()),
     ];
 
     // Get number of sources before consuming them

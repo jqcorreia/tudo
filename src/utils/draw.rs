@@ -27,6 +27,22 @@ pub fn draw_string_texture<'a>(
     let texture = tc.create_texture_from_surface(surf).unwrap();
     texture
 }
+pub fn draw_string_texture_canvas(
+    canvas: &mut Canvas<Window>,
+    x: i32,
+    y: i32,
+    s: String,
+    font: &Font,
+    fg: Color,
+) {
+    let tc = canvas.texture_creator();
+    let surf = font.render(&s).blended(fg).unwrap();
+    let texture = tc.create_texture_from_surface(surf).unwrap();
+    let query = texture.query();
+    let (w, h) = (query.width, query.height);
+    let rect = Rect::new(x, y, w, h);
+    canvas.copy(&texture, None, rect).unwrap();
+}
 
 pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, color: Color) {
     let rw = rect.w;
