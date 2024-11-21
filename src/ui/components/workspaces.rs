@@ -45,16 +45,16 @@ impl UIComponent for Workspaces {
         let rect_width = rect_height; // Make width == height to produce squares
         let text_x_padding = 6; // Leave this as constant for now
         let text_y_padding = -1; // Leave this as constant for now
-        for x in 1..10 {
-            let _x = x - 1;
-            let rect_x = rect_width * _x + 10 * _x;
+        for workspace_id in 1..10 {
+            let x = workspace_id - 1; // Workspaces are 1-based but screen positions are '0-based'
+            let rect_x = rect_width * x + 10 * x;
             let rect = Rect::new(rect_x, rect_y, rect_width as u32, rect_height as u32);
             draw_rounded_rect(canvas, rect, 3, Color::RGBA(0x30, 0x30, 0x50, 255));
             draw_string_texture_canvas(
                 canvas,
                 rect_x + text_x_padding,
                 rect_y + text_y_padding,
-                x.to_string(),
+                workspace_id.to_string(),
                 font,
                 Color::GRAY,
             );
