@@ -30,8 +30,6 @@ use sources::Source;
 use screen::Screen;
 use sdl2::pixels::Color;
 use sources::apps::DesktopApplications;
-use sources::dummy::DummySource;
-use sources::lua::LuaSource;
 use sources::secrets::Secrets;
 use sources::tmux::Tmux;
 use sources::windows::WindowSource;
