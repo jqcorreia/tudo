@@ -47,7 +47,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 
 <kbd>F1</kbd> - Show frames per second  
 <kbd>F2</kbd> - Toggle 60fps framelock  
-<kbd>F3</kbd> - Debug screen, mostly giberish  
+<kbd>F3</kbd> - Debug/Test screen, mostly gibberish  
 
 ## Rolling Dev Notes
 - [x] Solve the mistery of proper font atlas, right now using direct render from SDL2 ttf. It's kerning...
@@ -64,13 +64,16 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Lua based configuration (very early but promising)
 - [x] Migrate to mlua, due to serde support
 - [x] Support for multiple screens
-- [x] ! Layout builder and simplified component access
+- [x] Layout builder and simplified component access
 - [x] Component get_state and set_state
 - [x] Use a new component spinner to sinalize sources loading
 - [x] Extend canvas drawing functions implementing more complex shapes (rounded rect, circle, quadrants, ...) 
 - [x] Mouse coords translation to local component coords and list item click
+- [x] Support font family by name, using `fc-list` for getting installed fonts and filenames
+- [x] Proper XDG standard support for XDG_DATA_DIRS regarding applications and icons
+- [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
 - [ ] ! Implement component focus (which will receive events)
-- [ ] Get system default font, maybe
+- [ ] Get system default font and use it as a best effort font in case requested font doesn't exist
 - [ ] Prompt window available to actions
 - [ ] More prettier  
 - [ ] Better search (fuzzy)

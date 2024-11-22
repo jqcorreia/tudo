@@ -299,6 +299,10 @@ impl<T: PartialEq> SelectList<T> {
             last_mouse_y: 0,
         }
     }
+    pub fn with_on_select(mut self, func: fn(&T, &mut App)) -> Self {
+        self.on_select = func;
+        self
+    }
     pub fn select_up(&mut self) {
         if self.selected_index > 0 {
             self.selected_index -= 1;

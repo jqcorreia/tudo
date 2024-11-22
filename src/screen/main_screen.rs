@@ -14,6 +14,7 @@ use crate::{
     sources::SourceItem,
     ui::{
         components::{
+            button::Button,
             clock::Clock,
             list::{SelectList, SelectListState},
             spinner::Spinner,
@@ -41,8 +42,7 @@ impl MainScreen {
         items: Arc<Mutex<Vec<SourceItem>>>,
     ) -> MainScreen {
         let prompt = Prompt::new("prompt", config);
-        let mut select_list = SelectList::<SourceItem>::new("list");
-        select_list.on_select = execute;
+        let select_list = SelectList::<SourceItem>::new("list").with_on_select(execute);
         let spinner = Spinner::new("spinner".to_string());
         let clock = Clock::new("clock".to_string());
         let workspaces = Workspaces::new("workspaces".to_string());
@@ -56,7 +56,7 @@ impl MainScreen {
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.add(Box::new(clock), ContainerSize::Fixed(32));
         builder.add(Box::new(workspaces), ContainerSize::Fixed(32));
-        builder.generate(width, height);
+        // builder.generate(width, height);
 
         MainScreen {
             layout: builder,
@@ -87,7 +87,9 @@ impl Screen for MainScreen {
             // component
             // FIXME(quadrado): Do this per component?
             match event {
-                sdl2::event::Event::MouseMotion { .. } => {
+                sdl2::event::Event::MouseMotion { .. }
+                | sdl2::event::Event::MouseButtonDown { .. }
+                | sdl2::event::Event::MouseButtonUp { .. } => {
                     for (rect, component) in self.layout.components_with_rect() {
                         let (_event, contains) = localize_mouse_event(event, rect);
                         if contains {

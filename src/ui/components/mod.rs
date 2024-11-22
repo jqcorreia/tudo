@@ -1,3 +1,4 @@
+pub mod button;
 pub mod clock;
 pub mod label;
 pub mod list;
