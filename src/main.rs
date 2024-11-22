@@ -38,10 +38,9 @@ use std::sync::{Arc, Mutex};
 use utils::cache::TextureCache;
 use utils::draw::draw_string;
 use utils::font::FontConfig;
-use utils::hyprland::open_hyprland_socket_1;
 use utils::misc;
 
-const PID_FILE: &str = "/run/user/1000/todo.pid"; //TODO(quadrado): Use configuration value instead
+const PID_FILE: &str = "/run/user/1000/tudo.pid"; //TODO(quadrado): Use configuration value instead
                                                   //of this one.
 
 fn check_running_state() -> bool {
@@ -50,8 +49,7 @@ fn check_running_state() -> bool {
             let pid = String::from_utf8(std::fs::read(PID_FILE).unwrap()).unwrap();
             println!("Running PID: {}", pid);
             println!("Opening existing tudo session");
-            let cmd =
-                dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
+            dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
             return true;
         }
         _ => {
@@ -61,7 +59,7 @@ fn check_running_state() -> bool {
 }
 
 fn main() {
-    open_hyprland_socket_1();
+    //open_hyprland_socket_1();
     if check_running_state() {
         return;
     };

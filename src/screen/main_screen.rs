@@ -56,7 +56,7 @@ impl MainScreen {
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.add(Box::new(clock), ContainerSize::Fixed(32));
         builder.add(Box::new(workspaces), ContainerSize::Fixed(32));
-        // builder.generate(width, height);
+        builder.generate(width, height);
 
         MainScreen {
             layout: builder,
