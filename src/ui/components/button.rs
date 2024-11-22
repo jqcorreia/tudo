@@ -2,10 +2,10 @@ use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
     app::App,
-    utils::draw::{draw_rounded_rect, draw_string_texture_canvas},
+    utils::draw::{draw_rounded_rect, draw_string_texture, draw_string_texture_canvas},
 };
 
-use super::traits::UIComponent;
+use super::{text, traits::UIComponent};
 
 pub struct Button {
     id: String,
@@ -36,7 +36,7 @@ impl UIComponent for Button {
 
     fn render(
         &mut self,
-        _texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
+        tc: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
         cache: &mut crate::utils::cache::TextureCache,
         _app: &crate::app::App,
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
@@ -50,8 +50,17 @@ impl UIComponent for Button {
         } else {
             Color::GRAY
         };
+        let tex = draw_string_texture(self.text.clone(), tc, font, color);
+        let (tw, th) = (tex.query().width, tex.query().height);
+        let text_x = (rect.w - tw as i32) / 2;
+        // let text_y = (rect.h - th as i32) / 2;
+        let text_y = -3;
+
         draw_rounded_rect(canvas, r, 3, Color::RGBA(0x30, 0x30, 0x50, 255));
-        draw_string_texture_canvas(canvas, 0, 0, self.text.clone(), font, color);
+        canvas
+            .copy(&tex, None, Rect::new(text_x, text_y, tw, th))
+            .unwrap();
+        // draw_string_texture_canvas(canvas, 0, 0, self.text.clone(), font, color);
     }
 
     fn update(&mut self, event: &sdl2::event::Event, app: &mut App, _elapsed: u128) {

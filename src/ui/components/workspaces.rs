@@ -26,10 +26,10 @@ fn goto_workspace(x: u8) {
 }
 impl Workspaces {
     pub fn new(id: String) -> Workspaces {
-        let mut builder = LayoutBuilder::new().with_gap(1);
+        let mut builder = LayoutBuilder::new().with_gap(3);
         builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
 
-        for x in 1..9 {
+        for x in 1..10 {
             builder.add(
                 Box::new(
                     Button::new(x.to_string(), x.to_string()).with_on_click(|btn, app| {
@@ -37,13 +37,9 @@ impl Workspaces {
                         app.should_hide = true;
                     }),
                 ),
-                ContainerSize::Fixed(64),
+                ContainerSize::Fixed(40),
             );
         }
-        // builder.add(
-        //     Box::new(Button::new(String::from("BAR"))),
-        //     ContainerSize::Fixed(64),
-        // );
 
         Workspaces {
             id,
