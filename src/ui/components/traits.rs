@@ -67,6 +67,14 @@ pub trait UIComponent {
 
     fn get_state(&self) -> &dyn Any;
     fn set_state(&mut self, state: Box<dyn Any>);
+
+    fn set_focus(&mut self, _: bool) {
+        ()
+    }
+
+    fn get_focus(&self) -> bool {
+        false
+    }
 }
 
 impl Debug for dyn UIComponent {

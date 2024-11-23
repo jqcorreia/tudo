@@ -105,9 +105,12 @@ impl UIComponent for Workspaces {
             | sdl2::event::Event::MouseButtonDown { .. }
             | sdl2::event::Event::MouseButtonUp { .. } => {
                 for (rect, component) in self.builder.components_with_rect() {
-                    let (_event, contains) = localize_mouse_event(event, rect);
+                    let (event, contains) = localize_mouse_event(event, rect);
                     if contains {
-                        component.update(&_event, app, elapsed);
+                        component.set_focus(true);
+                        component.update(&event, app, elapsed);
+                    } else {
+                        component.set_focus(false);
                     }
                 }
             }

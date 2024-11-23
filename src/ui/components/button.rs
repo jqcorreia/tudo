@@ -2,16 +2,17 @@ use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
     app::App,
-    utils::draw::{draw_rounded_rect, draw_string_texture, draw_string_texture_canvas},
+    utils::draw::{draw_rounded_rect, draw_string_texture},
 };
 
-use super::{text, traits::UIComponent};
+use super::traits::UIComponent;
 
 pub struct Button {
     id: String,
     pressed: bool,
     text: String,
     pub on_click: fn(&Button, &mut App),
+    focus: bool,
 }
 
 impl Button {
@@ -21,6 +22,7 @@ impl Button {
             text,
             pressed: false,
             on_click: |_, _| (),
+            focus: false,
         }
     }
     pub fn with_on_click(mut self, func: fn(&Button, &mut App)) -> Self {
@@ -45,10 +47,10 @@ impl UIComponent for Button {
     ) {
         let r = Rect::new(0, 0, rect.width() - 1, rect.height() - 1);
         let font = cache.fonts.get_font("normal-20".to_string());
-        let color = if self.pressed {
-            Color::BLUE
-        } else {
-            Color::GRAY
+        let color = match (self.pressed, self.get_focus()) {
+            (true, _) => Color::RED,
+            (false, true) => Color::BLUE,
+            _ => Color::GRAY,
         };
         let tex = draw_string_texture(self.text.clone(), tc, font, color);
         let (tw, th) = (tex.query().width, tex.query().height);
@@ -64,13 +66,14 @@ impl UIComponent for Button {
     }
 
     fn update(&mut self, event: &sdl2::event::Event, app: &mut App, _elapsed: u128) {
-        // dbg!(event);
         match event {
             sdl2::event::Event::MouseButtonDown { .. } => {
                 self.pressed = true;
+            }
+            sdl2::event::Event::MouseButtonUp { .. } => {
+                self.pressed = false;
                 (self.on_click)(self, app);
             }
-            sdl2::event::Event::MouseButtonUp { .. } => self.pressed = false,
             _ => (),
         }
     }
@@ -81,5 +84,11 @@ impl UIComponent for Button {
 
     fn set_state(&mut self, _state: Box<dyn std::any::Any>) {
         todo!()
+    }
+    fn set_focus(&mut self, focus: bool) {
+        self.focus = focus;
+    }
+    fn get_focus(&self) -> bool {
+        self.focus
     }
 }
