@@ -71,8 +71,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Mouse coords translation to local component coords and list item click
 - [x] Support font family by name, using `fc-list` for getting installed fonts and filenames
 - [x] Proper XDG standard support for XDG_DATA_DIRS regarding applications and icons
+- [x] Implement component focus.
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
-- [ ] ! Implement component focus (which will receive events)
 - [ ] Get system default font and use it as a best effort font in case requested font doesn't exist
 - [ ] Prompt window available to actions
 - [ ] More prettier  
