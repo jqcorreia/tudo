@@ -13,6 +13,7 @@ pub struct Button {
     text: String,
     pub on_click: fn(&Button, &mut App),
     focus: bool,
+    pub active: bool,
 }
 
 impl Button {
@@ -23,6 +24,7 @@ impl Button {
             pressed: false,
             on_click: |_, _| (),
             focus: false,
+            active: true,
         }
     }
     pub fn with_on_click(mut self, func: fn(&Button, &mut App)) -> Self {
@@ -47,10 +49,11 @@ impl UIComponent for Button {
     ) {
         let r = Rect::new(0, 0, rect.width() - 1, rect.height() - 1);
         let font = cache.fonts.get_font("normal-20".to_string());
-        let color = match (self.pressed, self.get_focus()) {
-            (true, _) => Color::RED,
-            (false, true) => Color::BLUE,
-            _ => Color::GRAY,
+        let color = match (self.active, self.pressed, self.get_focus()) {
+            (true, false, false) => Color::WHITE,
+            (true, true, _) => Color::RED,
+            (true, false, true) => Color::BLUE,
+            (false, _, _) => Color::GRAY,
         };
         let tex = draw_string_texture(self.text.clone(), tc, font, color);
         let (tw, th) = (tex.query().width, tex.query().height);

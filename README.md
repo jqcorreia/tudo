@@ -72,11 +72,12 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Support font family by name, using `fc-list` for getting installed fonts and filenames
 - [x] Proper XDG standard support for XDG_DATA_DIRS regarding applications and icons
 - [x] Implement component focus.
+- [ ] ! Standardize button state. 
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
 - [ ] Get system default font and use it as a best effort font in case requested font doesn't exist
 - [ ] Prompt window available to actions
-- [ ] More prettier  
-- [ ] Better search (fuzzy)
+- [ ] More prettier (this will always be here)  
+- [ ] Fuzzy search (fzf dependency?)
 - [ ] Notion integration for notes. Depends on a prompt action.
 - [ ] Investigate async/await for async source loading
 - [ ] Dashboard-like widgets for things like metrics

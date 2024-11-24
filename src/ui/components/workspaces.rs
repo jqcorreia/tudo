@@ -16,29 +16,55 @@ pub struct Workspaces {
     builder: LayoutBuilder,
 }
 
+#[derive(Debug)]
+struct Workspace {
+    pub id: u8,
+}
 fn goto_workspace(x: u8) {
     let mut stream = open_hyprland_socket_1();
 
-    stream.write_all(format!("/dispatch workspace {}", x).as_bytes());
+    stream
+        .write_all(format!("/dispatch workspace {}", x).as_bytes())
+        .unwrap();
     let mut response = String::new();
-    stream.read_to_string(&mut response);
+    stream.read_to_string(&mut response).unwrap();
     dbg!(response);
+}
+
+fn get_workspaces() -> Vec<Workspace> {
+    let mut stream = open_hyprland_socket_1();
+    let mut result: Vec<Workspace> = vec![];
+
+    stream.write_all("workspaces".as_bytes()).unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).unwrap();
+    let mut current_workspace_id;
+    for line in response.lines() {
+        if line.starts_with("workspace") {
+            current_workspace_id = line.split(" ").nth(2).unwrap().parse().unwrap();
+            result.push(Workspace {
+                id: current_workspace_id,
+            });
+        }
+    }
+    result.sort_by(|a, b| a.id.cmp(&b.id));
+    result
 }
 impl Workspaces {
     pub fn new(id: String) -> Workspaces {
+        let workspaces = get_workspaces().iter().map(|x| x.id).collect::<Vec<u8>>();
         let mut builder = LayoutBuilder::new().with_gap(3);
         builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
 
         for x in 1..10 {
-            builder.add(
-                Box::new(
-                    Button::new(x.to_string(), x.to_string()).with_on_click(|btn, app| {
-                        goto_workspace(btn.id().parse::<u8>().unwrap());
-                        app.should_hide = true;
-                    }),
-                ),
-                ContainerSize::Fixed(40),
-            );
+            let mut btn = Button::new(x.to_string(), x.to_string()).with_on_click(|btn, app| {
+                goto_workspace(btn.id().parse::<u8>().unwrap());
+                app.should_hide = true;
+            });
+            if !workspaces.contains(&x) {
+                btn.active = false
+            }
+            builder.add(Box::new(btn), ContainerSize::Fixed(40));
         }
 
         Workspaces {
