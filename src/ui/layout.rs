@@ -184,7 +184,7 @@ impl LayoutBuilder {
                         _ => (),
                     };
                 }
-                let remaining_size = w - sum_fixed_size;
+                let remaining_size = w as i32 - sum_fixed_size as i32;
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
@@ -211,7 +211,7 @@ impl LayoutBuilder {
                         _ => (),
                     };
                 }
-                let remaining_size = h - sum_fixed_size;
+                let remaining_size = h as i32 - sum_fixed_size as i32;
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
