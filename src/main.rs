@@ -59,6 +59,7 @@ fn check_running_state() -> bool {
 }
 
 fn main() {
+    unsafe { std::env::set_var("SDL_VIDEODRIVER", "wayland") };
     //open_hyprland_socket_1();
     if check_running_state() {
         return;
