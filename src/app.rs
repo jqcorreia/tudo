@@ -1,7 +1,6 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
-use sdl2::sys::KeyCode;
 use sdl2::video::Window;
 use sdl2::EventPump;
 use sdl2::Sdl;
@@ -9,6 +8,7 @@ use sdl2::VideoSubsystem;
 
 use crate::config::load_config;
 use crate::config::Config;
+use crate::utils::hyprland::Hyprland;
 
 pub struct App {
     pub sdl: Sdl,
@@ -25,6 +25,7 @@ pub struct App {
     pub layout_debug: bool,
     pub should_hide: bool,
     pub ctrl_pressed: bool,
+    pub hyprland: std::io::Result<Hyprland>,
 }
 
 fn check_config_folder() -> String {
@@ -53,6 +54,8 @@ impl App {
         let config = load_config(format!("{}/config.lua", base_folder));
         let canvas = window.into_canvas().build().unwrap();
 
+        let hyprland = Hyprland::new();
+
         (
             App {
                 sdl,
@@ -69,6 +72,7 @@ impl App {
                 layout_debug: false,
                 should_hide: false,
                 ctrl_pressed: false,
+                hyprland,
             },
             canvas,
         )
@@ -127,8 +131,8 @@ impl App {
     }
 }
 
-impl Drop for App {
-    fn drop(&mut self) {
-        // App destructor
-    }
-}
+// impl Drop for App {
+//     fn drop(&mut self) {
+//         // App destructor
+//     }
+// }

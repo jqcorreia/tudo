@@ -1,9 +1,12 @@
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
-    app,
+    app::{self, App},
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::{hyprland::open_hyprland_socket_1, misc::localize_mouse_event},
+    utils::{
+        hyprland::{self, Hyprland},
+        misc::localize_mouse_event,
+    },
 };
 use std::io::prelude::*;
 
@@ -14,64 +17,19 @@ pub struct Workspaces {
     pub selected_workspace: u8,
     pub font_name: Option<String>,
     builder: LayoutBuilder,
+    initialized: bool,
 }
 
-#[derive(Debug)]
-struct Workspace {
-    pub id: u8,
-}
-fn goto_workspace(x: u8) {
-    let mut stream = open_hyprland_socket_1();
-
-    stream
-        .write_all(format!("/dispatch workspace {}", x).as_bytes())
-        .unwrap();
-    let mut response = String::new();
-    stream.read_to_string(&mut response).unwrap();
-    dbg!(response);
-}
-
-fn get_workspaces() -> Vec<Workspace> {
-    let mut stream = open_hyprland_socket_1();
-    let mut result: Vec<Workspace> = vec![];
-
-    stream.write_all("workspaces".as_bytes()).unwrap();
-    let mut response = String::new();
-    stream.read_to_string(&mut response).unwrap();
-    let mut current_workspace_id;
-    for line in response.lines() {
-        if line.starts_with("workspace") {
-            current_workspace_id = line.split(" ").nth(2).unwrap().parse().unwrap();
-            result.push(Workspace {
-                id: current_workspace_id,
-            });
-        }
-    }
-    result.sort_by(|a, b| a.id.cmp(&b.id));
-    result
-}
 impl Workspaces {
     pub fn new(id: String) -> Workspaces {
-        let workspaces = get_workspaces().iter().map(|x| x.id).collect::<Vec<u8>>();
-        let mut builder = LayoutBuilder::new().with_gap(3);
-        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
-
-        for x in 1..10 {
-            let mut btn = Button::new(x.to_string(), x.to_string()).with_on_click(|btn, app| {
-                goto_workspace(btn.id().parse::<u8>().unwrap());
-                app.should_hide = true;
-            });
-            if !workspaces.contains(&x) {
-                btn.active = false
-            }
-            builder.add(Box::new(btn), ContainerSize::Fixed(40));
-        }
+        let builder = LayoutBuilder::new().with_gap(3);
 
         Workspaces {
             id,
             selected_workspace: 1,
             font_name: None,
             builder,
+            initialized: false,
         }
     }
 }
@@ -126,6 +84,44 @@ impl UIComponent for Workspaces {
         // }
     }
     fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
+        if !self.initialized {
+            // dbg!(app.hyprland.as_mut().unwrap().get_active_workspace());
+            // dbg!(Hyprland::new().unwrap().get_active_workspace());
+            let workspaces = app
+                .hyprland
+                .as_mut()
+                .unwrap()
+                .get_workspaces()
+                .iter()
+                .map(|x| x.id)
+                .collect::<Vec<u8>>();
+            self.builder
+                .add_split(SplitType::Horizontal, ContainerSize::Percent(100));
+
+            for x in 1..10 {
+                let mut btn =
+                    Button::new(x.to_string(), x.to_string()).with_on_click(|btn, app| {
+                        //FIXME(quadrado): This should be possible
+                        // For some reason using the app context stream on click results on a
+                        // broken pipe
+                        // For now just instantiate another Hyprland object
+                        Hyprland::new()
+                            .unwrap()
+                            .goto_workspace(btn.id().parse::<u8>().unwrap());
+                        // app.hyprland
+                        //     .as_mut()
+                        //     .unwrap()
+                        //     .goto_workspace(btn.id().parse::<u8>().unwrap());
+                        app.should_hide = true;
+                    });
+                if !workspaces.contains(&x) {
+                    btn.active = false
+                }
+                self.builder.add(Box::new(btn), ContainerSize::Fixed(40));
+            }
+            self.initialized = true
+        }
+
         match event {
             sdl2::event::Event::MouseMotion { .. }
             | sdl2::event::Event::MouseButtonDown { .. }
