@@ -191,9 +191,12 @@ fn main() {
         // We need to drop here in order to yield the lock
         drop(ct);
 
-        if let Ok(sig) = rx.try_recv() {
-            dbg!(sig);
-            main_canvas.window_mut().show();
+        if app.hidden {
+            if let Ok(sig) = rx.recv() {
+                dbg!(sig);
+                main_canvas.window_mut().show();
+                app.hidden = false
+            }
         }
 
         // Sometime elapsed time is 0 and we need to account for that
@@ -218,6 +221,7 @@ fn main() {
             main_canvas.window_mut().hide();
             current_screen.reset();
             app.should_hide = false;
+            app.hidden = true
         }
 
         // Screen update

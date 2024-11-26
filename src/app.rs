@@ -23,9 +23,11 @@ pub struct App {
     pub current_screen_id: String,
     pub config: Config,
     pub layout_debug: bool,
-    pub should_hide: bool,
     pub ctrl_pressed: bool,
     pub hyprland: std::io::Result<Hyprland>,
+
+    pub should_hide: bool,
+    pub hidden: bool,
 }
 
 fn check_config_folder() -> String {
@@ -70,9 +72,11 @@ impl App {
                 current_screen_id: "main".to_string(),
                 config,
                 layout_debug: false,
-                should_hide: false,
                 ctrl_pressed: false,
                 hyprland,
+
+                should_hide: false,
+                hidden: false,
             },
             canvas,
         )
