@@ -146,4 +146,16 @@ impl Screen for MainScreen {
             );
         }
     }
+    fn reset(&mut self) {
+        // Clear both prompt and select list search
+        self.layout
+            .by_name("prompt".to_string())
+            .set_state(Box::new("".to_string()));
+        self.layout
+            .by_name("list".to_string())
+            .set_state(Box::new(SelectListState {
+                items: self.source_items.lock().unwrap().clone(),
+                prompt: "".to_string(),
+            }));
+    }
 }

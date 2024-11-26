@@ -22,4 +22,6 @@ pub trait Screen {
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
     );
+
+    fn reset(&mut self) {}
 }

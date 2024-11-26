@@ -211,6 +211,7 @@ fn main() {
         app.handle_global_events(&cur_events);
         if app.should_hide {
             main_canvas.window_mut().hide();
+            current_screen.reset();
             app.should_hide = false;
         }
 
