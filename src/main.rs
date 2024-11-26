@@ -64,7 +64,12 @@ fn check_running_state() -> bool {
 }
 
 fn main() {
-    unsafe { std::env::set_var("SDL_VIDEODRIVER", "wayland") };
+    if let Ok(value) = std::env::var("XDG_SESSION_TYPE") {
+        if value == "wayland" {
+            unsafe { std::env::set_var("SDL_VIDEODRIVER", "wayland") };
+        }
+    }
+
     if check_running_state() {
         return;
     };

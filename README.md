@@ -72,6 +72,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Support font family by name, using `fc-list` for getting installed fonts and filenames
 - [x] Proper XDG standard support for XDG_DATA_DIRS regarding applications and icons
 - [x] Implement component focus.
+- [x] UI reset after soft-close.
 - [ ] ! Standardize button state. 
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
 - [ ] Get system default font and use it as a best effort font in case requested font doesn't exist
@@ -87,5 +88,6 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 
 ## Wayland support
 
-Just add `SDL_VIDEODRIVER=wayland` to your environment variables
+`tudo` will try and detect the display manager being used. It uses XDG_SESSION_TYPE for this and sets `SDL_VIDEODRIVER` to `wayland`
+If it doesn't work or you're having issues just add `SDL_VIDEODRIVER=wayland` to your environment variables
 
