@@ -47,7 +47,12 @@ fn check_running_state() -> bool {
     match std::fs::exists(PID_FILE) {
         Ok(true) => {
             let pid = String::from_utf8(std::fs::read(PID_FILE).unwrap()).unwrap();
-            println!("Running PID: {}", pid);
+            println!("Lock file PID: {}", pid);
+            if !std::fs::exists(format!("/proc/{}", pid)).unwrap() {
+                println!("PID in lock file not running. Starting new instance");
+                return false;
+            }
+
             println!("Opening existing tudo session");
             dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
             return true;
@@ -60,7 +65,6 @@ fn check_running_state() -> bool {
 
 fn main() {
     unsafe { std::env::set_var("SDL_VIDEODRIVER", "wayland") };
-    //open_hyprland_socket_1();
     if check_running_state() {
         return;
     };

@@ -8,7 +8,6 @@ use crate::{
         misc::localize_mouse_event,
     },
 };
-use std::io::prelude::*;
 
 use super::{button::Button, traits::UIComponent};
 
