@@ -20,7 +20,6 @@ fn process_font<'a>(
     fconfig: FontConfig,
     ttf: &'a Sdl2TtfContext,
 ) -> Font<'a, 'a> {
-    dbg!(&fconfig.family);
     let path = file_map.get(&fconfig.family).unwrap();
     ttf.load_font(path, fconfig.point_size).unwrap()
 }

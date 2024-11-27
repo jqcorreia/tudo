@@ -93,13 +93,11 @@ pub fn generate_map() -> HashMap<String, String> {
     for theme in themes {
         for base_folder in base_folders.clone().into_iter() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
-            dbg!(&path);
             let ini = parse_ini_file(path.clone());
 
             if let Err(_) = ini {
                 continue;
             }
-            dbg!("---------", &path);
 
             let dirs: Vec<String> = ini
                 .unwrap()

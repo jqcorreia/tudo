@@ -73,6 +73,8 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Proper XDG standard support for XDG_DATA_DIRS regarding applications and icons
 - [x] Implement component focus.
 - [x] UI reset after soft-close.
+- [x] Implement workspaces! Good enoug progress for now. 
+- [ ] ! Implement tray! DBus is a mess, but a useful mess...
 - [ ] ! Standardize button state. 
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
 - [ ] Get system default font and use it as a best effort font in case requested font doesn't exist

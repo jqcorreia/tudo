@@ -23,6 +23,7 @@ use screen::info_screen::InfoScreen;
 use screen::main_screen::MainScreen;
 use sdl2::event::Event;
 use sdl2::image::InitFlag;
+use sdl2::libc::SIGINT;
 use sdl2::libc::SIGUSR2;
 use signal_hook::iterator::Signals;
 use sources::Source;
@@ -79,7 +80,7 @@ fn main() {
     // Control channel for signalling handling
     let (tx, rx) = channel::<i32>();
 
-    let mut signals = Signals::new([SIGUSR2]).unwrap();
+    let mut signals = Signals::new([SIGUSR2, SIGINT]).unwrap();
 
     thread::spawn(move || {
         for sig in signals.forever() {
@@ -193,9 +194,16 @@ fn main() {
 
         if app.hidden {
             if let Ok(sig) = rx.recv() {
-                dbg!(sig);
-                main_canvas.window_mut().show();
-                app.hidden = false
+                match sig {
+                    SIGINT => app.running = false, // This will stop the main thread when hidden
+                    // and receiving a Ctrl-C
+                    SIGUSR2 => {
+                        dbg!(sig);
+                        main_canvas.window_mut().show();
+                        app.hidden = false
+                    }
+                    _ => (),
+                }
             }
         }
 

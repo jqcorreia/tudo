@@ -5,4 +5,5 @@ pub mod list;
 pub mod spinner;
 pub mod text;
 pub mod traits;
+pub mod tray;
 pub mod workspaces;
