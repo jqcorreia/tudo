@@ -69,8 +69,10 @@ pub fn parse_ini_file(path: String) -> Result<HashMap<String, HashMap<String, St
 }
 
 pub fn generate_map() -> HashMap<String, String> {
+    let home = std::env::var("HOME").unwrap();
     let mut map: HashMap<String, String> = HashMap::new();
-    let env_folders = std::env::var("XDG_DATA_DIRS").unwrap_or("/usr/share/icons".to_string());
+    let env_folders = std::env::var("XDG_DATA_DIRS")
+        .unwrap_or(format!("/usr/share:{}/.local/share", home).to_string());
     let base_folders = env_folders.split(":");
     //let mut theme = "default";
     //let mut themes: Vec<String> = Vec::new();
@@ -118,6 +120,7 @@ pub fn generate_map() -> HashMap<String, String> {
                                 file.unwrap().path().into_os_string().into_string().unwrap();
                             let fname_no_ext =
                                 fpath.split("/").last().unwrap().split(".").next().unwrap();
+                            dbg!(fname_no_ext);
 
                             map.insert(fname_no_ext.to_string(), fpath);
                         }

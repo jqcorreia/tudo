@@ -94,7 +94,7 @@ impl UIComponent for Tray {
             canvas
                 .copy(tex, None, Some(Rect::new(x, 0, 24, 24)))
                 .unwrap();
-            x += w as i32 + 5;
+            x += 24 as i32 + 5;
         }
     }
 
