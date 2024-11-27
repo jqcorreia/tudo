@@ -44,12 +44,22 @@ impl Tray {
             }
             let icon: String = proxy.get("org.kde.StatusNotifierItem", "IconName").unwrap();
 
-            dbg!(title);
+            dbg!(&title);
             dbg!(&icon);
             dbg!(icon_finder.get_icon(icon.clone()));
 
             if let Some(path) = icon_finder.get_icon(icon) {
                 icon_paths.push(path)
+            }
+            if title == "Network" {
+                dbg!("cenas");
+                proxy
+                    .method_call(
+                        "org.kde.StatusNotifierItem",
+                        "SecondaryActivate",
+                        (1000, 1000),
+                    )
+                    .unwrap()
             }
         }
 
@@ -88,7 +98,12 @@ impl UIComponent for Tray {
         }
     }
 
-    fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {}
+    fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
+        match event {
+            sdl2::event::Event::MouseButtonUp { .. } => {}
+            _ => (),
+        }
+    }
 
     fn get_state(&self) -> &dyn std::any::Any {
         return &false;
