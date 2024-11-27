@@ -51,16 +51,11 @@ impl Tray {
             if let Some(path) = icon_finder.get_icon(icon) {
                 icon_paths.push(path)
             }
-            if title == "Network" {
-                dbg!("cenas");
-                proxy
-                    .method_call(
-                        "org.kde.StatusNotifierItem",
-                        "SecondaryActivate",
-                        (1000, 1000),
-                    )
-                    .unwrap()
-            }
+            //if title == "blueman" {
+            //    proxy
+            //        .method_call("org.kde.StatusNotifierItem", "Activate", (1000, 1000))
+            //        .unwrap()
+            //}
         }
 
         Tray {

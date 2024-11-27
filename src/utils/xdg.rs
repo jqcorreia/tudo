@@ -120,7 +120,6 @@ pub fn generate_map() -> HashMap<String, String> {
                                 file.unwrap().path().into_os_string().into_string().unwrap();
                             let fname_no_ext =
                                 fpath.split("/").last().unwrap().split(".").next().unwrap();
-                            dbg!(fname_no_ext);
 
                             map.insert(fname_no_ext.to_string(), fpath);
                         }
