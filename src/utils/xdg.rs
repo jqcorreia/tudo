@@ -6,8 +6,20 @@ pub struct Section {
     pub values: HashMap<String, String>,
 }
 
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub struct IconConfig {
+    pub size: u32,
+    pub name: String,
+}
+
+impl IconConfig {
+    pub fn new(size: u32, name: String) -> Self {
+        Self { size, name }
+    }
+}
+
 pub struct IconFinder {
-    map: HashMap<String, String>,
+    map: HashMap<IconConfig, String>,
 }
 impl IconFinder {
     pub fn new() -> IconFinder {
@@ -21,11 +33,12 @@ impl IconFinder {
         if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
             candidate = name.clone();
         } else {
-            let opt = self.map.get(&name);
+            let icon_config = IconConfig { name, size: 32 };
+            let opt = self.map.get(&icon_config);
             if opt.is_none() {
                 return None;
             }
-            candidate = self.map.get(&name).unwrap().to_string();
+            candidate = self.map.get(&icon_config).unwrap().to_string();
         }
 
         // Check if candidate is indeed a file
@@ -68,28 +81,13 @@ pub fn parse_ini_file(path: String) -> Result<HashMap<String, HashMap<String, St
     Ok(res)
 }
 
-pub fn generate_map() -> HashMap<String, String> {
+pub fn generate_map() -> HashMap<IconConfig, String> {
     let home = std::env::var("HOME").unwrap();
-    let mut map: HashMap<String, String> = HashMap::new();
+    let mut map: HashMap<IconConfig, String> = HashMap::new();
     let env_folders = std::env::var("XDG_DATA_DIRS")
         .unwrap_or(format!("/usr/share:{}/.local/share", home).to_string());
-    let base_folders = env_folders.split(":");
-    //let mut theme = "default";
-    //let mut themes: Vec<String> = Vec::new();
 
-    //FIXME(quadrado): This is buggy and not being used right now. Revisit this
-    // Commenting because Inherits field can have a comma separated list of values.
-    //let mut ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
-    //loop {
-    //    match ini.get("Icon Theme").unwrap().get("Inherits") {
-    //        Some(th) => {
-    //            themes.push(th.to_string().clone());
-    //            theme = th;
-    //        }
-    //        None => break,
-    //    }
-    //    ini = parse_ini_file(format!("{}/{}/index.theme", base_folder, theme));
-    //}
+    let base_folders = env_folders.split(":");
 
     let themes = vec!["hicolor".to_string()];
     for theme in themes {
@@ -102,8 +100,8 @@ pub fn generate_map() -> HashMap<String, String> {
             if let Err(_) = ini {
                 continue;
             }
-
             dirs = ini
+                .clone()
                 .unwrap()
                 .get("Icon Theme")
                 .unwrap()
@@ -113,28 +111,35 @@ pub fn generate_map() -> HashMap<String, String> {
                 .map(|x| x.to_string())
                 .collect();
 
-            // index.theme found and process, can exit now
-            break;
-        }
+            // Traverse the base_folders again to include all the icons that may exist for this theme
+            for base_folder in base_folders.clone().into_iter() {
+                for dir in dirs.iter() {
+                    let ini2 = ini.clone().unwrap();
+                    let section = ini2.get(dir).unwrap();
+                    let size = section.get("Size").unwrap();
 
-        // Traverse the base_folders again to include all the icons that may exist for this theme
-        for base_folder in base_folders.clone().into_iter() {
-            for dir in dirs.iter() {
-                let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
-                match fs::read_dir(d) {
-                    Ok(files) => {
-                        for file in files {
-                            let fpath =
-                                file.unwrap().path().into_os_string().into_string().unwrap();
-                            let fname_no_ext =
-                                fpath.split("/").last().unwrap().split(".").next().unwrap();
+                    let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
+                    match fs::read_dir(d) {
+                        Ok(files) => {
+                            for file in files {
+                                let fpath =
+                                    file.unwrap().path().into_os_string().into_string().unwrap();
+                                let fname_no_ext =
+                                    fpath.split("/").last().unwrap().split(".").next().unwrap();
 
-                            map.insert(fname_no_ext.to_string(), fpath);
+                                let icon_config = IconConfig {
+                                    size: size.clone().parse().unwrap(),
+                                    name: fname_no_ext.to_string(),
+                                };
+                                map.insert(icon_config, fpath);
+                            }
                         }
+                        Err(_) => (),
                     }
-                    Err(_) => (),
                 }
             }
+            // index.theme found and processed, can exit now
+            break;
         }
     }
 
@@ -148,7 +153,12 @@ pub fn generate_map() -> HashMap<String, String> {
                 let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
                 let fname_no_ext = fpath.split("/").last().unwrap().split(".").next().unwrap();
 
-                map.insert(fname_no_ext.to_string(), fpath);
+                let icon_config = IconConfig {
+                    size: 32, //FIXME(quadrado): Don't use this fixed size that means nothing. Need
+                    //to open the image and calculate the proper size.
+                    name: fname_no_ext.to_string(),
+                };
+                map.insert(icon_config, fpath);
             }
         }
         Err(_) => (),
