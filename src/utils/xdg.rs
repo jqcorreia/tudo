@@ -93,6 +93,8 @@ pub fn generate_map() -> HashMap<String, String> {
 
     let themes = vec!["hicolor".to_string()];
     for theme in themes {
+        // Try to find and parse the index.theme file for the theme being processed
+        let mut dirs: Vec<String> = vec![];
         for base_folder in base_folders.clone().into_iter() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
             let ini = parse_ini_file(path.clone());
@@ -101,7 +103,7 @@ pub fn generate_map() -> HashMap<String, String> {
                 continue;
             }
 
-            let dirs: Vec<String> = ini
+            dirs = ini
                 .unwrap()
                 .get("Icon Theme")
                 .unwrap()
@@ -111,6 +113,12 @@ pub fn generate_map() -> HashMap<String, String> {
                 .map(|x| x.to_string())
                 .collect();
 
+            // index.theme found and process, can exit now
+            break;
+        }
+
+        // Traverse the base_folders again to include all the icons that may exist for this theme
+        for base_folder in base_folders.clone().into_iter() {
             for dir in dirs.iter() {
                 let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
                 match fs::read_dir(d) {
