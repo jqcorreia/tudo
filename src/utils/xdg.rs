@@ -1,5 +1,7 @@
 use std::{collections::HashMap, fs};
 
+use super::math::{find_next_power_of_two, find_previous_power_of_two};
+
 #[derive(Debug)]
 pub struct Section {
     pub header: String,
@@ -43,6 +45,48 @@ impl IconFinder {
             let opt = self.map.get(&icon_config);
             opt?;
             candidate = self.map.get(&icon_config).unwrap().to_string();
+        }
+
+        // Check if candidate is indeed a file
+        match std::fs::read(&candidate) {
+            Ok(_) => Some(candidate),
+            Err(_) => None,
+        }
+    }
+
+    pub fn get_icon_with_size(&self, name: String, size: u32) -> Option<String> {
+        let mut candidate: String = "".to_string();
+
+        // First check if icon identifier is a path
+        if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
+            candidate = name.clone();
+        } else {
+            let mut _size = find_previous_power_of_two(size);
+            let mut found = false;
+            while (_size <= 1024) {
+                let icon_config = IconConfig {
+                    name: name.clone(),
+                    size: _size,
+                };
+                match self.map.get(&icon_config) {
+                    Some(path) => {
+                        dbg!(path);
+                        candidate = path.to_string();
+                        found = true;
+                        break;
+                    }
+                    None => {
+                        _size *= 2;
+                    }
+                }
+                //let opt = self.map.get(&icon_config);
+                //match opt {}
+                //opt?;
+                //candidate = self.map.get(&icon_config).unwrap().to_string();
+            }
+            if !found {
+                return None;
+            }
         }
 
         // Check if candidate is indeed a file
@@ -96,7 +140,6 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
         // Try to find and parse the index.theme file for the theme being processed
         for base_folder in base_folders.clone() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
-            
 
             let ini: IniMap = match parse_ini_file(path.clone()) {
                 Ok(i) => i,

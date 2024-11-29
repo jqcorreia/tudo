@@ -5,7 +5,6 @@ use sdl2::{
 };
 
 pub fn ignore_numlock(event: &Event) -> Event {
-    
     match event {
         sdl2::event::Event::KeyDown {
             timestamp,

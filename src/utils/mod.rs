@@ -5,5 +5,6 @@ pub mod font;
 pub mod fuzzy;
 pub mod hyprland;
 pub mod image;
+pub mod math;
 pub mod misc;
 pub mod xdg;

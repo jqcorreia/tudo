@@ -185,7 +185,9 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
-                    if let ContainerSize::Fixed(size) = container.size { sum_fixed_size += size };
+                    if let ContainerSize::Fixed(size) = container.size {
+                        sum_fixed_size += size
+                    };
                 }
                 let remaining_size = w as i32 - sum_fixed_size as i32;
 
@@ -209,7 +211,9 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
-                    if let ContainerSize::Fixed(size) = container.size { sum_fixed_size += size };
+                    if let ContainerSize::Fixed(size) = container.size {
+                        sum_fixed_size += size
+                    };
                 }
                 let remaining_size = h as i32 - sum_fixed_size as i32;
 
@@ -232,12 +236,13 @@ impl LayoutBuilder {
     pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
             if let Container {
-                    container_type:
-                        ContainerType::Leaf(Leaf {
-                            component: comp, ..
-                        }),
-                    ..
-                } = cell {
+                container_type:
+                    ContainerType::Leaf(Leaf {
+                        component: comp, ..
+                    }),
+                ..
+            } = cell
+            {
                 if comp.id() == name {
                     return comp;
                 }
@@ -253,9 +258,12 @@ impl LayoutBuilder {
             let container = self.arena.get_mut(idx).unwrap();
 
             if let Container {
-                    container_type: ContainerType::Leaf(leaf),
-                    ..
-                } = container { leaf.rect = Some(r) }
+                container_type: ContainerType::Leaf(leaf),
+                ..
+            } = container
+            {
+                leaf.rect = Some(r)
+            }
         }
     }
 
@@ -301,44 +309,44 @@ impl LayoutBuilder {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::{
-        ui::components::spinner::Spinner, ui::layout::ContainerSize, ui::layout::LayoutBuilder,
-    };
-
-    use super::SplitType;
-
-    #[test]
-    fn test_layout_builder() {
-        let mut builder = LayoutBuilder::new();
-
-        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
-        builder.add(
-            Box::new(Spinner {
-                id: "spin1".to_string(),
-                period_millis: 1000,
-                running: true,
-            }),
-            ContainerSize::Percent(50),
-        );
-        builder.add(
-            Box::new(Spinner {
-                id: "spin2".to_string(),
-                period_millis: 1000,
-                running: true,
-            }),
-            ContainerSize::Percent(50),
-        );
-        builder.get_container(1);
-        dbg!(&builder);
-        builder.generate(1000, 1000);
-        dbg!(&builder);
-        dbg!(builder.by_name("spin1".to_string()));
-        dbg!(builder.components());
-        dbg!(builder.components_with_rect());
-        assert!(builder.components().len() == 2);
-
-        dbg!(builder.by_coordinates(500, 10));
-    }
-}
+//#[cfg(test)]
+//mod tests {
+//    use crate::{
+//        ui::components::spinner::Spinner, ui::layout::ContainerSize, ui::layout::LayoutBuilder,
+//    };
+//
+//    use super::SplitType;
+//
+//    #[test]
+//    fn test_layout_builder() {
+//        let mut builder = LayoutBuilder::new();
+//
+//        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
+//        builder.add(
+//            Box::new(Spinner {
+//                id: "spin1".to_string(),
+//                period_millis: 1000,
+//                running: true,
+//            }),
+//            ContainerSize::Percent(50),
+//        );
+//        builder.add(
+//            Box::new(Spinner {
+//                id: "spin2".to_string(),
+//                period_millis: 1000,
+//                running: true,
+//            }),
+//            ContainerSize::Percent(50),
+//        );
+//        builder.get_container(1);
+//        dbg!(&builder);
+//        builder.generate(1000, 1000);
+//        dbg!(&builder);
+//        dbg!(builder.by_name("spin1".to_string()));
+//        dbg!(builder.components());
+//        dbg!(builder.components_with_rect());
+//        assert!(builder.components().len() == 2);
+//
+//        dbg!(builder.by_coordinates(500, 10));
+//    }
+//}

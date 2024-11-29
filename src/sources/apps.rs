@@ -73,7 +73,7 @@ impl Source for DesktopApplications {
                 let action = desk_entry.get("Desktop Entry").unwrap().get("Exec");
 
                 let icon = match desk_entry.get("Desktop Entry").unwrap().get("Icon") {
-                    Some(_icon) => icon_finder.get_icon(_icon.to_string()),
+                    Some(_icon) => icon_finder.get_icon_with_size(_icon.to_string(), 32),
                     None => None,
                 };
 
