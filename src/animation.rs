@@ -66,10 +66,15 @@ impl Animation {
         self.target = target;
         if let Some(v) = tick {
             self.start(v)
+        } else {
+            self.running = false;
         };
     }
 
     pub fn tick(&mut self, tick: u128) -> u32 {
+        if !self.running {
+            self.start(tick);
+        }
         (self.animation_type.func())(self, tick, 100.0);
         self.value
     }

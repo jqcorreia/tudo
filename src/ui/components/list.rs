@@ -31,19 +31,27 @@ trait RenderItem<T> {
     ) -> Texture;
 }
 
-pub struct Viewport(pub usize, pub usize);
-pub struct RenderViewport(pub i32, pub i32, pub i32);
+pub struct Viewport {
+    top: i32,
+    bottom: i32,
+    anim: Animation,
+}
 
 impl Viewport {
-    pub fn down(&mut self, amount: usize) {
-        self.0 += amount;
-        self.1 += amount;
+    pub fn down(&mut self, amount: i32) {
+        self.top += amount;
+        self.bottom += amount;
+        self.anim.set_target(self.top as u32, None);
     }
-    pub fn up(&mut self, amount: usize) {
-        self.0 -= amount;
-        self.1 -= amount;
+    pub fn up(&mut self, amount: i32) {
+        self.top = std::cmp::max(0, self.top - amount);
+        self.bottom -= amount;
+        self.anim.set_target(self.top as u32, None);
     }
 }
+
+pub struct RenderViewport(pub i32, pub i32, pub i32);
+
 impl RenderViewport {
     pub fn down(&mut self, amount: i32) {
         self.0 += amount;
@@ -189,7 +197,8 @@ impl UIComponent for SelectList<SourceItem> {
                 .unwrap();
 
             self.render_viewport.1 = self.render_viewport.0 + rect.h;
-            let rv0 = self.ss_anim.tick(elapsed);
+            self.viewport.bottom = self.viewport.top + rect.h;
+            let rv0 = self.viewport.anim.tick(elapsed);
 
             for (idx, item) in self.items.as_slice().iter().enumerate() {
                 // if idx < self.viewport.0 || idx > self.viewport.1 {
@@ -269,22 +278,24 @@ impl UIComponent for SelectList<SourceItem> {
             } => self.select_down(),
             sdl2::event::Event::MouseWheel { y, .. } => {
                 if *y == 1 {
-                    self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 40);
-                    self.ss_anim
-                        .set_target(self.render_viewport.0 as u32, Some(elapsed))
+                    self.viewport.up(self.row_height as i32);
+                    //self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 40);
+                    //self.ss_anim
+                    //    .set_target(self.render_viewport.0 as u32, Some(elapsed))
                 } else {
                     let tex_h = self.items.len() as i32 * self.row_height as i32;
-                    if self.render_viewport.1 < tex_h {
-                        self.render_viewport.0 += std::cmp::min(tex_h - self.render_viewport.1, 40);
-                        self.ss_anim
-                            .set_target(self.render_viewport.0 as u32, Some(elapsed))
+                    if self.viewport.bottom < tex_h {
+                        self.viewport.down(self.row_height as i32);
+                        //self.render_viewport.0 += std::cmp::min(tex_h - self.render_viewport.1, 40);
+                        //self.ss_anim
+                        //    .set_target(self.render_viewport.0 as u32, Some(elapsed))
                     }
                 }
             }
             sdl2::event::Event::MouseMotion { y, .. } => {
                 self.last_mouse_y = *y;
                 self.set_selected_index(
-                    ((self.ss_anim.value as i32 + self.last_mouse_y) / self.row_height as i32)
+                    ((self.viewport.anim.value as i32 + self.last_mouse_y) / self.row_height as i32)
                         as usize,
                 );
             }
@@ -300,7 +311,11 @@ impl<T: PartialEq> SelectList<T> {
             items: Vec::<T>::new(),
             selected_index: 0,
             foreground_color: Color::RGBA(255, 255, 255, 255),
-            viewport: Viewport(0, 10),
+            viewport: Viewport {
+                top: 0,
+                bottom: 10,
+                anim: Animation::new(0, 0, AnimationType::EaseOut),
+            },
             render_viewport: RenderViewport(0, 100, 0),
             vertical_bar_width: 5,
             on_select: |_, _| (),
@@ -316,18 +331,16 @@ impl<T: PartialEq> SelectList<T> {
     pub fn select_up(&mut self) {
         if self.selected_index > 0 {
             self.selected_index -= 1;
-            if self.selected_index < self.viewport.0 {
-                //self.viewport.up(1);
-                self.render_viewport.up(40);
+            if (self.selected_index as i32) < self.viewport.top / self.row_height as i32 {
+                self.viewport.up(self.row_height as i32);
             }
         }
     }
     pub fn select_down(&mut self) {
         if !self.items.is_empty() && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
-            if self.selected_index > self.viewport.1 {
-                //self.viewport.down(1);
-                self.render_viewport.down(40);
+            if (self.selected_index as i32) > self.viewport.bottom / self.row_height as i32 {
+                self.viewport.down(self.row_height as i32);
             }
         }
     }
@@ -342,7 +355,11 @@ impl<T: PartialEq> SelectList<T> {
         }
         self.items = new_list;
         self.set_selected_index(0);
-        self.viewport = Viewport(0, 10); // The bottom setting dynamic, this 10 is irrelevant
+        self.viewport = Viewport {
+            top: 0,
+            bottom: 10,
+            anim: Animation::new(0, 0, AnimationType::EaseOut),
+        };
         self.render_viewport = RenderViewport(0, 10, 0); // The bottom setting dynamic, this 10 is irrelevant
     }
 
@@ -352,27 +369,6 @@ impl<T: PartialEq> SelectList<T> {
             Some(item) => Some(item),
         }
     }
-
-    //pub fn move_viewport_up(&mut self) {
-    //    if self.viewport.0 > 0 {
-    //        self.viewport.0 -= 1;
-    //        // Do this to simulate an adjustment to viewport bottom without
-    //        // the need for row height
-    //        self.viewport.1 -= 1;
-    //        if self.viewport.1 < self.selected_index {
-    //            self.selected_index = self.viewport.1
-    //        }
-    //    }
-    //}
-    //
-    //pub fn move_viewport_down(&mut self) {
-    //    if self.viewport.1 < self.items.len() {
-    //        self.viewport.0 += 1;
-    //        if self.viewport.0 > self.selected_index {
-    //            self.selected_index = self.viewport.0
-    //        }
-    //    }
-    //}
 }
 
 impl Render for SelectList<SourceItem> {}
