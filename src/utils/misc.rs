@@ -5,7 +5,8 @@ use sdl2::{
 };
 
 pub fn ignore_numlock(event: &Event) -> Event {
-    let _event = match event {
+    
+    match event {
         sdl2::event::Event::KeyDown {
             timestamp,
             window_id,
@@ -27,8 +28,7 @@ pub fn ignore_numlock(event: &Event) -> Event {
         }
 
         _ => event.clone(),
-    };
-    _event
+    }
 }
 
 pub fn localize_mouse_event(event: &Event, rect: Rect) -> (Event, bool) {

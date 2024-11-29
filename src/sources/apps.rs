@@ -9,6 +9,12 @@ use super::actions::RunAction;
 
 pub struct DesktopApplications {}
 
+impl Default for DesktopApplications {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DesktopApplications {
     pub fn new() -> DesktopApplications {
         DesktopApplications {}

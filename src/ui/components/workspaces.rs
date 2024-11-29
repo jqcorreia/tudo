@@ -34,7 +34,7 @@ impl Workspaces {
 
 impl UIComponent for Workspaces {
     fn id(&self) -> String {
-        return self.id.clone();
+        self.id.clone()
     }
     fn render(
         &mut self,
@@ -52,7 +52,7 @@ impl UIComponent for Workspaces {
         canvas.clear();
 
         for (rect, component) in self.builder.components_with_rect() {
-            component.draw(&texture_creator, cache, &app, canvas, rect, elapsed);
+            component.draw(texture_creator, cache, app, canvas, rect, elapsed);
         }
 
         // let font = cache
@@ -136,14 +136,14 @@ impl UIComponent for Workspaces {
             }
             _ => {
                 for component in self.builder.components() {
-                    component.update(&event, app, elapsed);
+                    component.update(event, app, elapsed);
                 }
             }
         }
     }
 
     fn get_state(&self) -> &dyn std::any::Any {
-        return &self.selected_workspace;
+        &self.selected_workspace
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {

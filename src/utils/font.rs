@@ -15,11 +15,11 @@ pub struct FontManager<'a> {
     pub cache: UnsafeCell<HashMap<String, Font<'a, 'a>>>,
 }
 
-fn process_font<'a>(
+fn process_font(
     file_map: HashMap<String, String>,
     fconfig: FontConfig,
-    ttf: &'a Sdl2TtfContext,
-) -> Font<'a, 'a> {
+    ttf: &Sdl2TtfContext,
+) -> Font<'_, '_> {
     let path = file_map.get(&fconfig.family).unwrap();
     ttf.load_font(path, fconfig.point_size).unwrap()
 }
@@ -34,7 +34,7 @@ impl<'a> FontManager<'_> {
                 continue;
             }
             let split = line.split(":").collect::<Vec<&str>>();
-            let path = split.get(0).unwrap();
+            let path = split.first().unwrap();
             let family_names = split.get(1).unwrap();
             for family in family_names.split(",") {
                 file_map.insert(family.trim().to_string(), path.to_string());

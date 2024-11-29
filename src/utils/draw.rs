@@ -75,7 +75,7 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
             c.set_draw_color(color);
             for line in rect_lines {
                 let (sx, sy, ex, ey) = line;
-                c.draw_line((sx as i32, sy as i32), (ex as i32, ey as i32))
+                c.draw_line((sx, sy), (ex, ey))
                     .unwrap();
             }
             for (cx, cy, quadrant) in corners {
@@ -89,7 +89,7 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
 fn error_radius(cx: i32, cy: i32, x: i32, y: i32, radius: i32) -> i32 {
     // Simply calculate for a given point the distance to the circle of center 'c' and radius
     // 'radius'
-    (((x - cx as i32).pow(2) + (y - cy as i32).pow(2)) - (radius.pow(2) as i32)).abs()
+    (((x - cx).pow(2) + (y - cy).pow(2)) - radius.pow(2)).abs()
 }
 pub fn draw_circle(canvas: &mut Canvas<Window>, cx: i32, cy: i32, radius: i32, color: Color) {
     draw_circle_quadrants(canvas, cx, cy, radius, color, None);
@@ -153,7 +153,7 @@ pub fn draw_circle_quadrants(
         if error_radius(cx, cy, x, y - 1, radius) < error_radius(cx, cy, x - 1, y - 1, radius) {
             x = x;
         } else {
-            x = x - 1;
+            x -= 1;
         }
         y -= 1;
     }

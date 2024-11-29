@@ -46,7 +46,7 @@ impl MainScreen {
         let spinner = Spinner::new("spinner".to_string());
         let clock = Clock::new("clock".to_string());
         let workspaces = Workspaces::new("workspaces".to_string());
-        let tray = Tray::new("workspaces".to_string());
+        let tray = Tray::new("workspaces");
 
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
@@ -101,7 +101,7 @@ impl Screen for MainScreen {
                 }
                 _ => {
                     for component in self.layout.components() {
-                        component.update(&event, app, elapsed);
+                        component.update(event, app, elapsed);
                     }
                 }
             }
@@ -123,7 +123,7 @@ impl Screen for MainScreen {
     fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
-        mut cache: &mut TextureCache,
+        cache: &mut TextureCache,
         app: &App,
         main_canvas: &mut Canvas<Window>,
         elapsed: u128,
@@ -139,9 +139,9 @@ impl Screen for MainScreen {
 
         for (rect, component) in self.layout.components_with_rect() {
             component.draw(
-                &texture_creator,
-                &mut cache,
-                &app,
+                texture_creator,
+                cache,
+                app,
                 main_canvas,
                 rect,
                 elapsed,

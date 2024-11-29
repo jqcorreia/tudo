@@ -21,6 +21,12 @@ impl IconConfig {
 pub struct IconFinder {
     map: HashMap<IconConfig, String>,
 }
+impl Default for IconFinder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IconFinder {
     pub fn new() -> IconFinder {
         let map = generate_map();
@@ -35,9 +41,7 @@ impl IconFinder {
         } else {
             let icon_config = IconConfig { name, size: 32 };
             let opt = self.map.get(&icon_config);
-            if opt.is_none() {
-                return None;
-            }
+            opt?;
             candidate = self.map.get(&icon_config).unwrap().to_string();
         }
 
@@ -68,13 +72,10 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
             }
         } else {
             let split = line.split_once("=");
-            match split {
-                Some((k, v)) => {
-                    res.get_mut(header_title)
-                        .unwrap()
-                        .insert(k.to_string(), v.to_string());
-                }
-                _ => (),
+            if let Some((k, v)) = split {
+                res.get_mut(header_title)
+                    .unwrap()
+                    .insert(k.to_string(), v.to_string());
             };
         }
     }
@@ -93,12 +94,12 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
     let themes = vec!["hicolor".to_string()];
     for theme in themes {
         // Try to find and parse the index.theme file for the theme being processed
-        for base_folder in base_folders.clone().into_iter() {
+        for base_folder in base_folders.clone() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
-            let ini: IniMap;
+            
 
-            match parse_ini_file(path.clone()) {
-                Ok(i) => ini = i,
+            let ini: IniMap = match parse_ini_file(path.clone()) {
+                Ok(i) => i,
                 Err(_) => continue,
             };
 
@@ -112,28 +113,25 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
                 .collect();
 
             // Traverse the base_folders again to include all the icons that may exist for this theme
-            for base_folder in base_folders.clone().into_iter() {
+            for base_folder in base_folders.clone() {
                 for dir in dirs.iter() {
                     let section = ini.get(dir).unwrap();
                     let size = section.get("Size").unwrap();
 
                     let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
-                    match fs::read_dir(d) {
-                        Ok(files) => {
-                            for file in files {
-                                let fpath =
-                                    file.unwrap().path().into_os_string().into_string().unwrap();
-                                let fname_no_ext =
-                                    fpath.split("/").last().unwrap().split(".").next().unwrap();
+                    if let Ok(files) = fs::read_dir(d) {
+                        for file in files {
+                            let fpath =
+                                file.unwrap().path().into_os_string().into_string().unwrap();
+                            let fname_no_ext =
+                                fpath.split("/").last().unwrap().split(".").next().unwrap();
 
-                                let icon_config = IconConfig {
-                                    size: size.parse().unwrap(),
-                                    name: fname_no_ext.to_string(),
-                                };
-                                map.insert(icon_config, fpath);
-                            }
+                            let icon_config = IconConfig {
+                                size: size.parse().unwrap(),
+                                name: fname_no_ext.to_string(),
+                            };
+                            map.insert(icon_config, fpath);
                         }
-                        Err(_) => (),
                     }
                 }
             }
@@ -143,24 +141,21 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
     }
 
     // Process /usr/share/pixmaps
-    match fs::read_dir("/usr/share/pixmaps/") {
-        Ok(files) => {
-            for file in files {
-                if file.as_ref().unwrap().file_type().unwrap().is_dir() {
-                    continue;
-                }
-                let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
-                let fname_no_ext = fpath.split("/").last().unwrap().split(".").next().unwrap();
-
-                let icon_config = IconConfig {
-                    size: 32, //FIXME(quadrado): Don't use this fixed size that means nothing. Need
-                    //to open the image and calculate the proper size.
-                    name: fname_no_ext.to_string(),
-                };
-                map.insert(icon_config, fpath);
+    if let Ok(files) = fs::read_dir("/usr/share/pixmaps/") {
+        for file in files {
+            if file.as_ref().unwrap().file_type().unwrap().is_dir() {
+                continue;
             }
+            let fpath = file.unwrap().path().into_os_string().into_string().unwrap();
+            let fname_no_ext = fpath.split("/").last().unwrap().split(".").next().unwrap();
+
+            let icon_config = IconConfig {
+                size: 32, //FIXME(quadrado): Don't use this fixed size that means nothing. Need
+                //to open the image and calculate the proper size.
+                name: fname_no_ext.to_string(),
+            };
+            map.insert(icon_config, fpath);
         }
-        Err(_) => (),
     }
 
     map

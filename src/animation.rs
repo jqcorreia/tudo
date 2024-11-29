@@ -64,14 +64,11 @@ impl Animation {
             return;
         }
         self.target = target;
-        match tick {
-            Some(v) => self.start(v),
-            None => (),
-        };
+        if let Some(v) = tick { self.start(v) };
     }
 
     pub fn tick(&mut self, tick: u128) -> u32 {
         (self.animation_type.func())(self, tick, 100.0);
-        return self.value;
+        self.value
     }
 }

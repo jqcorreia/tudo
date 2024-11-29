@@ -89,18 +89,18 @@ impl UIComponent for Prompt {
         let font = cache.fonts.get_font("normal-24");
         let (_fw, fh) = font.size_of(" ").unwrap();
 
-        let draw_cursor = self.text.len() > 0 || self.input_hint.is_none();
+        let draw_cursor = !self.text.is_empty() || self.input_hint.is_none();
         let texture = match (self.text.len(), &self.input_hint) {
             (0, Some(hint)) => Some(draw_string_texture(
                 hint.to_string(),
-                &texture_creator,
+                texture_creator,
                 font,
                 Color::RGBA(100, 100, 100, 255),
             )),
             (0, None) => None,
             _ => Some(draw_string_texture(
                 self.text.clone(),
-                &texture_creator,
+                texture_creator,
                 font,
                 self.foreground_color,
             )),
@@ -129,7 +129,7 @@ impl UIComponent for Prompt {
             let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - fh as i32) / 2, 5, fh);
             let alpha = match self.blink {
                 true => {
-                    (((((elapsed - self.last_blink.unwrap()) as f32 / 100.0) as f32).sin() + 1.0)
+                    ((((elapsed - self.last_blink.unwrap()) as f32 / 100.0).sin() + 1.0)
                         / 2.0)
                         * 255.0
                 }
@@ -155,18 +155,15 @@ impl UIComponent for Prompt {
             }
             sdl2::event::Event::TextInput { text, .. } => {
                 if !ctx.ctrl_pressed {
-                    self.text += &text;
+                    self.text += text;
                 }
             }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Backspace),
                 ..
             } => {
-                match self.text.char_indices().nth_back(0) {
-                    Some((char_boundary, _)) => {
-                        self.text = self.text.get(..char_boundary).unwrap().into()
-                    }
-                    None => (),
+                if let Some((char_boundary, _)) = self.text.char_indices().nth_back(0) {
+                    self.text = self.text.get(..char_boundary).unwrap().into()
                 };
             }
             _ => (),

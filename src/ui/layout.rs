@@ -48,6 +48,12 @@ pub struct LayoutBuilder {
     arena: Vec<Container>,
 }
 
+impl Default for LayoutBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LayoutBuilder {
     pub fn new() -> Self {
         LayoutBuilder {
@@ -179,19 +185,16 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
-                    match container.size {
-                        ContainerSize::Fixed(size) => sum_fixed_size += size,
-                        _ => (),
-                    };
+                    if let ContainerSize::Fixed(size) = container.size { sum_fixed_size += size };
                 }
                 let remaining_size = w as i32 - sum_fixed_size as i32;
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let w_step = match container.size {
-                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Fixed(size) => size,
                         ContainerSize::Percent(size) => {
-                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                            (remaining_size as f64 * (size as f64 / 100.0)) as usize
                         }
                     };
 
@@ -206,19 +209,16 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
-                    match container.size {
-                        ContainerSize::Fixed(size) => sum_fixed_size += size,
-                        _ => (),
-                    };
+                    if let ContainerSize::Fixed(size) = container.size { sum_fixed_size += size };
                 }
                 let remaining_size = h as i32 - sum_fixed_size as i32;
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
                     let h_step = match container.size {
-                        ContainerSize::Fixed(size) => size.clone(),
+                        ContainerSize::Fixed(size) => size,
                         ContainerSize::Percent(size) => {
-                            (remaining_size as f64 * (size.clone() as f64 / 100.0)) as usize
+                            (remaining_size as f64 * (size as f64 / 100.0)) as usize
                         }
                     };
 
@@ -231,19 +231,16 @@ impl LayoutBuilder {
     }
     pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
-            match cell {
-                Container {
+            if let Container {
                     container_type:
                         ContainerType::Leaf(Leaf {
                             component: comp, ..
                         }),
                     ..
-                } => {
-                    if comp.id() == name {
-                        return comp;
-                    }
+                } = cell {
+                if comp.id() == name {
+                    return comp;
                 }
-                _ => (),
             }
         }
         panic!("Component not found")
@@ -255,13 +252,10 @@ impl LayoutBuilder {
         for (idx, r) in rects {
             let container = self.arena.get_mut(idx).unwrap();
 
-            match container {
-                Container {
+            if let Container {
                     container_type: ContainerType::Leaf(leaf),
                     ..
-                } => leaf.rect = Some(r),
-                _ => (),
-            }
+                } = container { leaf.rect = Some(r) }
         }
     }
 

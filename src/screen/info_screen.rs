@@ -39,7 +39,7 @@ impl Screen for InfoScreen {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
         for event in events.iter() {
             for component in self.layout.components() {
-                component.update(&event, app, elapsed);
+                component.update(event, app, elapsed);
             }
         }
     }
@@ -61,7 +61,7 @@ impl Screen for InfoScreen {
         main_canvas.clear();
 
         for (rect, component) in self.layout.components_with_rect() {
-            component.draw(&texture_creator, cache, &app, main_canvas, rect, elapsed);
+            component.draw(texture_creator, cache, app, main_canvas, rect, elapsed);
         }
     }
 }

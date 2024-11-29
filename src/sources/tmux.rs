@@ -6,6 +6,12 @@ use super::{Source, SourceItem};
 
 pub struct Tmux {}
 
+impl Default for Tmux {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Tmux {
     pub fn new() -> Tmux {
         Tmux {}

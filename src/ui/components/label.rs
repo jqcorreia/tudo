@@ -44,7 +44,7 @@ impl UIComponent for Label {
     }
     fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, elapsed: u128) {}
     fn get_state(&self) -> &dyn std::any::Any {
-        return &self.text;
+        &self.text
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {

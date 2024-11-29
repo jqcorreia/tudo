@@ -4,6 +4,12 @@ use super::{actions::PassSecretAction, Source, SourceItem};
 
 pub struct Secrets {}
 
+impl Default for Secrets {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Secrets {
     pub fn new() -> Secrets {
         Secrets {}

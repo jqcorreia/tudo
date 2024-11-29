@@ -4,6 +4,12 @@ use crate::sources::{Source, SourceItem};
 
 pub struct DummySource {}
 
+impl Default for DummySource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DummySource {
     pub fn new() -> DummySource {
         DummySource {}

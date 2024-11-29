@@ -30,7 +30,7 @@ pub trait UIComponent {
     fn draw(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
-        mut cache: &mut TextureCache,
+        cache: &mut TextureCache,
         app: &App,
         main_canvas: &mut Canvas<Window>,
         component_rect: Rect,
@@ -51,9 +51,9 @@ pub trait UIComponent {
         main_canvas
             .with_texture_canvas(&mut tex, |c| {
                 self.render(
-                    &texture_creator,
-                    &mut cache,
-                    &app,
+                    texture_creator,
+                    cache,
+                    app,
                     c,
                     component_rect,
                     elapsed,
@@ -69,7 +69,7 @@ pub trait UIComponent {
     fn set_state(&mut self, state: Box<dyn Any>);
 
     fn set_focus(&mut self, _: bool) {
-        ()
+        
     }
 
     fn get_focus(&self) -> bool {

@@ -48,7 +48,7 @@ impl UIComponent for Button {
         _elapsed: u128,
     ) {
         let r = Rect::new(0, 0, rect.width() - 1, rect.height() - 1);
-        let font = cache.fonts.get_font("normal-20".to_string());
+        let font = cache.fonts.get_font("normal-20");
         let color = match (self.active, self.pressed, self.get_focus()) {
             (true, false, false) => Color::WHITE,
             (true, true, _) => Color::RED,

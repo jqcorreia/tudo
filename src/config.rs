@@ -119,6 +119,6 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
             panic!("{}", err)
         }
     };
-    let c = lua.from_value(globals.get("tudo").unwrap()).unwrap();
-    c
+    
+    lua.from_value(globals.get("tudo").unwrap()).unwrap()
 }

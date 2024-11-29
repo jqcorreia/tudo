@@ -36,7 +36,7 @@ impl UIComponent for Spinner {
         let mut buf: Vec<u8> = vec![0; smallest_dim * smallest_dim * 4];
 
         if self.running {
-            let c = (((elapsed.rem(self.period_millis) as f32 / self.period_millis as f32) as f32
+            let c = (((elapsed.rem(self.period_millis) as f32 / self.period_millis as f32)
                 * 360.0)
                 .to_radians()
                 .sin()
@@ -88,7 +88,7 @@ impl UIComponent for Spinner {
     fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, _elapsed: u128) {}
 
     fn get_state(&self) -> &dyn std::any::Any {
-        return &self.running;
+        &self.running
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {

@@ -12,7 +12,7 @@ fn open_hyprland_socket_1() -> std::io::Result<UnixStream> {
     );
     dbg!(&socket_path);
     let stream = UnixStream::connect(socket_path)?;
-    return Ok(stream);
+    Ok(stream)
 }
 
 fn open_hyprland_socket_2() -> std::io::Result<UnixStream> {
@@ -24,7 +24,7 @@ fn open_hyprland_socket_2() -> std::io::Result<UnixStream> {
     );
     dbg!(&socket_path);
     let stream = UnixStream::connect(socket_path)?;
-    return Ok(stream);
+    Ok(stream)
 }
 
 #[derive(Debug)]

@@ -84,7 +84,7 @@ impl UIComponent for SelectList<SourceItem> {
         // in order to not have to manage original list indices
         let mut final_list = Vec::new();
 
-        if prompt.len() == 0 {
+        if prompt.is_empty() {
             final_list = new_list.clone();
         } else {
             let haystack: Vec<String>;
@@ -98,12 +98,12 @@ impl UIComponent for SelectList<SourceItem> {
                 // action type searching
                 haystack = new_list
                     .iter()
-                    .map(|i| i.action.tags().get(0).unwrap().clone())
+                    .map(|i| i.action.tags().first().unwrap().clone())
                     .collect::<Vec<String>>();
-                matches = basic_contains(tag.to_string(), &haystack).unwrap_or(Vec::new());
+                matches = basic_contains(tag.to_string(), &haystack).unwrap_or_default();
 
                 // if filter present, further filter the list with another haystack
-                if filter != "".to_string() {
+                if !filter.is_empty() {
                     let mut list2 = Vec::new();
                     for m in matches.iter() {
                         list2.push(new_list.get(m.original_idx).unwrap().clone());
@@ -113,7 +113,7 @@ impl UIComponent for SelectList<SourceItem> {
                         .iter()
                         .map(|i| i.title.clone())
                         .collect::<Vec<String>>();
-                    matches = basic_contains(filter.to_string(), &haystack2).unwrap_or(Vec::new());
+                    matches = basic_contains(filter.to_string(), &haystack2).unwrap_or_default();
 
                     // We cant to the final list computation on the outside since we are getting values
                     // from different lists based on
@@ -131,7 +131,7 @@ impl UIComponent for SelectList<SourceItem> {
                     .iter()
                     .map(|i| i.title.clone())
                     .collect::<Vec<String>>();
-                matches = basic_contains(prompt.to_string(), &haystack).unwrap_or(Vec::new());
+                matches = basic_contains(prompt.to_string(), &haystack).unwrap_or_default();
 
                 for m in matches.iter() {
                     final_list.push(new_list.get(m.original_idx).unwrap().clone());
@@ -158,7 +158,7 @@ impl UIComponent for SelectList<SourceItem> {
         canvas.set_draw_color(Color::BLACK);
 
         canvas.draw_filled_rounded_rect(Rect::new(0, 0, rect.w as u32, rect.h as u32), 7);
-        if self.items.len() == 0 {
+        if self.items.is_empty() {
             draw_string(
                 "No items found".to_string(),
                 canvas,
@@ -187,7 +187,7 @@ impl UIComponent for SelectList<SourceItem> {
                 // }
 
                 let _y = y as i32;
-                if _y < rv0 as i32 - self.row_height as i32 || y >= rv0 as u32 + rect.h as u32 {
+                if _y < rv0 as i32 - self.row_height as i32 || y >= rv0 + rect.h as u32 {
                     y += self.row_height;
                     continue;
                 }
@@ -198,7 +198,7 @@ impl UIComponent for SelectList<SourceItem> {
                     cache,
                     font2,
                     canvas,
-                    Rect::new(0, 0, rect.w as u32, self.row_height as u32),
+                    Rect::new(0, 0, rect.w as u32, self.row_height),
                     elapsed,
                     idx == self.selected_index,
                     idx,
@@ -312,7 +312,7 @@ impl<T: PartialEq> SelectList<T> {
         }
     }
     pub fn select_down(&mut self) {
-        if self.items.len() > 0 && self.selected_index < self.items.len() - 1 {
+        if !self.items.is_empty() && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
             if self.selected_index > self.viewport.1 {
                 self.viewport.down(1);
@@ -413,7 +413,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                         .get_image(item.icon.as_ref().unwrap().to_string());
                     canvas
                         .copy(
-                            &icon_texture,
+                            icon_texture,
                             None,
                             Rect::new(vertical_bar_spacing, 0, icon_height, icon_height),
                         )
@@ -440,7 +440,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
 
                 // Draw tag
                 let tag_texture = draw_string_texture(
-                    format!(":{}", item.action.tags().get(0).unwrap().clone()),
+                    format!(":{}", item.action.tags().first().unwrap().clone()),
                     texture_creator,
                     font,
                     Color::RGBA(128, 128, 128, 128),

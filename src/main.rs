@@ -57,12 +57,12 @@ fn check_running_state() -> bool {
 
             println!("Opening existing tudo session");
             dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
-            return true;
+            true
         }
         _ => {
-            return false;
+            false
         }
-    };
+    }
 }
 
 fn main() {
@@ -174,8 +174,8 @@ fn main() {
     let mut tick_time = Instant::now();
     let mut fps = 0;
     let frame_lock_value = 60;
-    let window_width = main_canvas.window().size().clone().0 as i32;
-    let window_height = main_canvas.window().size().clone().1 as i32;
+    let window_width = main_canvas.window().size().0 as i32;
+    let window_height = main_canvas.window().size().1 as i32;
 
     let main_screen = MainScreen::new(
         &app.config,

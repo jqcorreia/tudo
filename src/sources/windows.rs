@@ -54,9 +54,9 @@ pub fn switch_to_window(
     _root: &Window,
 ) -> Result<(), xcb::Error> {
     println!("SWITCH");
-    let net_active_window_atom = get_atom(&conn, "_NET_ACTIVE_WINDOW");
-    let net_wm_desktop_atom = get_atom(&conn, "_NET_WM_DESKTOP");
-    let net_current_desktop_atom = get_atom(&conn, "_NET_CURRENT_DESKTOP");
+    let net_active_window_atom = get_atom(conn, "_NET_ACTIVE_WINDOW");
+    let net_wm_desktop_atom = get_atom(conn, "_NET_WM_DESKTOP");
+    let net_current_desktop_atom = get_atom(conn, "_NET_CURRENT_DESKTOP");
 
     //  Get window current desktop
     let x = conn.send_request(&x::GetProperty {
@@ -116,6 +116,12 @@ pub fn switch_to_window(
     Ok(())
 }
 
+impl Default for WindowSource {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WindowSource {
     pub fn new() -> Self {
         WindowSource {}
@@ -160,7 +166,7 @@ impl Source for WindowSource {
 
             let r = conn.wait_for_reply(c).unwrap();
             let buf: Vec<u8> = r.value().to_vec();
-            let mut split = buf.split(|item| item == &(0 as u8));
+            let mut split = buf.split(|item| item == &0_u8);
             let wname = String::from_utf8(split.nth(1).unwrap().to_vec()).unwrap();
             res.push(SourceItem {
                 action: Box::new(WindowSwitchAction {
@@ -168,7 +174,7 @@ impl Source for WindowSource {
                     exit_after: true,
                 }),
                 icon: None,
-                title: format!("{}", wname),
+                title: wname.to_string(),
             });
         }
         res

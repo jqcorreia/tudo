@@ -17,7 +17,7 @@ pub struct ImageCache<'fa> {
     tc: &'fa TextureCreator<WindowContext>,
 }
 
-fn gen_tex<'a>(path: String, tc: &'a TextureCreator<WindowContext>) -> Texture<'a> {
+fn gen_tex(path: String, tc: &TextureCreator<WindowContext>) -> Texture<'_> {
     let buf = fs::read(&path).unwrap();
 
     let tex: Texture = tc.load_texture_bytes(&buf).unwrap();

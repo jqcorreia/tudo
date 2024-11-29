@@ -39,7 +39,7 @@ impl Tray {
             println!("svc : {}, object: {}", svc, object);
             let proxy = conn.with_proxy(svc, object, Duration::from_millis(2000));
             let title: String = proxy.get("org.kde.StatusNotifierItem", "Title").unwrap();
-            if title == "" {
+            if title.is_empty() {
                 continue;
             }
             let icon: String = proxy.get("org.kde.StatusNotifierItem", "IconName").unwrap();
@@ -90,19 +90,16 @@ impl UIComponent for Tray {
             canvas
                 .copy(tex, None, Some(Rect::new(x, 0, 24, 24)))
                 .unwrap();
-            x += 24 as i32 + 5;
+            x += 24_i32 + 5;
         }
     }
 
     fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
-        match event {
-            sdl2::event::Event::MouseButtonUp { .. } => {}
-            _ => (),
-        }
+        if let sdl2::event::Event::MouseButtonUp { .. } = event {}
     }
 
     fn get_state(&self) -> &dyn std::any::Any {
-        return &false;
+        &false
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {}

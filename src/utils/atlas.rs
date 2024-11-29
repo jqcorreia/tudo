@@ -29,7 +29,7 @@ impl<'fa> FontAtlas<'fa> {
         }
     }
     pub fn generate_new_texture(&mut self, font: &Font, te: TextureInfo) -> &Texture {
-        let surf = font.render_char(te.ch as char).blended(te.fg).unwrap();
+        let surf = font.render_char(te.ch).blended(te.fg).unwrap();
 
         let tex: Texture<'fa> = self.tc.create_texture_from_surface(surf).unwrap();
 
@@ -62,7 +62,7 @@ impl<'fa> FontAtlas<'fa> {
     ) -> Texture {
         let surf = font.render(&s).blended(fg).unwrap();
         let final_tex = self.tc.create_texture_from_surface(surf).unwrap();
-        return final_tex;
+        final_tex
     }
 
     pub fn draw_string_atlas(
@@ -80,7 +80,7 @@ impl<'fa> FontAtlas<'fa> {
 
         //FIXME this is stupid has we need to traverse the string twice FIXME
         for c in s.chars() {
-            let ch = c as char;
+            let ch = c;
             let t = self.draw_char(font, ch, fg);
             tw += t.query().width;
             th = t.query().height;
@@ -98,11 +98,11 @@ impl<'fa> FontAtlas<'fa> {
                 //     texture_canvas.clear();
                 // }
                 for c in s.chars() {
-                    let ch = c as char;
+                    let ch = c;
                     let t = self.draw_char(font, ch, fg);
 
                     texture_canvas
-                        .copy(&t, None, Rect::new(x, 0, t.query().width, t.query().height))
+                        .copy(t, None, Rect::new(x, 0, t.query().width, t.query().height))
                         .unwrap();
                     x += t.query().width as i32;
                 }
