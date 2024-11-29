@@ -1,10 +1,9 @@
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
-    app::{self, App},
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::{
-        hyprland::{self, Hyprland},
+        hyprland::{Hyprland},
         misc::localize_mouse_event,
     },
 };

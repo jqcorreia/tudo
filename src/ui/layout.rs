@@ -1,6 +1,6 @@
-use sdl2::{event::Event, rect::Rect};
+use sdl2::rect::Rect;
 
-use crate::{ui::components::traits::UIComponent, utils::misc::localize_mouse_event};
+use crate::ui::components::traits::UIComponent;
 
 type LayoutIndex = usize;
 

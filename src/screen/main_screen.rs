@@ -14,13 +14,12 @@ use crate::{
     sources::SourceItem,
     ui::{
         components::{
-            button::Button,
             clock::Clock,
             list::{SelectList, SelectListState},
             spinner::Spinner,
             text::Prompt,
             tray::Tray,
-            workspaces::{self, Workspaces},
+            workspaces::{Workspaces},
         },
         layout::{Container, ContainerSize, LayoutBuilder, SplitType},
     },
