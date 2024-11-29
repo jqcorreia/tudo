@@ -64,7 +64,9 @@ impl Animation {
             return;
         }
         self.target = target;
-        if let Some(v) = tick { self.start(v) };
+        if let Some(v) = tick {
+            self.start(v)
+        };
     }
 
     pub fn tick(&mut self, tick: u128) -> u32 {

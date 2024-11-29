@@ -44,6 +44,16 @@ impl Viewport {
         self.1 -= amount;
     }
 }
+impl RenderViewport {
+    pub fn down(&mut self, amount: i32) {
+        self.0 += amount;
+        self.1 += amount;
+    }
+    pub fn up(&mut self, amount: i32) {
+        self.0 -= amount;
+        self.1 -= amount;
+    }
+}
 #[derive(Clone)]
 pub struct SelectListState<T> {
     pub items: Vec<T>,
@@ -307,7 +317,8 @@ impl<T: PartialEq> SelectList<T> {
         if self.selected_index > 0 {
             self.selected_index -= 1;
             if self.selected_index < self.viewport.0 {
-                self.viewport.up(1);
+                //self.viewport.up(1);
+                self.render_viewport.up(40);
             }
         }
     }
@@ -315,7 +326,8 @@ impl<T: PartialEq> SelectList<T> {
         if !self.items.is_empty() && self.selected_index < self.items.len() - 1 {
             self.selected_index += 1;
             if self.selected_index > self.viewport.1 {
-                self.viewport.down(1);
+                //self.viewport.down(1);
+                self.render_viewport.down(40);
             }
         }
     }
@@ -341,26 +353,26 @@ impl<T: PartialEq> SelectList<T> {
         }
     }
 
-    pub fn move_viewport_up(&mut self) {
-        if self.viewport.0 > 0 {
-            self.viewport.0 -= 1;
-            // Do this to simulate an adjustment to viewport bottom without
-            // the need for row height
-            self.viewport.1 -= 1;
-            if self.viewport.1 < self.selected_index {
-                self.selected_index = self.viewport.1
-            }
-        }
-    }
-
-    pub fn move_viewport_down(&mut self) {
-        if self.viewport.1 < self.items.len() {
-            self.viewport.0 += 1;
-            if self.viewport.0 > self.selected_index {
-                self.selected_index = self.viewport.0
-            }
-        }
-    }
+    //pub fn move_viewport_up(&mut self) {
+    //    if self.viewport.0 > 0 {
+    //        self.viewport.0 -= 1;
+    //        // Do this to simulate an adjustment to viewport bottom without
+    //        // the need for row height
+    //        self.viewport.1 -= 1;
+    //        if self.viewport.1 < self.selected_index {
+    //            self.selected_index = self.viewport.1
+    //        }
+    //    }
+    //}
+    //
+    //pub fn move_viewport_down(&mut self) {
+    //    if self.viewport.1 < self.items.len() {
+    //        self.viewport.0 += 1;
+    //        if self.viewport.0 > self.selected_index {
+    //            self.selected_index = self.viewport.0
+    //        }
+    //    }
+    //}
 }
 
 impl Render for SelectList<SourceItem> {}
@@ -388,7 +400,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
         tex.set_blend_mode(BlendMode::Blend);
         canvas
             .with_texture_canvas(&mut tex, |canvas| {
-                canvas.set_draw_color(Color::BLUE);
+                //canvas.set_draw_color(Color::BLUE);
                 if is_selected {
                     canvas.set_draw_color(Color::RGBA(20, 20, 50, 255));
                     canvas.clear();
