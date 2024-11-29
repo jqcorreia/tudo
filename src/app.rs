@@ -1,3 +1,4 @@
+use log::info;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
@@ -52,9 +53,15 @@ impl App {
             .build()
             .unwrap();
 
+        info!("Computing base folder");
         let base_folder = check_config_folder();
+        info!("Base folder: {}", &base_folder);
+
+        info!("Loading config: {}", format!("{}/config.lua", base_folder));
         let config = load_config(format!("{}/config.lua", base_folder));
+        info!("Initializing window canvas");
         let canvas = window.into_canvas().build().unwrap();
+        info!("Finished initializing canvas");
 
         let hyprland = Hyprland::new();
 

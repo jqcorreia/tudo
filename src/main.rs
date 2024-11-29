@@ -18,6 +18,7 @@ use std::time::Instant;
 use app::App;
 
 use execute::execute;
+use log::info;
 use screen::debug_screen::DebugScreen;
 use screen::info_screen::InfoScreen;
 use screen::main_screen::MainScreen;
@@ -26,6 +27,7 @@ use sdl2::image::InitFlag;
 use sdl2::libc::SIGINT;
 use sdl2::libc::SIGUSR2;
 use signal_hook::iterator::Signals;
+use simple_logger::SimpleLogger;
 use sources::Source;
 
 use screen::Screen;
@@ -40,7 +42,6 @@ use utils::cache::TextureCache;
 use utils::draw::draw_string;
 use utils::font::FontConfig;
 use utils::misc;
-
 const PID_FILE: &str = "/run/user/1000/tudo.pid"; //TODO(quadrado): Use configuration value instead
                                                   //of this one.
 
@@ -65,11 +66,15 @@ fn check_running_state() -> bool {
 }
 
 fn main() {
+    // Initialize logging
+    SimpleLogger::new().init().unwrap();
     if let Ok(value) = std::env::var("XDG_SESSION_TYPE") {
         if value == "wayland" {
             unsafe { std::env::set_var("SDL_VIDEODRIVER", "wayland") };
         }
     }
+
+    info!("Starting TUDO");
 
     if check_running_state() {
         return;
@@ -98,8 +103,10 @@ fn main() {
     //NOTE(quadrado) The image context just needs to exist. Weird. Use other lib?
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG);
 
+    info!("Initializing App State");
     // Create app context and main window canvas
     let (mut app, mut main_canvas) = App::init();
+    info!("Finished initializing App State");
 
     // Create texture creator for the main window canvas
     let tc = main_canvas.texture_creator();

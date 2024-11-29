@@ -17,6 +17,8 @@ ureq = { version = "2.9.5", features = ["json"] }
 chrono = "0.4.38"
 signal-hook = "0.3.17"
 dbus = "0.9.7"
+simple_logger = "5.0.0"
+log = "0.4.22"
 
 [[bin]]
 name = "tudo"

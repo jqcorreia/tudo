@@ -93,7 +93,6 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
     let themes = vec!["hicolor".to_string()];
     for theme in themes {
         // Try to find and parse the index.theme file for the theme being processed
-        let mut dirs: Vec<String> = vec![];
         for base_folder in base_folders.clone().into_iter() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
             let ini: IniMap;
@@ -103,7 +102,7 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
                 Err(_) => continue,
             };
 
-            dirs = ini
+            let dirs: Vec<String> = ini
                 .get("Icon Theme")
                 .unwrap()
                 .get("Directories")

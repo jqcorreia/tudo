@@ -1,6 +1,8 @@
 use std::io::prelude::*;
 use std::os::unix::net::UnixStream;
 
+use log::info;
+
 fn open_hyprland_socket_1() -> std::io::Result<UnixStream> {
     let xdg_runtime_dir = std::env::var("XDG_RUNTIME_DIR").unwrap();
     let hyprland_signature = std::env::var("HYPRLAND_INSTANCE_SIGNATURE").unwrap();
@@ -37,8 +39,10 @@ pub struct Hyprland {
 
 impl Hyprland {
     pub fn new() -> std::io::Result<Hyprland> {
+        info!("Starting hyprland client");
         let cmd_stream = open_hyprland_socket_1()?;
         let listen_stream = open_hyprland_socket_2()?;
+        info!("Finished Starting hyprland client");
 
         Ok(Hyprland {
             cmd_stream,

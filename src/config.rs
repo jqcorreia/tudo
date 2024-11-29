@@ -114,7 +114,7 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
     set_globals(&lua);
 
     match lua.load(&contents).set_name("config").eval() {
-        Ok(r) => dbg!(r),
+        Ok(r) => r,
         Err(err) => {
             panic!("{}", err)
         }
