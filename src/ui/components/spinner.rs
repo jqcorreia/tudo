@@ -85,7 +85,7 @@ impl UIComponent for Spinner {
             .unwrap();
     }
 
-    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, elapsed: u128) {}
+    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, _elapsed: u128) {}
 
     fn get_state(&self) -> &dyn std::any::Any {
         return &self.running;

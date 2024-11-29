@@ -44,5 +44,5 @@ impl UIComponent for Clock {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.label.set_state(state);
     }
-    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _event: &Event, _app: &mut App, _elapsed: u128) {}
 }

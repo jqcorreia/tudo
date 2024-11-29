@@ -19,7 +19,7 @@ use crate::{
             spinner::Spinner,
             text::Prompt,
             tray::Tray,
-            workspaces::{Workspaces},
+            workspaces::Workspaces,
         },
         layout::{Container, ContainerSize, LayoutBuilder, SplitType},
     },

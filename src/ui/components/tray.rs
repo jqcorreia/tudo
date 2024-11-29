@@ -75,7 +75,8 @@ impl UIComponent for Tray {
         &mut self,
         texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
         cache: &mut crate::utils::cache::TextureCache,
-        app: &crate::app::App,
+        _app: &crate::app::App,
+
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
         rect: sdl2::rect::Rect,
         elapsed: u128,
@@ -83,7 +84,7 @@ impl UIComponent for Tray {
         let mut x: i32 = 0;
         for p in self.icon_paths.clone() {
             let tex = cache.images.get_image(p);
-            let w = tex.query().width;
+            let _w = tex.query().width;
             let h = tex.query().width;
 
             canvas
