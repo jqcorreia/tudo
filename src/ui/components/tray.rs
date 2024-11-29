@@ -73,19 +73,19 @@ impl UIComponent for Tray {
 
     fn render(
         &mut self,
-        texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
+        _texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
         cache: &mut crate::utils::cache::TextureCache,
         _app: &crate::app::App,
 
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
-        rect: sdl2::rect::Rect,
-        elapsed: u128,
+        _rect: sdl2::rect::Rect,
+        _elapsed: u128,
     ) {
         let mut x: i32 = 0;
         for p in self.icon_paths.clone() {
             let tex = cache.images.get_image(p);
             let _w = tex.query().width;
-            let h = tex.query().width;
+            let _h = tex.query().width;
 
             canvas
                 .copy(tex, None, Some(Rect::new(x, 0, 24, 24)))
@@ -93,11 +93,9 @@ impl UIComponent for Tray {
             x += 24_i32 + 5;
         }
     }
-
     fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
         if let sdl2::event::Event::MouseButtonUp { .. } = event {}
     }
-
     fn get_state(&self) -> &dyn std::any::Any {
         &false
     }

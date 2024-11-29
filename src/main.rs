@@ -1,3 +1,4 @@
+#![allow(unused)]
 pub mod animation;
 pub mod app;
 pub mod config;
@@ -59,9 +60,7 @@ fn check_running_state() -> bool {
             dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
             true
         }
-        _ => {
-            false
-        }
+        _ => false,
     }
 }
 
