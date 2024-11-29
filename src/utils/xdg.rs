@@ -49,7 +49,8 @@ impl IconFinder {
     }
 }
 
-pub fn parse_ini_file(path: String) -> Result<HashMap<String, HashMap<String, String>>, ()> {
+type IniMap = HashMap<String, HashMap<String, String>>;
+pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
     let contents = match std::fs::read(path) {
         Ok(c) => Ok(String::from_utf8(c).unwrap()),
         Err(_) => return Err(()),
@@ -95,14 +96,14 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
         let mut dirs: Vec<String> = vec![];
         for base_folder in base_folders.clone().into_iter() {
             let path = format!("{}/icons/{}/index.theme", base_folder, theme);
-            let ini = parse_ini_file(path.clone());
+            let ini: IniMap;
 
-            if let Err(_) = ini {
-                continue;
-            }
+            match parse_ini_file(path.clone()) {
+                Ok(i) => ini = i,
+                Err(_) => continue,
+            };
+
             dirs = ini
-                .clone()
-                .unwrap()
                 .get("Icon Theme")
                 .unwrap()
                 .get("Directories")
@@ -114,8 +115,7 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
             // Traverse the base_folders again to include all the icons that may exist for this theme
             for base_folder in base_folders.clone().into_iter() {
                 for dir in dirs.iter() {
-                    let ini2 = ini.clone().unwrap();
-                    let section = ini2.get(dir).unwrap();
+                    let section = ini.get(dir).unwrap();
                     let size = section.get("Size").unwrap();
 
                     let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
@@ -128,7 +128,7 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
                                     fpath.split("/").last().unwrap().split(".").next().unwrap();
 
                                 let icon_config = IconConfig {
-                                    size: size.clone().parse().unwrap(),
+                                    size: size.parse().unwrap(),
                                     name: fname_no_ext.to_string(),
                                 };
                                 map.insert(icon_config, fpath);
