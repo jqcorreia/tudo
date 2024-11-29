@@ -61,28 +61,23 @@ impl IconFinder {
         if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
             candidate = name.clone();
         } else {
-            let mut _size = find_previous_power_of_two(size);
+            let mut _size = find_next_power_of_two(size);
             let mut found = false;
-            while (_size <= 1024) {
+
+            let exponent = 1;
+            let exponent_limit = (_size as f32).log2().trunc() as u32;
+
+            //while (_size <= 1025) {
+            for i in exponent..exponent_limit {
+                let _size = 2_u32.pow(i);
                 let icon_config = IconConfig {
                     name: name.clone(),
                     size: _size,
                 };
-                match self.map.get(&icon_config) {
-                    Some(path) => {
-                        dbg!(path);
-                        candidate = path.to_string();
-                        found = true;
-                        break;
-                    }
-                    None => {
-                        _size *= 2;
-                    }
+                if let Some(path) = self.map.get(&icon_config) {
+                    candidate = path.to_string();
+                    found = true;
                 }
-                //let opt = self.map.get(&icon_config);
-                //match opt {}
-                //opt?;
-                //candidate = self.map.get(&icon_config).unwrap().to_string();
             }
             if !found {
                 return None;
@@ -160,6 +155,13 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
                 for dir in dirs.iter() {
                     let section = ini.get(dir).unwrap();
                     let size = section.get("Size").unwrap();
+
+                    let scale = section.get("Scale").map_or("1", |v| v);
+
+                    if scale.parse::<u32>().unwrap() > 1 {
+                        //FIXME(quadrado): For now ignore scaled icons
+                        continue;
+                    }
 
                     let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
                     if let Ok(files) = fs::read_dir(d) {
