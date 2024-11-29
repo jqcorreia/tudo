@@ -46,7 +46,7 @@ impl Tray {
 
             dbg!(&title);
             dbg!(&icon);
-            dbg!(icon_finder.get_icon(icon.clone()));
+            dbg!(icon_finder.get_icon_with_size(icon.clone(), 24));
 
             if let Some(path) = icon_finder.get_icon(icon) {
                 icon_paths.push(path)

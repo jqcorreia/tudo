@@ -9,6 +9,7 @@ pub mod utils;
 
 pub mod ui;
 
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::process::Command;
 use std::sync::mpsc::channel;
@@ -275,18 +276,25 @@ fn main() {
                 Duration::new(0, (1000 / frame_lock_value) * 1_000_000) - tick_time.elapsed(),
             );
         }
+        if app.clipboard.is_some() {
+            let cmd = match std::env::var("XDG_SESSION_TYPE") {
+                Ok(session) => match session.borrow() {
+                    "wayland" => dbg!("wl-copy"),
+                    "x11" => "xsel --clipboard --input",
+                    _ => "",
+                },
+                _ => "",
+            };
+            let full_cmd = format!(
+                r"echo -n {} | {}",
+                app.clipboard.clone().unwrap().replace("\n", ""),
+                cmd
+            );
+            dbg!(&full_cmd);
+
+            Command::new("sh").arg("-c").arg(full_cmd).spawn();
+            app.clipboard = None;
+        }
     }
     std::fs::remove_file(PID_FILE).unwrap();
-
-    if app.clipboard.is_some() {
-        let _out = Command::new("sh")
-            .arg("-c")
-            .arg(format!(
-                r"echo -n {} | xsel --clipboard --input",
-                app.clipboard.clone().unwrap().replace("\n", "")
-            ))
-            .output()
-            .unwrap()
-            .stdout;
-    }
 }
