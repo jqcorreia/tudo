@@ -10,7 +10,6 @@ fn open_hyprland_socket_1() -> std::io::Result<UnixStream> {
         "{}/hypr/{}/.socket.sock",
         xdg_runtime_dir, hyprland_signature
     );
-    dbg!(&socket_path);
     let stream = UnixStream::connect(socket_path)?;
     Ok(stream)
 }
@@ -22,7 +21,6 @@ fn open_hyprland_socket_2() -> std::io::Result<UnixStream> {
         "{}/hypr/{}/.socket2.sock",
         xdg_runtime_dir, hyprland_signature
     );
-    dbg!(&socket_path);
     let stream = UnixStream::connect(socket_path)?;
     Ok(stream)
 }

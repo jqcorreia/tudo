@@ -87,7 +87,6 @@ impl IconFinder {
         _sizes.reverse();
 
         for _size in _sizes {
-            dbg!(&_size);
             let icon_config = IconConfig {
                 name: name.clone(),
                 size: _size,
@@ -163,7 +162,7 @@ fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
     for theme in themes {
         // Try to find and parse the index.theme file for the theme being processed
         for base_folder in base_folders.clone() {
-            let path = dbg!(format!("{}/icons/{}/index.theme", base_folder, theme));
+            let path = format!("{}/icons/{}/index.theme", base_folder, theme);
 
             let ini: IniMap = match parse_ini_file(path.clone()) {
                 Ok(i) => i,

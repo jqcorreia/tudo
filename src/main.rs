@@ -57,7 +57,9 @@ fn check_running_state() -> bool {
             }
 
             println!("Opening existing tudo session");
-            dbg!(Command::new("sh").args(["-c", &format!("kill -s USR2 {}", &pid)])).spawn();
+            let _ = Command::new("sh")
+                .args(["-c", &format!("kill -s USR2 {}", &pid)])
+                .spawn();
             true
         }
         _ => false,
@@ -204,7 +206,6 @@ fn main() {
                     SIGINT => app.running = false, // This will stop the main thread when hidden
                     // and receiving a Ctrl-C
                     SIGUSR2 => {
-                        dbg!(sig);
                         main_canvas.window_mut().show();
                         app.hidden = false
                     }
@@ -278,7 +279,7 @@ fn main() {
         if app.clipboard.is_some() {
             let cmd = match std::env::var("XDG_SESSION_TYPE") {
                 Ok(session) => match session.borrow() {
-                    "wayland" => dbg!("wl-copy"),
+                    "wayland" => "wl-copy",
                     "x11" => "xsel --clipboard --input",
                     _ => "",
                 },
@@ -289,9 +290,8 @@ fn main() {
                 app.clipboard.clone().unwrap().replace("\n", ""),
                 cmd
             );
-            dbg!(&full_cmd);
 
-            Command::new("sh").arg("-c").arg(full_cmd).spawn();
+            let _ = Command::new("sh").arg("-c").arg(full_cmd).spawn();
             app.clipboard = None;
         }
     }
