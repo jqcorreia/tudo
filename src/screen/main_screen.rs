@@ -17,7 +17,7 @@ use crate::{
             clock::Clock,
             list::{SelectList, SelectListState},
             spinner::Spinner,
-            text::Prompt,
+            text::TextInput,
             tray::Tray,
             workspaces::Workspaces,
         },
@@ -41,7 +41,7 @@ impl MainScreen {
         height: usize,
         items: Arc<Mutex<Vec<SourceItem>>>,
     ) -> MainScreen {
-        let prompt = Prompt::new("prompt", config);
+        let prompt = TextInput::new("prompt", config);
         let select_list = SelectList::<SourceItem>::new("list").with_on_select(execute);
         let spinner = Spinner::new("spinner".to_string());
         let clock = Clock::new("clock".to_string());
@@ -138,14 +138,7 @@ impl Screen for MainScreen {
         main_canvas.clear();
 
         for (rect, component) in self.layout.components_with_rect() {
-            component.draw(
-                texture_creator,
-                cache,
-                app,
-                main_canvas,
-                rect,
-                elapsed,
-            );
+            component.draw(texture_creator, cache, app, main_canvas, rect, elapsed);
         }
     }
     fn reset(&mut self) {

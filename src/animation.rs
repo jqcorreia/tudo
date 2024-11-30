@@ -41,10 +41,11 @@ pub struct Animation {
     start_tick: u128,
     pub target: u32,
     animation_type: AnimationType,
+    duration: f32,
 }
 
 impl Animation {
-    pub fn new(value: u32, target: u32, atype: AnimationType) -> Animation {
+    pub fn new(value: u32, target: u32, atype: AnimationType, duration: f32) -> Animation {
         Animation {
             start_value: value,
             value,
@@ -52,6 +53,7 @@ impl Animation {
             start_tick: 0,
             target,
             animation_type: atype,
+            duration,
         }
     }
     pub fn start(&mut self, tick: u128) {
@@ -75,7 +77,7 @@ impl Animation {
         if !self.running {
             self.start(tick);
         }
-        (self.animation_type.func())(self, tick, 100.0);
+        (self.animation_type.func())(self, tick, self.duration);
         self.value
     }
 }

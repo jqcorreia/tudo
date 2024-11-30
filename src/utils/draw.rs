@@ -75,8 +75,7 @@ pub fn draw_rounded_rect(canvas: &mut Canvas<Window>, rect: Rect, radius: i32, c
             c.set_draw_color(color);
             for line in rect_lines {
                 let (sx, sy, ex, ey) = line;
-                c.draw_line((sx, sy), (ex, ey))
-                    .unwrap();
+                c.draw_line((sx, sy), (ex, ey)).unwrap();
             }
             for (cx, cy, quadrant) in corners {
                 draw_circle_quadrants(c, cx, cy, radius, color, Some(vec![quadrant]));

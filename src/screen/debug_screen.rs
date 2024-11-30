@@ -9,7 +9,7 @@ use sdl2::{
 use crate::{
     app::App,
     config::Config,
-    ui::components::{spinner::Spinner, text::Prompt},
+    ui::components::{spinner::Spinner, text::TextInput},
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
     utils::{
         cache::TextureCache,
@@ -25,8 +25,8 @@ pub struct DebugScreen {
 
 impl DebugScreen {
     pub fn new(config: &Config) -> DebugScreen {
-        let text1 = Prompt::new("t1", config);
-        let text2 = Prompt::new("t2", config);
+        let text1 = TextInput::new("t1", config);
+        let text2 = TextInput::new("t2", config);
         let spinner = Spinner {
             id: "spinner".to_string(),
             running: true,

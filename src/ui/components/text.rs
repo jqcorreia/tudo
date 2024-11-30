@@ -2,9 +2,11 @@ use std::process::Command;
 
 use sdl2::keyboard::Keycode;
 use sdl2::render::{BlendMode, TextureCreator};
+use sdl2::ttf::Font;
 use sdl2::video::WindowContext;
 use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, video::Window};
 
+use crate::animation::{Animation, AnimationType};
 use crate::app::App;
 use crate::config::Config;
 use crate::utils::cache::TextureCache;
@@ -13,29 +15,30 @@ use crate::utils::font::FontConfig;
 
 use super::traits::UIComponent;
 
-#[derive(Debug)]
-pub struct Prompt {
+pub struct TextInput {
     pub id: String,
     pub text: String,
+    pub text_changed: bool,
     pub foreground_color: Color,
     pub cursor_x: i32,
-    pub last_cursor_move: u128,
     pub blink: bool,
     pub last_blink: Option<u128>,
     pub input_hint: Option<String>,
+    pub cursor_anim: Animation,
 }
 
-impl Prompt {
+impl TextInput {
     pub fn new(id: impl AsRef<str>, config: &Config) -> Self {
-        Prompt {
+        TextInput {
             id: id.as_ref().to_string(),
             text: String::from(""),
+            text_changed: false,
             foreground_color: config.prompt_color,
             cursor_x: 0,
-            last_cursor_move: 0,
             blink: config.cursor_blink,
             last_blink: None,
             input_hint: None,
+            cursor_anim: Animation::new(0, 0, AnimationType::EaseOut, 75.0),
         }
     }
     pub fn with_input_hint(mut self, input_hint: String) -> Self {
@@ -51,11 +54,12 @@ impl Prompt {
         self
     }
     pub fn set_text(&mut self, text: String) {
-        self.text = text
+        self.text = text;
+        self.text_changed = true;
     }
 }
 
-impl UIComponent for Prompt {
+impl UIComponent for TextInput {
     fn get_state(&self) -> &dyn std::any::Any {
         &self.text
     }
@@ -110,13 +114,17 @@ impl UIComponent for Prompt {
             self.last_blink = Some(elapsed);
         }
 
+        self.cursor_anim.tick(elapsed);
         match texture {
             Some(tex) => {
                 let query = tex.query();
                 let (w, h) = (query.width as i32, query.height as i32);
+                if self.text_changed {
+                    self.cursor_anim.set_target(w as u32, None);
+                    self.text_changed = false;
+                }
 
-                self.last_cursor_move = elapsed;
-                self.cursor_x = w;
+                self.cursor_x = self.cursor_anim.value as i32;
 
                 let text_rect = Rect::new(10, (rect.h - h) / 2, w as u32, h as u32);
 
@@ -129,8 +137,7 @@ impl UIComponent for Prompt {
             let cursor_rect = Rect::new(self.cursor_x + 10, (rect.h - fh as i32) / 2, 5, fh);
             let alpha = match self.blink {
                 true => {
-                    ((((elapsed - self.last_blink.unwrap()) as f32 / 100.0).sin() + 1.0)
-                        / 2.0)
+                    ((((elapsed - self.last_blink.unwrap()) as f32 / 100.0).sin() + 1.0) / 2.0)
                         * 255.0
                 }
                 false => 255.0,
@@ -155,7 +162,7 @@ impl UIComponent for Prompt {
             }
             sdl2::event::Event::TextInput { text, .. } => {
                 if !ctx.ctrl_pressed {
-                    self.text += text;
+                    self.set_text(self.text.clone() + text);
                 }
             }
             sdl2::event::Event::KeyDown {
@@ -163,7 +170,7 @@ impl UIComponent for Prompt {
                 ..
             } => {
                 if let Some((char_boundary, _)) = self.text.char_indices().nth_back(0) {
-                    self.text = self.text.get(..char_boundary).unwrap().into()
+                    self.set_text(self.text.get(..char_boundary).unwrap().into())
                 };
             }
             _ => (),

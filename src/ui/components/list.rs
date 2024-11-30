@@ -307,7 +307,7 @@ impl<T: PartialEq> SelectList<T> {
             viewport: Viewport {
                 top: 0,
                 bottom: 10,
-                anim: Animation::new(0, 0, AnimationType::EaseOut),
+                anim: Animation::new(0, 0, AnimationType::EaseOut, 100.0),
             },
             render_viewport: RenderViewport(0, 100, 0),
             vertical_bar_width: 5,
@@ -350,7 +350,7 @@ impl<T: PartialEq> SelectList<T> {
         self.viewport = Viewport {
             top: 0,
             bottom: 10,
-            anim: Animation::new(0, 0, AnimationType::EaseOut),
+            anim: Animation::new(0, 0, AnimationType::EaseOut, 100.0),
         };
         self.render_viewport = RenderViewport(0, 10, 0); // The bottom setting dynamic, this 10 is irrelevant
     }
