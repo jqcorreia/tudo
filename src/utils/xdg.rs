@@ -80,9 +80,14 @@ impl IconFinder {
         }
 
         // Scan different sizes until one appears
-        // In this case we are going from smallest to largest
+        // In this case we are going from largest to smallest
         // FIXME(quadrado): We can do better here to try and find the closest match
-        for _size in self.sizes.clone() {
+        let mut _sizes: Vec<u32> = self.sizes.clone().into_iter().collect::<Vec<u32>>();
+        _sizes.sort();
+        _sizes.reverse();
+
+        for _size in _sizes {
+            dbg!(&_size);
             let icon_config = IconConfig {
                 name: name.clone(),
                 size: _size,
@@ -101,7 +106,6 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
         Ok(c) => Ok(String::from_utf8(c).unwrap()),
         Err(_) => return Err(()),
     };
-    // String::from_utf8(std::fs::read(path).unwrap()).unwrap();
 
     let mut header_title = "";
     let mut res: HashMap<String, HashMap<String, String>> = HashMap::new();
@@ -125,7 +129,23 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
     Ok(res)
 }
 
-pub fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
+fn get_gtk_settings_theme() -> Option<String> {
+    let home = std::env::var("HOME").unwrap();
+    match parse_ini_file(format!("{}/.config/gtk-3.0/settings.ini", home)) {
+        Ok(i) => match i.get("Settings").unwrap().get("gtk-icon-theme-name") {
+            Some(theme) => Some(theme.to_string()),
+            _ => None,
+        },
+        Err(_) => match parse_ini_file(format!("{}/.config/gtk-4.0/settings.ini", home)) {
+            Ok(i) => match i.get("Settings").unwrap().get("gtk-icon-theme-name") {
+                Some(theme) => Some(theme.to_string()),
+                _ => None,
+            },
+            Err(_) => None,
+        },
+    }
+}
+fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
     let home = std::env::var("HOME").unwrap();
     let mut map: HashMap<IconConfig, String> = HashMap::new();
     let mut sizes: HashSet<u32> = HashSet::new();
@@ -135,11 +155,15 @@ pub fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
 
     let base_folders = env_folders.split(":");
 
-    let themes = vec!["hicolor".to_string()];
+    let mut themes = vec!["hicolor".to_string()];
+
+    // if let Some(theme_name) = get_gtk_settings_theme() {
+    //     themes.push(theme_name);
+    // }
     for theme in themes {
         // Try to find and parse the index.theme file for the theme being processed
         for base_folder in base_folders.clone() {
-            let path = format!("{}/icons/{}/index.theme", base_folder, theme);
+            let path = dbg!(format!("{}/icons/{}/index.theme", base_folder, theme));
 
             let ini: IniMap = match parse_ini_file(path.clone()) {
                 Ok(i) => i,
