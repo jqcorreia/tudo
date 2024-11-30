@@ -1,4 +1,3 @@
-#![allow(unused)]
 pub mod animation;
 pub mod app;
 pub mod config;

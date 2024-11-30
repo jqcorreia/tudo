@@ -1,4 +1,7 @@
-use std::{collections::HashMap, fs};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+};
 
 use super::math::{find_next_power_of_two, find_previous_power_of_two};
 
@@ -22,6 +25,7 @@ impl IconConfig {
 
 pub struct IconFinder {
     map: HashMap<IconConfig, String>,
+    sizes: HashSet<u32>,
 }
 impl Default for IconFinder {
     fn default() -> Self {
@@ -31,8 +35,8 @@ impl Default for IconFinder {
 
 impl IconFinder {
     pub fn new() -> IconFinder {
-        let map = generate_map();
-        IconFinder { map }
+        let (map, sizes) = generate_map();
+        IconFinder { map, sizes }
     }
     pub fn get_icon(&self, name: String) -> Option<String> {
         let candidate: String;
@@ -55,40 +59,39 @@ impl IconFinder {
     }
 
     pub fn get_icon_with_size(&self, name: String, size: u32) -> Option<String> {
-        let mut candidate: String = "".to_string();
+        fn check_file(path: String) -> Option<String> {
+            match std::fs::read(&path) {
+                Ok(_) => Some(path),
+                Err(_) => None,
+            }
+        }
 
         // First check if icon identifier is a path
         if name.starts_with("/") && fs::metadata(name.clone()).is_ok() {
-            candidate = name.clone();
-        } else {
-            let mut _size = find_next_power_of_two(size);
-            let mut found = false;
-
-            let exponent = 1;
-            let exponent_limit = (_size as f32).log2().trunc() as u32;
-
-            //while (_size <= 1025) {
-            for i in exponent..exponent_limit {
-                let _size = 2_u32.pow(i);
-                let icon_config = IconConfig {
-                    name: name.clone(),
-                    size: _size,
-                };
-                if let Some(path) = self.map.get(&icon_config) {
-                    candidate = path.to_string();
-                    found = true;
-                }
-            }
-            if !found {
-                return None;
-            }
+            return check_file(name);
         }
 
-        // Check if candidate is indeed a file
-        match std::fs::read(&candidate) {
-            Ok(_) => Some(candidate),
-            Err(_) => None,
+        // Check for exact match
+        if let Some(path) = self.map.get(&IconConfig {
+            name: name.clone(),
+            size,
+        }) {
+            return check_file(path.to_string());
         }
+
+        // Scan different sizes until one appears
+        // In this case we are going from smallest to largest
+        // FIXME(quadrado): We can do better here to try and find the closest match
+        for _size in self.sizes.clone() {
+            let icon_config = IconConfig {
+                name: name.clone(),
+                size: _size,
+            };
+            if let Some(path) = self.map.get(&icon_config) {
+                return check_file(path.to_string());
+            }
+        }
+        return None;
     }
 }
 
@@ -122,9 +125,11 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
     Ok(res)
 }
 
-pub fn generate_map() -> HashMap<IconConfig, String> {
+pub fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
     let home = std::env::var("HOME").unwrap();
     let mut map: HashMap<IconConfig, String> = HashMap::new();
+    let mut sizes: HashSet<u32> = HashSet::new();
+
     let env_folders = std::env::var("XDG_DATA_DIRS")
         .unwrap_or(format!("/usr/share:{}/.local/share", home).to_string());
 
@@ -154,14 +159,14 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
             for base_folder in base_folders.clone() {
                 for dir in dirs.iter() {
                     let section = ini.get(dir).unwrap();
-                    let size = section.get("Size").unwrap();
-
+                    let size: u32 = section.get("Size").unwrap().parse().unwrap();
                     let scale = section.get("Scale").map_or("1", |v| v);
 
                     if scale.parse::<u32>().unwrap() > 1 {
                         //FIXME(quadrado): For now ignore scaled icons
                         continue;
                     }
+                    sizes.insert(size);
 
                     let d = format!("{}/icons/{}/{}", base_folder, theme, dir);
                     if let Ok(files) = fs::read_dir(d) {
@@ -171,8 +176,9 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
                             let fname_no_ext =
                                 fpath.split("/").last().unwrap().split(".").next().unwrap();
 
+                            // println!("{} {}", fname_no_ext, fpath);
                             let icon_config = IconConfig {
-                                size: size.parse().unwrap(),
+                                size,
                                 name: fname_no_ext.to_string(),
                             };
                             map.insert(icon_config, fpath);
@@ -203,5 +209,5 @@ pub fn generate_map() -> HashMap<IconConfig, String> {
         }
     }
 
-    map
+    (map, sizes)
 }

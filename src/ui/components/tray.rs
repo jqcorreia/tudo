@@ -44,11 +44,11 @@ impl Tray {
             }
             let icon: String = proxy.get("org.kde.StatusNotifierItem", "IconName").unwrap();
 
-            dbg!(&title);
-            dbg!(&icon);
-            dbg!(icon_finder.get_icon_with_size(icon.clone(), 24));
+            // dbg!(&title);
+            // dbg!(&icon);
+            // dbg!(icon_finder.get_icon_with_size(icon.clone(), 24));
 
-            if let Some(path) = icon_finder.get_icon(icon) {
+            if let Some(path) = icon_finder.get_icon_with_size(icon, 24) {
                 icon_paths.push(path)
             }
             //if title == "blueman" {

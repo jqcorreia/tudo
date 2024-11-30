@@ -78,7 +78,6 @@ pub struct SelectList<T> {
     pub on_select: fn(&T, &mut App),
     pub vertical_bar_width: u32,
     pub row_height: u32,
-    pub ss_anim: Animation,
     pub last_mouse_y: i32,
 }
 
@@ -279,16 +278,10 @@ impl UIComponent for SelectList<SourceItem> {
             sdl2::event::Event::MouseWheel { y, .. } => {
                 if *y == 1 {
                     self.viewport.up(self.row_height as i32);
-                    //self.render_viewport.0 = std::cmp::max(0, self.render_viewport.0 - 40);
-                    //self.ss_anim
-                    //    .set_target(self.render_viewport.0 as u32, Some(elapsed))
                 } else {
                     let tex_h = self.items.len() as i32 * self.row_height as i32;
                     if self.viewport.bottom < tex_h {
                         self.viewport.down(self.row_height as i32);
-                        //self.render_viewport.0 += std::cmp::min(tex_h - self.render_viewport.1, 40);
-                        //self.ss_anim
-                        //    .set_target(self.render_viewport.0 as u32, Some(elapsed))
                     }
                 }
             }
@@ -320,7 +313,6 @@ impl<T: PartialEq> SelectList<T> {
             vertical_bar_width: 5,
             on_select: |_, _| (),
             row_height: 34, // Make this the same height as the font
-            ss_anim: Animation::new(0, 0, AnimationType::EaseOut),
             last_mouse_y: 0,
         }
     }
