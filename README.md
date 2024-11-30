@@ -9,17 +9,21 @@ Semi-serious learning project.
 Meant to be used as a wristwatch. You want it there but you don't need to look at it all the time.  
 Maybe just replace the concept of a top/bottom bar with the clock and stuff  
 
+Currently looks like this:
+![Alt text](./screenshot.png?raw=true "Title")
+
 ## Nice-to-haves and objectives
 - As low latency as possible both in launching and in using
 - Fast indexing
 - Tray icons, interactable
 - TOML configuration (with sane defaults)
 - Extendable in Lua
-- Minimal list of dependencies, i.e no UI toolkit
+- Minimal list of dependencies, i.e no UI toolkit (Gtk, Qt)
 
 ## Thing I will **not** implement
 - TTF parser
 - HTTP client
+
 ## Dependencies
 - SDL2 with `ttf` and `image`
 
@@ -74,6 +78,7 @@ Maybe just replace the concept of a top/bottom bar with the clock and stuff
 - [x] Implement component focus.
 - [x] UI reset after soft-close.
 - [x] Implement workspaces! Good enoug progress for now. 
+- [x] Smoooooth cursor movement and smoooooth list scrolling with key navigation working.
 - [ ] ! Implement tray! DBus is a mess, but a useful mess...
 - [ ] ! Standardize button state. 
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
