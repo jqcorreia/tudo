@@ -2,10 +2,7 @@ use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
     ui::layout::{ContainerSize, LayoutBuilder, SplitType},
-    utils::{
-        hyprland::{Hyprland},
-        misc::localize_mouse_event,
-    },
+    utils::{hyprland::Hyprland, misc::localize_mouse_event},
 };
 
 use super::{button::Button, traits::UIComponent};
@@ -54,32 +51,6 @@ impl UIComponent for Workspaces {
         for (rect, component) in self.builder.components_with_rect() {
             component.draw(texture_creator, cache, app, canvas, rect, elapsed);
         }
-
-        // let font = cache
-        //     .fonts
-        //     .get_font(self.font_name.clone().unwrap_or("normal-20".to_string()));
-
-        // canvas.set_draw_color(Color::RGBA(0x00, 0x00, 0x00, 0xFF));
-        // canvas.clear();
-        // let rect_height = rect.h - 3;
-        // let rect_y = (rect.h - rect_height) / 2;
-        // let rect_width = rect_height; // Make width == height to produce squares
-        // let text_x_padding = 6; // Leave this as constant for now
-        // let text_y_padding = -1; // Leave this as constant for now
-        // for workspace_id in 1..10 {
-        //     let x = workspace_id - 1; // Workspaces are 1-based but screen positions are '0-based'
-        //     let rect_x = rect_width * x + 10 * x;
-        //     let rect = Rect::new(rect_x, rect_y, rect_width as u32, rect_height as u32);
-        //     draw_rounded_rect(canvas, rect, 3, Color::RGBA(0x30, 0x30, 0x50, 255));
-        //     draw_string_texture_canvas(
-        //         canvas,
-        //         rect_x + text_x_padding,
-        //         rect_y + text_y_padding,
-        //         workspace_id.to_string(),
-        //         font,
-        //         Color::GRAY,
-        //     );
-        // }
     }
     fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
         if !self.initialized {
