@@ -31,29 +31,25 @@ pub struct Workspace {
 }
 
 pub struct Hyprland {
-    cmd_stream: UnixStream,
     listen_stream: UnixStream,
 }
 
 impl Hyprland {
     pub fn new() -> std::io::Result<Hyprland> {
         info!("Starting hyprland client");
-        let cmd_stream = open_hyprland_socket_1()?;
         let listen_stream = open_hyprland_socket_2()?;
         info!("Finished Starting hyprland client");
 
-        Ok(Hyprland {
-            cmd_stream,
-            listen_stream,
-        })
+        Ok(Hyprland { listen_stream })
     }
 
     pub fn send_command(&mut self, command: impl AsRef<str>) -> String {
-        self.cmd_stream
+        let mut cmd_stream = open_hyprland_socket_1().unwrap();
+        cmd_stream
             .write_all(command.as_ref().to_string().as_bytes())
             .unwrap();
         let mut response = String::new();
-        self.cmd_stream.read_to_string(&mut response).unwrap();
+        cmd_stream.read_to_string(&mut response).unwrap();
 
         response
     }
