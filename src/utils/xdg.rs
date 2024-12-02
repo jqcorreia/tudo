@@ -3,6 +3,8 @@ use std::{
     fs,
 };
 
+use log::debug;
+
 use super::math::{find_next_power_of_two, find_previous_power_of_two};
 
 #[derive(Debug)]
@@ -156,9 +158,9 @@ fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
 
     let mut themes = vec!["hicolor".to_string()];
 
-    // if let Some(theme_name) = get_gtk_settings_theme() {
-    //     themes.push(theme_name);
-    // }
+    if let Some(theme_name) = get_gtk_settings_theme() {
+        themes.push(theme_name);
+    }
     for theme in themes {
         // Try to find and parse the index.theme file for the theme being processed
         for base_folder in base_folders.clone() {
@@ -176,11 +178,16 @@ fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
                 .unwrap()
                 .split(",")
                 .map(|x| x.to_string())
+                .filter(|x| !x.is_empty())
                 .collect();
 
             // Traverse the base_folders again to include all the icons that may exist for this theme
             for base_folder in base_folders.clone() {
                 for dir in dirs.iter() {
+                    if ini.get(dir).is_none() {
+                        debug!("Section {} not found", dir);
+                        continue;
+                    }
                     let section = ini.get(dir).unwrap();
                     let size: u32 = section.get("Size").unwrap().parse().unwrap();
                     let scale = section.get("Scale").map_or("1", |v| v);

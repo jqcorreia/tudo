@@ -141,7 +141,8 @@ impl UIComponent for Tray {
         if let Ok(_) = self.signals_rx.try_recv() {
             self.refresh_icons()
         }
-        self.conn.process(Duration::from_millis(10)).unwrap();
+        // This should
+        self.conn.process(Duration::new(0, 500_000)).unwrap();
     }
     fn get_state(&self) -> &dyn std::any::Any {
         todo!();
@@ -150,42 +151,42 @@ impl UIComponent for Tray {
     fn set_state(&mut self, _state: Box<dyn std::any::Any>) {}
 }
 
-#[allow(unused)]
-#[cfg(test)]
-mod tests {
-    use dbus::{
-        arg::ReadAll,
-        message::{MatchRule, SignalArgs},
-    };
-
-    use super::*;
-
-    struct Signal {}
-    impl SignalArgs for Signal {
-        const NAME: &'static str = "NewToolTip";
-
-        const INTERFACE: &'static str = "org.kde.StatusNotifierItem";
-    }
-
-    impl ReadAll for Signal {
-        fn read(i: &mut dbus::arg::Iter) -> Result<Self, dbus::arg::TypeMismatchError> {
-            Ok(Self {})
-        }
-    }
-
-    #[test]
-    fn test_tray() {
-        let conn = Connection::new_session().unwrap();
-        let proxy = conn.with_proxy(":1.804", "/org/blueman/sni", Duration::from_millis(2000));
-        let mr = MatchRule::default()
-            .with_interface("org.kde.StatusNotifierItem")
-            .with_member("NewToolTip");
-        proxy.match_signal(|s: Signal, _: &Connection, m: &dbus::Message| {
-            dbg!(m);
-            true
-        });
-        loop {
-            conn.process(Duration::from_millis(1000));
-        }
-    }
-}
+//#[allow(unused)]
+//#[cfg(test)]
+//mod tests {
+//    use dbus::{
+//        arg::ReadAll,
+//        message::{MatchRule, SignalArgs},
+//    };
+//
+//    use super::*;
+//
+//    struct Signal {}
+//    impl SignalArgs for Signal {
+//        const NAME: &'static str = "NewToolTip";
+//
+//        const INTERFACE: &'static str = "org.kde.StatusNotifierItem";
+//    }
+//
+//    impl ReadAll for Signal {
+//        fn read(i: &mut dbus::arg::Iter) -> Result<Self, dbus::arg::TypeMismatchError> {
+//            Ok(Self {})
+//        }
+//    }
+//
+//    #[test]
+//    fn test_tray() {
+//        let conn = Connection::new_session().unwrap();
+//        let proxy = conn.with_proxy(":1.804", "/org/blueman/sni", Duration::from_millis(2000));
+//        let mr = MatchRule::default()
+//            .with_interface("org.kde.StatusNotifierItem")
+//            .with_member("NewToolTip");
+//        proxy.match_signal(|s: Signal, _: &Connection, m: &dbus::Message| {
+//            dbg!(m);
+//            true
+//        });
+//        loop {
+//            conn.process(Duration::from_millis(1000));
+//        }
+//    }
+//}
