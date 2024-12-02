@@ -24,6 +24,7 @@ pub struct TextInput {
     pub last_blink: Option<u128>,
     pub input_hint: Option<String>,
     pub cursor_anim: Animation,
+    pub cursor_position: usize,
 }
 
 impl TextInput {
@@ -38,6 +39,7 @@ impl TextInput {
             last_blink: None,
             input_hint: None,
             cursor_anim: Animation::new(0, 0, AnimationType::EaseOut, 40.0),
+            cursor_position: 0,
         }
     }
     pub fn with_input_hint(mut self, input_hint: String) -> Self {
@@ -55,6 +57,7 @@ impl TextInput {
     pub fn set_text(&mut self, text: String) {
         self.text = text;
         self.text_changed = true;
+        self.cursor_position = self.text.len();
     }
 }
 
@@ -119,7 +122,11 @@ impl UIComponent for TextInput {
                 let query = tex.query();
                 let (w, h) = (query.width as i32, query.height as i32);
                 if self.text_changed {
-                    self.cursor_anim.set_target(w as u32, None);
+                    //self.cursor_anim.set_target(w as u32, None);
+                    self.cursor_anim.set_target(
+                        (w as u32 / self.text.len() as u32) * self.cursor_position as u32,
+                        None,
+                    );
                     self.text_changed = false;
                 }
 
@@ -171,6 +178,20 @@ impl UIComponent for TextInput {
                 if let Some((char_boundary, _)) = self.text.char_indices().nth_back(0) {
                     self.set_text(self.text.get(..char_boundary).unwrap().into())
                 };
+            }
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Left),
+                ..
+            } => {
+                self.cursor_position -= 1;
+                self.text_changed = true;
+            }
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Right),
+                ..
+            } => {
+                self.cursor_position += 1;
+                self.text_changed = true;
             }
             _ => (),
         };
