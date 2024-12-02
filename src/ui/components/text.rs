@@ -38,7 +38,7 @@ impl TextInput {
             blink: config.cursor_blink,
             last_blink: None,
             input_hint: None,
-            cursor_anim: Animation::new(0, 0, AnimationType::EaseOut, 75.0),
+            cursor_anim: Animation::new(0, 0, AnimationType::EaseOut, 40.0),
         }
     }
     pub fn with_input_hint(mut self, input_hint: String) -> Self {
