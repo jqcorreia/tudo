@@ -252,6 +252,9 @@ impl LayoutBuilder {
     }
 
     pub fn generate(&mut self, w: usize, h: usize) {
+        if self.root.is_none() {
+            return;
+        }
         let rects = self.generate_recur(*self.root.as_ref().unwrap(), 0, 0, w, h);
 
         for (idx, r) in rects {
