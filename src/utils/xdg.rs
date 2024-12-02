@@ -96,7 +96,7 @@ impl IconFinder {
                 return check_file(path.to_string());
             }
         }
-        return None;
+        None
     }
 }
 
@@ -132,15 +132,9 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
 fn get_gtk_settings_theme() -> Option<String> {
     let home = std::env::var("HOME").unwrap();
     match parse_ini_file(format!("{}/.config/gtk-3.0/settings.ini", home)) {
-        Ok(i) => match i.get("Settings").unwrap().get("gtk-icon-theme-name") {
-            Some(theme) => Some(theme.to_string()),
-            _ => None,
-        },
+        Ok(i) => i.get("Settings").unwrap().get("gtk-icon-theme-name").map(|theme| theme.to_string()),
         Err(_) => match parse_ini_file(format!("{}/.config/gtk-4.0/settings.ini", home)) {
-            Ok(i) => match i.get("Settings").unwrap().get("gtk-icon-theme-name") {
-                Some(theme) => Some(theme.to_string()),
-                _ => None,
-            },
+            Ok(i) => i.get("Settings").unwrap().get("gtk-icon-theme-name").map(|theme| theme.to_string()),
             Err(_) => None,
         },
     }

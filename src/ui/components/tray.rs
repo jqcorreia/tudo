@@ -138,7 +138,7 @@ impl UIComponent for Tray {
         if self.icon_paths.is_none() {
             self.refresh_icons();
         }
-        if let Ok(_) = self.signals_rx.try_recv() {
+        if self.signals_rx.try_recv().is_ok() {
             self.refresh_icons()
         }
         // This should
