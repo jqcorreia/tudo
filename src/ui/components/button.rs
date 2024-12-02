@@ -13,6 +13,11 @@ pub struct Button {
     text: String,
     pub on_click: fn(&Button, &mut App),
     focus: bool,
+    pub state: ButtonState,
+}
+
+#[derive(Clone)]
+pub struct ButtonState {
     pub active: bool,
 }
 
@@ -24,7 +29,7 @@ impl Button {
             pressed: false,
             on_click: |_, _| (),
             focus: false,
-            active: true,
+            state: ButtonState { active: true },
         }
     }
     pub fn with_on_click(mut self, func: fn(&Button, &mut App)) -> Self {
@@ -49,7 +54,7 @@ impl UIComponent for Button {
     ) {
         let r = Rect::new(0, 0, rect.width() - 1, rect.height() - 1);
         let font = cache.fonts.get_font("normal-20");
-        let color = match (self.active, self.pressed, self.get_focus()) {
+        let color = match (self.state.active, self.pressed, self.get_focus()) {
             (true, false, false) => Color::WHITE,
             (true, true, _) => Color::RED,
             (true, false, true) => Color::BLUE,
@@ -82,11 +87,11 @@ impl UIComponent for Button {
     }
 
     fn get_state(&self) -> &dyn std::any::Any {
-        todo!()
+        &self.state
     }
 
-    fn set_state(&mut self, _state: Box<dyn std::any::Any>) {
-        todo!()
+    fn set_state(&mut self, state: Box<dyn std::any::Any>) {
+        self.state = state.downcast_ref::<ButtonState>().unwrap().clone();
     }
     fn set_focus(&mut self, focus: bool) {
         self.focus = focus;

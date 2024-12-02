@@ -1,7 +1,10 @@
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
-    ui::layout::{ContainerSize, LayoutBuilder, SplitType},
+    ui::{
+        components::button::ButtonState,
+        layout::{ContainerSize, LayoutBuilder, SplitType},
+    },
     utils::{hyprland::Hyprland, misc::localize_mouse_event},
 };
 
@@ -84,11 +87,27 @@ impl UIComponent for Workspaces {
                         app.should_hide = true;
                     });
                 if !workspaces.contains(&x) {
-                    btn.active = false
+                    btn.state.active = false
                 }
                 self.builder.add(Box::new(btn), ContainerSize::Fixed(40));
             }
             self.initialized = true
+        }
+        // Check for hyprland messages
+        if let Ok(msg) = app.hyprland.as_mut().unwrap().rx().try_recv() {
+            if msg.starts_with("createworkspace>") {
+                let wid = msg.split(">>").nth(1).unwrap();
+                let btn = self.builder.by_name(wid.to_string());
+
+                let mut btn_state = btn
+                    .get_state()
+                    .downcast_ref::<ButtonState>()
+                    .unwrap()
+                    .clone();
+                btn_state.active = true;
+                btn.set_state(Box::new(btn_state));
+            }
+            // dbg!(msg);
         }
 
         match event {

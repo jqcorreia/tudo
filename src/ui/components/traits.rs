@@ -50,14 +50,7 @@ pub trait UIComponent {
         tex.set_blend_mode(BlendMode::Blend);
         main_canvas
             .with_texture_canvas(&mut tex, |c| {
-                self.render(
-                    texture_creator,
-                    cache,
-                    app,
-                    c,
-                    component_rect,
-                    elapsed,
-                );
+                self.render(texture_creator, cache, app, c, component_rect, elapsed);
             })
             .unwrap();
 
@@ -68,9 +61,7 @@ pub trait UIComponent {
     fn get_state(&self) -> &dyn Any;
     fn set_state(&mut self, state: Box<dyn Any>);
 
-    fn set_focus(&mut self, _: bool) {
-        
-    }
+    fn set_focus(&mut self, _: bool) {}
 
     fn get_focus(&self) -> bool {
         false

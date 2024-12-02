@@ -25,8 +25,10 @@ fn open_hyprland_socket_2() -> std::io::Result<UnixStream> {
         "{}/hypr/{}/.socket2.sock",
         xdg_runtime_dir, hyprland_signature
     );
-    let stream = UnixStream::connect(socket_path)?;
-    Ok(stream)
+    info!("Hyprland socket2 @ {}", socket_path);
+    UnixStream::connect(socket_path)
+    // let stream = UnixStream::connect(socket_path)?;
+    // Ok(stream)
 }
 
 #[derive(Debug)]
@@ -41,20 +43,35 @@ pub struct Hyprland {
 impl Hyprland {
     pub fn new() -> std::io::Result<Hyprland> {
         info!("Starting hyprland client");
-        let mut listen_stream = open_hyprland_socket_2()?;
-        info!("Finished Starting hyprland client");
+        info!("Starting hyprland sock2 stream");
+        let mut sock = open_hyprland_socket_2().unwrap();
+        let (tx, rx) = channel::<String>();
+        sock.set_nonblocking(true).unwrap();
+        thread::spawn(move || loop {
+            let mut buf: Vec<u8> = vec![];
+            match sock.read_to_end(&mut buf) {
+                Ok(foo) => {
+                    // This never happens...!
+                    dbg!(foo);
+                }
+                Err(_) => {
+                    // dbg!(e);
+                }
+            };
+            // sock.read_to_end(&mut buf).unwrap();
 
-        let (tx, rx) = channel();
-        let _tx = tx.clone();
-        // info!("Starting hyprland sock2 stream");
-        // thread::spawn(move || loop {
-        //     let mut buf = String::new();
-        //     let mut buf: Vec<u8> = vec![];
-        //     listen_stream.read_to_end(&mut buf).unwrap();
-        //     dbg!(&buf);
-        //     _tx.send(String::from_utf8(buf).unwrap()).unwrap();
-        //     sleep(Duration::new(0, 100));
-        // });
+            if !buf.is_empty() {
+                let buf_string = String::from_utf8(buf.clone()).unwrap();
+
+                // Split by '\n' and send them down the pipe
+                buf_string.split('\n').for_each(|e| {
+                    tx.send(e.to_string()).unwrap();
+                });
+            }
+            // dbg!(String::from_utf8(buf.clone()));
+            sleep(Duration::new(0, 100_000_000));
+        });
+        info!("Finished Starting hyprland client");
         Ok(Hyprland { rx })
     }
 
@@ -110,24 +127,32 @@ impl Hyprland {
     }
 }
 
+#[allow(unused)]
 #[cfg(test)]
 mod tests {
-    use std::os::unix::net::UnixDatagram;
-
     use super::*;
 
     #[test]
     fn test_hyprland() {
-        let sock = UnixStream::connect("/run/user/1000/hypr/918d8340afd652b011b937d29d5eea0be08467f5_1732916189_1583074004/.socket2.sock");
-        dbg!(&sock);
-        let mut buf: Vec<u8> = vec![];
-        // let i = stream.read_to_end(&mut buf);
-        dbg!(sock.unwrap().read_to_end(&mut buf));
-        dbg!(buf);
-        // let mut stream = UnixStream::connect("/run/user/1000/hypr/918d8340afd652b011b937d29d5eea0be08467f5_1732916189_1583074004/.socket2.sock").unwrap();
-        // stream.set_nonblocking(true);
-
-        // let mut buf: Vec<u8> = vec![];
-        // let i = stream.read_to_end(&mut buf);
+        // Hyprland::new();
+        // loop {}
+        // let mut sock = UnixStream::connect(
+        //     "/run/user/1000/hypr/918d8340afd652b011b937d29d5eea0be08467f5_1733075473_1355729644/.socket2.sock",
+        // ).unwrap();
+        // dbg!(&sock);
+        // sock.set_nonblocking(true);
+        // loop {
+        //     let mut buf: Vec<u8> = vec![];
+        //     match sock.read_to_end(&mut buf) {
+        //         Ok(foo) => {
+        //             dbg!(foo);
+        //         }
+        //         Err(e) => {
+        //             dbg!(e);
+        //         }
+        //     };
+        //     dbg!(String::from_utf8(buf.clone()));
+        //     sleep(Duration::new(0, 100_000_000));
+        // }
     }
 }
