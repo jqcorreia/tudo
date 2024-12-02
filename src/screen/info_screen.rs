@@ -39,7 +39,7 @@ impl Screen for InfoScreen {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
         for event in events.iter() {
             for component in self.layout.components() {
-                component.update(event, app, elapsed);
+                component.handle_event(event, app, elapsed);
             }
         }
     }

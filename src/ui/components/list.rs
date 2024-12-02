@@ -246,7 +246,7 @@ impl UIComponent for SelectList<SourceItem> {
                 .unwrap();
         }
     }
-    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128) {
+    fn handle_event(&mut self, event: &Event, app: &mut App, elapsed: u128) {
         match event {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
@@ -295,6 +295,8 @@ impl UIComponent for SelectList<SourceItem> {
             _ => (),
         }
     }
+
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }
 
 impl<T: PartialEq> SelectList<T> {

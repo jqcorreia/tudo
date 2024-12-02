@@ -1,6 +1,6 @@
 use sdl2::{pixels::Color, rect::Rect};
 
-use crate::utils::draw::draw_string_texture;
+use crate::{app::App, utils::draw::draw_string_texture};
 
 use super::traits::UIComponent;
 
@@ -42,7 +42,7 @@ impl UIComponent for Label {
 
         canvas.copy(&texture, None, Rect::new(0, 0, w, h)).unwrap();
     }
-    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, elapsed: u128) {}
+    fn handle_event(&mut self, _event: &sdl2::event::Event, _app: &mut App, elapsed: u128) {}
     fn get_state(&self) -> &dyn std::any::Any {
         &self.text
     }
@@ -50,4 +50,5 @@ impl UIComponent for Label {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.text = state.downcast_ref::<String>().unwrap().to_string();
     }
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }

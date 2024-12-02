@@ -95,16 +95,19 @@ impl Screen for MainScreen {
                     for (rect, component) in self.layout.components_with_rect() {
                         let (_event, contains) = localize_mouse_event(event, rect);
                         if contains {
-                            component.update(&_event, app, elapsed);
+                            component.handle_event(&_event, app, elapsed);
                         }
                     }
                 }
                 _ => {
                     for component in self.layout.components() {
-                        component.update(event, app, elapsed);
+                        component.handle_event(event, app, elapsed);
                     }
                 }
             }
+        }
+        for component in self.layout.components() {
+            component.update(app, elapsed);
         }
 
         self.layout

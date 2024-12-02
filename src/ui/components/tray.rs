@@ -3,7 +3,7 @@ use std::time::Duration;
 use dbus::blocking::{stdintf::org_freedesktop_dbus::Properties, Connection};
 use sdl2::rect::Rect;
 
-use crate::utils::xdg::IconFinder;
+use crate::{app::App, utils::xdg::IconFinder};
 
 use super::traits::UIComponent;
 
@@ -93,7 +93,7 @@ impl UIComponent for Tray {
             x += 24_i32 + 5;
         }
     }
-    fn update(&mut self, event: &sdl2::event::Event, app: &mut crate::app::App, elapsed: u128) {
+    fn handle_event(&mut self, event: &sdl2::event::Event, app: &mut App, elapsed: u128) {
         if let sdl2::event::Event::MouseButtonUp { .. } = event {}
     }
     fn get_state(&self) -> &dyn std::any::Any {
@@ -101,4 +101,5 @@ impl UIComponent for Tray {
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {}
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }

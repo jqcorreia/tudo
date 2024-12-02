@@ -73,7 +73,7 @@ impl UIComponent for Button {
         // draw_string_texture_canvas(canvas, 0, 0, self.text.clone(), font, color);
     }
 
-    fn update(&mut self, event: &sdl2::event::Event, app: &mut App, _elapsed: u128) {
+    fn handle_event(&mut self, event: &sdl2::event::Event, app: &mut App, _elapsed: u128) {
         match event {
             sdl2::event::Event::MouseButtonDown { .. } => {
                 self.pressed = true;
@@ -99,4 +99,5 @@ impl UIComponent for Button {
     fn get_focus(&self) -> bool {
         self.focus
     }
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }

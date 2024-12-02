@@ -147,7 +147,7 @@ impl UIComponent for TextInput {
             canvas.fill_rect(cursor_rect).unwrap();
         }
     }
-    fn update(&mut self, event: &Event, ctx: &mut App, _: u128) {
+    fn handle_event(&mut self, event: &Event, ctx: &mut App, _: u128) {
         match event {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
@@ -176,4 +176,5 @@ impl UIComponent for TextInput {
             _ => (),
         };
     }
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }

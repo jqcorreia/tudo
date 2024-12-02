@@ -56,7 +56,8 @@ pub trait UIComponent {
 
         main_canvas.copy(&tex, None, component_rect).unwrap();
     }
-    fn update(&mut self, event: &Event, app: &mut App, elapsed: u128);
+    fn handle_event(&mut self, event: &Event, app: &mut App, elapsed: u128);
+    fn update(&mut self, app: &mut App, elapsed: u128);
 
     fn get_state(&self) -> &dyn Any;
     fn set_state(&mut self, state: Box<dyn Any>);

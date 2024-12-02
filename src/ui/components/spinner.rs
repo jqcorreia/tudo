@@ -2,6 +2,8 @@ use std::{ops::Rem, usize};
 
 use sdl2::{pixels::PixelFormatEnum, rect::Rect};
 
+use crate::app::App;
+
 use super::traits::UIComponent;
 
 pub struct Spinner {
@@ -85,7 +87,7 @@ impl UIComponent for Spinner {
             .unwrap();
     }
 
-    fn update(&mut self, _event: &sdl2::event::Event, _app: &mut crate::app::App, _elapsed: u128) {}
+    fn handle_event(&mut self, _event: &sdl2::event::Event, _app: &mut App, _elapsed: u128) {}
 
     fn get_state(&self) -> &dyn std::any::Any {
         &self.running
@@ -94,4 +96,5 @@ impl UIComponent for Spinner {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.running = *state.downcast_ref::<bool>().unwrap();
     }
+    fn update(&mut self, app: &mut App, elapsed: u128) {}
 }
