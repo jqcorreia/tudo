@@ -5,7 +5,6 @@ use std::{
 
 use log::debug;
 
-
 #[derive(Debug)]
 pub struct Section {
     pub header: String,
@@ -132,9 +131,17 @@ pub fn parse_ini_file(path: String) -> Result<IniMap, ()> {
 fn get_gtk_settings_theme() -> Option<String> {
     let home = std::env::var("HOME").unwrap();
     match parse_ini_file(format!("{}/.config/gtk-3.0/settings.ini", home)) {
-        Ok(i) => i.get("Settings").unwrap().get("gtk-icon-theme-name").map(|theme| theme.to_string()),
+        Ok(i) => i
+            .get("Settings")
+            .unwrap()
+            .get("gtk-icon-theme-name")
+            .map(|theme| theme.to_string()),
         Err(_) => match parse_ini_file(format!("{}/.config/gtk-4.0/settings.ini", home)) {
-            Ok(i) => i.get("Settings").unwrap().get("gtk-icon-theme-name").map(|theme| theme.to_string()),
+            Ok(i) => i
+                .get("Settings")
+                .unwrap()
+                .get("gtk-icon-theme-name")
+                .map(|theme| theme.to_string()),
             Err(_) => None,
         },
     }
@@ -196,13 +203,21 @@ fn generate_map() -> (HashMap<IconConfig, String>, HashSet<u32>) {
                         for file in files {
                             let fpath =
                                 file.unwrap().path().into_os_string().into_string().unwrap();
-                            let fname_no_ext =
-                                fpath.split("/").last().unwrap().split(".").next().unwrap();
+
+                            let fname_no_ext = std::path::Path::new(&fpath)
+                                .file_stem()
+                                .unwrap()
+                                .to_os_string()
+                                .to_str()
+                                .unwrap()
+                                .to_string();
+
+                            //fpath.split("/").last().unwrap().split(".").next().unwrap();
 
                             // println!("{} {}", fname_no_ext, fpath);
                             let icon_config = IconConfig {
                                 size,
-                                name: fname_no_ext.to_string(),
+                                name: fname_no_ext,
                             };
                             map.insert(icon_config, fpath);
                         }
