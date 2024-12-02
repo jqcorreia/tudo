@@ -6,7 +6,7 @@ use crate::{
         components::button::ButtonState,
         layout::{ContainerSize, LayoutBuilder, SplitType},
     },
-    utils::{hyprland::Hyprland, misc::localize_mouse_event},
+    utils::misc::localize_mouse_event,
 };
 
 use super::{button::Button, traits::UIComponent};

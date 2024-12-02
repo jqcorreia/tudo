@@ -5,7 +5,6 @@ use std::{
 
 use log::debug;
 
-use super::math::{find_next_power_of_two, find_previous_power_of_two};
 
 #[derive(Debug)]
 pub struct Section {
