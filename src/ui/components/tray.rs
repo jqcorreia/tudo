@@ -18,9 +18,13 @@ use super::traits::UIComponent;
 pub struct Tray {
     id: String,
     conn: Connection,
-    icon_paths: Option<Vec<String>>,
+    items: Vec<TrayItem>,
     signals_tx: Sender<String>,
     signals_rx: Receiver<String>,
+}
+
+pub struct TrayItem {
+    icon_path: String,
 }
 
 struct Signal {}
@@ -41,13 +45,15 @@ impl Tray {
         let conn = Connection::new_session().unwrap();
 
         let (tx, rx) = channel();
-        Tray {
+        let mut t = Tray {
             id: id.as_ref().to_string(),
             conn,
-            icon_paths: None,
             signals_tx: tx,
             signals_rx: rx,
-        }
+            items: vec![],
+        };
+        t.refresh_icons();
+        t
     }
 
     pub fn refresh_icons(&mut self) {
@@ -66,7 +72,6 @@ impl Tray {
 
         let icon_finder = IconFinder::new();
 
-        let mut icon_paths = vec![];
         for item in sni {
             let mut split = item.splitn(2, "/");
             let svc = split.next().unwrap();
@@ -83,21 +88,15 @@ impl Tray {
             let tx = self.signals_tx.clone();
             proxy
                 .match_signal(move |_: Signal, _: &Connection, m: &Message| {
-                    tx.send(String::from("new icon")).unwrap();
-                    dbg!(m);
+                    tx.send(format!("{:?}", m)).unwrap();
                     true
                 })
                 .unwrap();
 
             if let Some(path) = icon_finder.get_icon_with_size(icon, 24) {
-                icon_paths.push(path)
+                self.items.push(TrayItem { icon_path: path });
             }
         }
-        self.icon_paths = if icon_paths.is_empty() {
-            None
-        } else {
-            Some(icon_paths)
-        };
     }
 }
 
@@ -117,17 +116,15 @@ impl UIComponent for Tray {
         _elapsed: u128,
     ) {
         let mut x: i32 = 0;
-        if self.icon_paths.is_some() {
-            for p in self.icon_paths.as_ref().unwrap().clone() {
-                let tex = cache.images.get_image(p);
-                let _w = tex.query().width;
-                let _h = tex.query().width;
+        for p in self.items.iter().map(|x| &x.icon_path) {
+            let tex = cache.images.get_image(p);
+            let _w = tex.query().width;
+            let _h = tex.query().width;
 
-                canvas
-                    .copy(tex, None, Some(Rect::new(x, 0, 24, 24)))
-                    .unwrap();
-                x += 24_i32 + 5;
-            }
+            canvas
+                .copy(tex, None, Some(Rect::new(x, 0, 24, 24)))
+                .unwrap();
+            x += 24_i32 + 5;
         }
     }
 
@@ -135,13 +132,10 @@ impl UIComponent for Tray {
         if let sdl2::event::Event::MouseButtonUp { .. } = event {}
     }
     fn update(&mut self, _app: &mut App, _elapsed: u128) {
-        if self.icon_paths.is_none() {
-            self.refresh_icons();
-        }
         if self.signals_rx.try_recv().is_ok() {
             self.refresh_icons()
         }
-        // This should
+
         self.conn.process(Duration::new(0, 500_000)).unwrap();
     }
     fn get_state(&self) -> &dyn std::any::Any {

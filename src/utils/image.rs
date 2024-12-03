@@ -35,14 +35,18 @@ impl<'fa> ImageCache<'fa> {
 
     // Use interior mutability in order to have a shared reference &self be able to mutate the
     // inner hashmap
-    pub fn get_image(&self, path: String) -> &Texture {
-        let key = ImageKey { path: path.clone() };
+    pub fn get_image(&self, path: impl AsRef<str>) -> &Texture {
+        let key = ImageKey {
+            path: path.as_ref().to_string(),
+        };
 
         // SAFETY this is pulled from FrozenMap implementation at https://docs.rs/elsa/latest/src/elsa/map.rs.html#74
         // Still not sure how this works
         let ret = unsafe {
             let map = self.cache.get();
-            &*(*map).entry(key).or_insert_with(|| gen_tex(path, self.tc))
+            &*(*map)
+                .entry(key)
+                .or_insert_with(|| gen_tex(path.as_ref().to_string(), self.tc))
         };
         ret
     }

@@ -31,7 +31,6 @@ use super::Screen;
 pub struct MainScreen {
     layout: LayoutBuilder,
     source_items: Arc<Mutex<Vec<SourceItem>>>,
-    spinner_idx: usize,
 }
 
 impl MainScreen {
@@ -51,8 +50,9 @@ impl MainScreen {
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
         let _top_split = builder.add_split(SplitType::Horizontal, ContainerSize::Fixed(64));
+
         builder.add(Box::new(prompt), ContainerSize::Percent(100));
-        let spinner_idx = builder.add(Box::new(spinner), ContainerSize::Fixed(64));
+        builder.add(Box::new(spinner), ContainerSize::Fixed(64));
         builder.set_cur_split(main_split);
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
         builder.add(Box::new(clock), ContainerSize::Fixed(32));
@@ -63,7 +63,6 @@ impl MainScreen {
         MainScreen {
             layout: builder,
             source_items: items,
-            spinner_idx,
         }
     }
 }
