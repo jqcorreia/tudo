@@ -233,6 +233,25 @@ impl LayoutBuilder {
         };
         vec
     }
+
+    pub fn container_by_name(&mut self, name: String) -> Option<&mut Container> {
+        for cell in self.arena.iter_mut() {
+            if let Container {
+                container_type:
+                    ContainerType::Leaf(Leaf {
+                        component: comp, ..
+                    }),
+                ..
+            } = cell
+            {
+                if comp.id() == name {
+                    return Some(cell);
+                }
+            }
+        }
+        panic!("Component not found")
+    }
+
     pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
             if let Container {
