@@ -1,3 +1,6 @@
+use std::any::Any;
+
+use enum_downcast::EnumDowncast;
 use sdl2::rect::Rect;
 
 use crate::ui::components::traits::UIComponent;
@@ -270,6 +273,28 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
+    //pub fn by_name_2<T>(&mut self, name: impl AsRef<str>) -> &mut T
+    //where
+    //    T: UIComponent + 'static,
+    //{
+    //    for cell in self.arena.iter_mut() {
+    //        if let Container {
+    //            container_type:
+    //                ContainerType::Leaf(Leaf {
+    //                    component: comp, ..
+    //                }),
+    //            ..
+    //        } = cell
+    //        {
+    //            if comp.id() == name.as_ref() {
+    //                let _c = comp as &mut dyn Any;
+    //                return (*_c).downcast_mut::<T>().unwrap();
+    //            }
+    //        }
+    //    }
+    //    panic!("Component not found")
+    //}
+    //
     pub fn generate(&mut self, w: usize, h: usize) {
         if self.root.is_none() {
             return;
@@ -331,44 +356,46 @@ impl LayoutBuilder {
     }
 }
 
-//#[cfg(test)]
-//mod tests {
-//    use crate::{
-//        ui::components::spinner::Spinner, ui::layout::ContainerSize, ui::layout::LayoutBuilder,
-//    };
-//
-//    use super::SplitType;
-//
-//    #[test]
-//    fn test_layout_builder() {
-//        let mut builder = LayoutBuilder::new();
-//
-//        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
-//        builder.add(
-//            Box::new(Spinner {
-//                id: "spin1".to_string(),
-//                period_millis: 1000,
-//                running: true,
-//            }),
-//            ContainerSize::Percent(50),
-//        );
-//        builder.add(
-//            Box::new(Spinner {
-//                id: "spin2".to_string(),
-//                period_millis: 1000,
-//                running: true,
-//            }),
-//            ContainerSize::Percent(50),
-//        );
-//        builder.get_container(1);
-//        dbg!(&builder);
-//        builder.generate(1000, 1000);
-//        dbg!(&builder);
-//        dbg!(builder.by_name("spin1".to_string()));
-//        dbg!(builder.components());
-//        dbg!(builder.components_with_rect());
-//        assert!(builder.components().len() == 2);
-//
-//        dbg!(builder.by_coordinates(500, 10));
-//    }
-//}
+#[cfg(test)]
+mod tests {
+    use crate::{
+        ui::components::spinner::Spinner, ui::layout::ContainerSize, ui::layout::LayoutBuilder,
+    };
+
+    use super::SplitType;
+
+    #[test]
+    fn test_layout_builder() {
+        let mut builder = LayoutBuilder::new();
+
+        builder.add_split(SplitType::Horizontal, ContainerSize::Percent(100));
+        builder.add(
+            Box::new(Spinner {
+                id: "spin1".to_string(),
+                period_millis: 1000,
+                running: true,
+            }),
+            ContainerSize::Percent(50),
+        );
+        builder.add(
+            Box::new(Spinner {
+                id: "spin2".to_string(),
+                period_millis: 1000,
+                running: true,
+            }),
+            ContainerSize::Percent(50),
+        );
+        builder.get_container(1);
+        dbg!(&builder);
+        builder.generate(1000, 1000);
+        dbg!(&builder);
+        dbg!(builder.by_name("spin1".to_string()));
+        dbg!(builder.components());
+        dbg!(builder.components_with_rect());
+        assert!(builder.components().len() == 2);
+
+        //builder.by_name_2::<Spinner>("spin1");
+
+        //dbg!(builder.by_coordinates(500, 10));
+    }
+}

@@ -57,22 +57,24 @@ impl Tray {
     }
 
     pub fn refresh_icons(&mut self) {
+        self.items.clear();
         let proxy = self.conn.with_proxy(
             "org.kde.StatusNotifierWatcher",
             "/StatusNotifierWatcher",
             Duration::from_millis(2000),
         );
 
-        let sni: Vec<String> = proxy
-            .get(
-                "org.kde.StatusNotifierWatcher",
-                "RegisteredStatusNotifierItems",
-            )
-            .unwrap();
+        let sni = proxy.get::<Vec<String>>(
+            "org.kde.StatusNotifierWatcher",
+            "RegisteredStatusNotifierItems",
+        );
 
+        if !sni.is_ok() {
+            return;
+        }
         let icon_finder = IconFinder::new();
 
-        for item in sni {
+        for item in sni.unwrap() {
             let mut split = item.splitn(2, "/");
             let svc = split.next().unwrap();
             let object = format!("/{}", split.next().unwrap());

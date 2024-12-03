@@ -147,10 +147,12 @@ impl Screen for MainScreen {
         }
     }
     fn reset(&mut self) {
+        //self.layout.by_name_2::<TextInput>("prompt").clear();
+
         // Clear both prompt and select list search
-        self.layout
-            .by_name("prompt".to_string())
-            .set_state(Box::new("".to_string()));
+        //self.layout
+        //    .by_name("prompt".to_string())
+        //    .set_state(Box::new("".to_string()));
         self.layout
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {
