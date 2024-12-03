@@ -59,6 +59,11 @@ impl TextInput {
         self.text_changed = true;
     }
 
+    pub fn clear(&mut self) {
+        self.set_text("".to_string());
+        self.cursor_home();
+    }
+
     pub fn insert_at_cursor(&mut self, text: String) {
         let char_boundary = match self.text.char_indices().nth(self.cursor_position) {
             Some((cb, _)) => cb,
@@ -70,7 +75,8 @@ impl TextInput {
         self.set_text(lhs + &text + &rhs);
         self.cursor_position += 1;
     }
-    pub fn delete_at_cursor(&mut self) {
+
+    pub fn delete_before_cursor(&mut self) {
         if !self.text.is_empty() && self.cursor_position > 0 {
             if let Some((char_boundary, _)) = self.text.char_indices().nth(self.cursor_position - 1)
             {
@@ -78,6 +84,16 @@ impl TextInput {
                 let rhs: String = self.text.get(char_boundary + 1..).unwrap().into();
                 self.set_text(lhs + &rhs);
                 self.cursor_left();
+            };
+        }
+    }
+
+    pub fn delete_at_cursor(&mut self) {
+        if !self.text.is_empty() {
+            if let Some((char_boundary, _)) = self.text.char_indices().nth(self.cursor_position) {
+                let lhs: String = self.text.get(..char_boundary).unwrap().into();
+                let rhs: String = self.text.get(char_boundary + 1..).unwrap().into();
+                self.set_text(lhs + &rhs);
             };
         }
     }
@@ -93,6 +109,15 @@ impl TextInput {
             self.cursor_position += 1;
             self.text_changed = true;
         }
+    }
+    pub fn cursor_home(&mut self) {
+        self.cursor_position = 0;
+        self.text_changed = true;
+    }
+    pub fn cursor_end(&mut self) {
+        dbg!("end");
+        self.cursor_position = self.text.char_indices().count();
+        self.text_changed = true;
     }
 }
 
@@ -212,23 +237,29 @@ impl UIComponent for TextInput {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Backspace),
                 ..
-            } => {
-                self.delete_at_cursor();
-            }
+            } => self.delete_before_cursor(),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Left),
                 ..
-            } => {
-                self.cursor_left();
-            }
+            } => self.cursor_left(),
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Right),
                 ..
-            } => {
-                self.cursor_right();
-            }
+            } => self.cursor_right(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Home),
+                ..
+            } => self.cursor_home(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::End),
+                ..
+            } => self.cursor_end(),
+            sdl2::event::Event::KeyDown {
+                keycode: Some(Keycode::Delete),
+                ..
+            } => self.delete_at_cursor(),
             _ => (),
         };
     }
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }
