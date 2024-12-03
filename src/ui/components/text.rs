@@ -57,7 +57,42 @@ impl TextInput {
     pub fn set_text(&mut self, text: String) {
         self.text = text;
         self.text_changed = true;
-        self.cursor_position = self.text.len();
+    }
+
+    pub fn insert_at_cursor(&mut self, text: String) {
+        let char_boundary = match self.text.char_indices().nth(self.cursor_position) {
+            Some((cb, _)) => cb,
+            None => self.text.char_indices().count(),
+        };
+        let lhs: String = self.text.get(..char_boundary).unwrap().into();
+        let rhs: String = self.text.get(char_boundary..).unwrap().into();
+        dbg!(char_boundary, &lhs, &rhs);
+        self.set_text(lhs + &text + &rhs);
+        self.cursor_position += 1;
+    }
+    pub fn delete_at_cursor(&mut self) {
+        if !self.text.is_empty() && self.cursor_position > 0 {
+            if let Some((char_boundary, _)) = self.text.char_indices().nth(self.cursor_position - 1)
+            {
+                let lhs: String = self.text.get(..char_boundary).unwrap().into();
+                let rhs: String = self.text.get(char_boundary + 1..).unwrap().into();
+                self.set_text(lhs + &rhs);
+                self.cursor_left();
+            };
+        }
+    }
+
+    pub fn cursor_left(&mut self) {
+        if self.cursor_position > 0 {
+            self.cursor_position -= 1;
+            self.text_changed = true;
+        }
+    }
+    pub fn cursor_right(&mut self) {
+        if self.cursor_position < self.text.char_indices().count() {
+            self.cursor_position += 1;
+            self.text_changed = true;
+        }
     }
 }
 
@@ -167,31 +202,30 @@ impl UIComponent for TextInput {
                 }
             }
             sdl2::event::Event::TextInput { text, .. } => {
-                if !ctx.ctrl_pressed {
-                    self.set_text(self.text.clone() + text);
+                // Ignore text input with ctrl pressed because of wayland reasons
+                // On key press repeat a text input event is emitted
+                if ctx.ctrl_pressed {
+                    return;
                 }
+                self.insert_at_cursor(text.to_string());
             }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Backspace),
                 ..
             } => {
-                if let Some((char_boundary, _)) = self.text.char_indices().nth_back(0) {
-                    self.set_text(self.text.get(..char_boundary).unwrap().into())
-                };
+                self.delete_at_cursor();
             }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Left),
                 ..
             } => {
-                self.cursor_position -= 1;
-                self.text_changed = true;
+                self.cursor_left();
             }
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Right),
                 ..
             } => {
-                self.cursor_position += 1;
-                self.text_changed = true;
+                self.cursor_right();
             }
             _ => (),
         };
