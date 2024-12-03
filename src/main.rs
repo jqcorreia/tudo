@@ -20,6 +20,7 @@ use app::App;
 
 use execute::execute;
 use log::info;
+use mlua::Lua;
 use screen::debug_screen::DebugScreen;
 use screen::info_screen::InfoScreen;
 use screen::main_screen::MainScreen;
@@ -43,6 +44,7 @@ use utils::cache::TextureCache;
 use utils::draw::draw_string;
 use utils::font::FontConfig;
 use utils::misc;
+
 const PID_FILE: &str = "/run/user/1000/tudo.pid"; //TODO(quadrado): Use configuration value instead
                                                   //of this one.
 
@@ -66,7 +68,22 @@ fn check_running_state() -> bool {
     }
 }
 
+fn calc() {
+    let lua = Lua::new();
+    let script = "
+    local sin = math.sin
+    local cos = math.cos
+    local sqrt = math.sqrt
+    ";
+
+    dbg!(lua
+        .load(script.to_string() + "return sqrt(25) + 30")
+        .eval::<f32>()
+        .unwrap());
+}
+
 fn main() {
+    calc();
     // Initialize logging
     SimpleLogger::new().init().unwrap();
     if let Ok(value) = std::env::var("XDG_SESSION_TYPE") {

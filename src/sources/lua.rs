@@ -45,7 +45,6 @@ fn http_get(
         req = req.set(&k, &v);
     }
 
-    
     let contents: serde_json::Value = match req.call() {
         Ok(response) => response.into_json().unwrap(),
         Err(err) => return Err(mlua::Error::RuntimeError(err.to_string())),

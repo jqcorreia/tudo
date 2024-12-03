@@ -121,7 +121,6 @@ impl App {
                     ..
                 } => {
                     if &self.current_screen_id == "main" {
-                        // self.running = false
                         self.should_hide = true;
                     } else {
                         self.current_screen_id = "main".to_string()
