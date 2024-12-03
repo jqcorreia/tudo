@@ -81,6 +81,8 @@ Currently looks like this:
 - [x] Smoooooth cursor movement and smoooooth list scrolling with key navigation working.
 - [x] Implement tray! DBus is a mess, but a useful mess... Icon events and refresh is done
 - [x] Standardize button state. Only field is active. 
+- [x] Implement textinput cursor movement.
+- [ ] ! Replace SDL2_image with something more light dependency-wise
 - [ ] ! Make LayoutManager implement UIComponent so it can be called directly to update and draw
 - [ ] Get system default font and use it as a best effort font in case requested font doesn't exist
 - [ ] Prompt window available to actions
