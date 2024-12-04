@@ -270,7 +270,7 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
-    pub fn by_name_2<T>(&mut self, name: impl AsRef<str>) -> &mut T
+    pub fn by_name_typed<T>(&mut self, name: impl AsRef<str>) -> &mut T
     where
         T: UIComponent + 'static,
     {
