@@ -115,6 +115,6 @@ pub fn load_config(path: impl AsRef<str>) -> Config {
 
     // This currently panics if config.lua file is wrong in any way.
     // FIXME(quadrado): Deal better with this error
-    let _: String = lua.load(&contents).set_name("config").eval().unwrap();
+    lua.load(&contents).set_name("config").eval::<()>().unwrap();
     lua.from_value(globals.get("tudo").unwrap()).unwrap()
 }

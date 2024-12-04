@@ -81,28 +81,38 @@ impl TextInput {
             .nth(self.state.cursor_position)
         {
             Some((cb, _)) => cb,
-            None => self.state.text.char_indices().count(),
+            None => self.state.text.len(),
         };
         let lhs: String = self.state.text.get(..char_boundary).unwrap().into();
         let rhs: String = self.state.text.get(char_boundary..).unwrap().into();
-        dbg!(char_boundary, &lhs, &rhs);
-        self.set_text(lhs + &text + &rhs);
+        dbg!(char_boundary, &lhs, &text, &rhs);
+        let new_text = lhs + &text + &rhs;
+        self.set_text(new_text);
         self.state.cursor_position += 1;
     }
 
     pub fn delete_before_cursor(&mut self) {
-        if !self.state.text.is_empty() && self.state.cursor_position > 0 {
-            if let Some((char_boundary, _)) = self
-                .state
-                .text
-                .char_indices()
-                .nth(self.state.cursor_position - 1)
-            {
-                let lhs: String = self.state.text.get(..char_boundary).unwrap().into();
-                let rhs: String = self.state.text.get(char_boundary + 1..).unwrap().into();
-                self.set_text(lhs + &rhs);
-                self.cursor_left();
-            };
+        // This is a bit verbose but it is bullet proof in terms of supporting unicode text
+        if self.state.cursor_position > 0 {
+            let t = self.state.text.clone();
+            match (
+                t.char_indices().nth(self.state.cursor_position - 1),
+                t.char_indices().nth(self.state.cursor_position),
+            ) {
+                (Some((before, _)), Some((after, _))) => {
+                    let lhs: String = t.get(..before).unwrap().into();
+                    let rhs: String = t.get(after + 1..).unwrap().into();
+                    self.set_text(lhs + &rhs);
+                    self.cursor_left();
+                }
+
+                (Some((before, _)), None) => {
+                    let lhs: String = t.get(..before).unwrap().into();
+                    self.set_text(lhs);
+                    self.cursor_left();
+                }
+                _ => (),
+            }
         }
     }
 
@@ -212,7 +222,7 @@ impl UIComponent for TextInput {
                 let (w, h) = (query.width as i32, query.height as i32);
                 if self.text_changed {
                     self.cursor_anim.set_target(
-                        (w as u32 / self.state.text.len() as u32)
+                        (w as u32 / self.state.text.char_indices().count() as u32)
                             * self.state.cursor_position as u32,
                         None,
                     );
