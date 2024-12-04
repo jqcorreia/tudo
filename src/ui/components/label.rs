@@ -50,7 +50,7 @@ impl UIComponent for Label {
 
         canvas.copy(&texture, None, Rect::new(0, 0, w, h)).unwrap();
     }
-    fn handle_event(&mut self, _event: &sdl2::event::Event, _app: &mut App, elapsed: u128) {}
+    fn handle_event(&mut self, _event: &sdl2::event::Event, _app: &mut App, _elapsed: u128) {}
     fn get_state(&self) -> &dyn std::any::Any {
         &self.text
     }

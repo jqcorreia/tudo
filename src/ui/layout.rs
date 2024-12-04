@@ -1,6 +1,3 @@
-use std::any::Any;
-
-use enum_downcast::EnumDowncast;
 use sdl2::rect::Rect;
 
 use crate::ui::components::traits::UIComponent;

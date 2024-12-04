@@ -87,7 +87,7 @@ impl UIComponent for Workspaces {
             }
         }
     }
-    fn update(&mut self, app: &mut App, elapsed: u128) {
+    fn update(&mut self, app: &mut App, _: u128) {
         if !self.initialized {
             // dbg!(app.hyprland.as_mut().unwrap().get_active_workspace());
             // dbg!(Hyprland::new().unwrap().get_active_workspace());
