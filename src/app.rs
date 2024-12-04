@@ -1,5 +1,6 @@
 use log::info;
 use sdl2::event::Event;
+use sdl2::event::WindowEvent;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
@@ -93,9 +94,6 @@ impl App {
         for event in events.iter() {
             // Deal with main loop events
             // Things like app quit and global window mouse events
-            // if event.is_keyboard() || event.is_text() {
-            //     dbg!(&event);
-            // }
             match event {
                 // Trap ctrl in order to bypass a bug in SDL2 and wayland
                 // Set it on the application state so other components can react to it
@@ -134,6 +132,10 @@ impl App {
                     keycode: Some(Keycode::F4),
                     ..
                 } => self.current_screen_id = "info".to_string(),
+                sdl2::event::Event::Window {
+                    win_event: WindowEvent::FocusLost,
+                    ..
+                } => self.should_hide = true,
                 sdl2::event::Event::Quit { .. } => self.running = false,
                 _ => (),
             }
@@ -141,8 +143,8 @@ impl App {
     }
 }
 
-// impl Drop for App {
-//     fn drop(&mut self) {
-//         // App destructor
-//     }
-// }
+impl Drop for App {
+    fn drop(&mut self) {
+        // App destructor
+    }
+}
