@@ -376,9 +376,5 @@ mod tests {
         dbg!(builder.components());
         dbg!(builder.components_with_rect());
         assert!(builder.components().len() == 2);
-
-        //builder.by_name_2::<Spinner>("spin1");
-
-        //dbg!(builder.by_coordinates(500, 10));
     }
 }
