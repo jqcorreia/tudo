@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
@@ -36,6 +38,12 @@ impl Workspaces {
 impl UIComponent for Workspaces {
     fn id(&self) -> String {
         self.id.clone()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
     fn render(
         &mut self,

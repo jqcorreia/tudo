@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{
@@ -41,6 +43,13 @@ impl Button {
 impl UIComponent for Button {
     fn id(&self) -> String {
         self.id.clone()
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 
     fn render(
@@ -99,5 +108,5 @@ impl UIComponent for Button {
     fn get_focus(&self) -> bool {
         self.focus
     }
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }

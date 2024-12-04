@@ -9,12 +9,10 @@ use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
 
-pub trait Render {}
-
-pub trait Updatable {}
-
 pub trait UIComponent {
     fn id(&self) -> String;
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
     fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,

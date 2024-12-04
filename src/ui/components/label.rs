@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use sdl2::{pixels::Color, rect::Rect};
 
 use crate::{app::App, utils::draw::draw_string_texture};
@@ -23,6 +25,12 @@ impl Label {
 impl UIComponent for Label {
     fn id(&self) -> String {
         self.id.clone()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
     fn render(
         &mut self,
@@ -50,5 +58,5 @@ impl UIComponent for Label {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.text = state.downcast_ref::<String>().unwrap().to_string();
     }
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }

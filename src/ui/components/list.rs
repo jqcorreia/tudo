@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::usize;
 
 use sdl2::keyboard::Keycode;
@@ -8,7 +9,6 @@ use sdl2::{event::Event, pixels::Color, rect::Rect, render::Canvas, ttf::Font, v
 
 use crate::animation::{Animation, AnimationType};
 use crate::sources::SourceItem;
-use crate::ui::components::traits::Render;
 use crate::utils::cache::TextureCache;
 use crate::utils::draw::{draw_string, draw_string_texture, DrawExtensions};
 use crate::utils::fuzzy::basic_contains;
@@ -84,6 +84,13 @@ pub struct SelectList<T> {
 impl UIComponent for SelectList<SourceItem> {
     fn id(&self) -> String {
         self.id.clone()
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 
     fn get_state(&self) -> &dyn std::any::Any {
@@ -246,7 +253,7 @@ impl UIComponent for SelectList<SourceItem> {
                 .unwrap();
         }
     }
-    fn handle_event(&mut self, event: &Event, app: &mut App, elapsed: u128) {
+    fn handle_event(&mut self, event: &Event, app: &mut App, _: u128) {
         match event {
             sdl2::event::Event::KeyDown {
                 keycode: Some(Keycode::Return),
@@ -296,7 +303,7 @@ impl UIComponent for SelectList<SourceItem> {
         }
     }
 
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }
 
 impl<T: PartialEq> SelectList<T> {
@@ -364,8 +371,6 @@ impl<T: PartialEq> SelectList<T> {
         }
     }
 }
-
-impl Render for SelectList<SourceItem> {}
 
 impl RenderItem<SourceItem> for SelectList<SourceItem> {
     fn render_row<'a>(

@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use chrono::prelude::*;
 use sdl2::{event::Event, rect::Rect};
 
@@ -23,6 +25,12 @@ impl UIComponent for Clock {
     fn id(&self) -> String {
         self.id.clone()
     }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
     fn render(
         &mut self,
         texture_creator: &sdl2::render::TextureCreator<sdl2::video::WindowContext>,
@@ -45,5 +53,5 @@ impl UIComponent for Clock {
         self.label.set_state(state);
     }
     fn handle_event(&mut self, _event: &Event, _app: &mut App, _elapsed: u128) {}
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }

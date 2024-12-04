@@ -255,7 +255,7 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
-    pub fn by_name(&mut self, name: String) -> &mut Box<dyn UIComponent> {
+    pub fn by_name(&mut self, name: impl AsRef<str>) -> &mut Box<dyn UIComponent> {
         for cell in self.arena.iter_mut() {
             if let Container {
                 container_type:
@@ -265,7 +265,7 @@ impl LayoutBuilder {
                 ..
             } = cell
             {
-                if comp.id() == name {
+                if comp.id() == name.as_ref() {
                     return comp;
                 }
             }
@@ -273,28 +273,14 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
-    //pub fn by_name_2<T>(&mut self, name: impl AsRef<str>) -> &mut T
-    //where
-    //    T: UIComponent + 'static,
-    //{
-    //    for cell in self.arena.iter_mut() {
-    //        if let Container {
-    //            container_type:
-    //                ContainerType::Leaf(Leaf {
-    //                    component: comp, ..
-    //                }),
-    //            ..
-    //        } = cell
-    //        {
-    //            if comp.id() == name.as_ref() {
-    //                let _c = comp as &mut dyn Any;
-    //                return (*_c).downcast_mut::<T>().unwrap();
-    //            }
-    //        }
-    //    }
-    //    panic!("Component not found")
-    //}
-    //
+    pub fn by_name_2<T>(&mut self, name: impl AsRef<str>) -> &mut T
+    where
+        T: UIComponent + 'static,
+    {
+        let comp = self.by_name(name);
+        comp.as_any_mut().downcast_mut::<T>().unwrap()
+    }
+
     pub fn generate(&mut self, w: usize, h: usize) {
         if self.root.is_none() {
             return;

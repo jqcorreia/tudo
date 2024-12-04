@@ -1,3 +1,4 @@
+use std::any::Any;
 use std::process::Command;
 
 use sdl2::keyboard::Keycode;
@@ -14,9 +15,14 @@ use crate::utils::font::FontConfig;
 
 use super::traits::UIComponent;
 
+#[derive(Clone)]
+pub struct TextInputState {
+    pub text: String,
+    pub cursor_position: usize,
+}
+
 pub struct TextInput {
     pub id: String,
-    pub text: String,
     pub text_changed: bool,
     pub foreground_color: Color,
     pub cursor_x: i32,
@@ -24,14 +30,13 @@ pub struct TextInput {
     pub last_blink: Option<u128>,
     pub input_hint: Option<String>,
     pub cursor_anim: Animation,
-    pub cursor_position: usize,
+    pub state: TextInputState,
 }
 
 impl TextInput {
     pub fn new(id: impl AsRef<str>, config: &Config) -> Self {
         TextInput {
             id: id.as_ref().to_string(),
-            text: String::from(""),
             text_changed: false,
             foreground_color: config.prompt_color,
             cursor_x: 0,
@@ -39,7 +44,10 @@ impl TextInput {
             last_blink: None,
             input_hint: None,
             cursor_anim: Animation::new(0, 0, AnimationType::EaseOut, 40.0),
-            cursor_position: 0,
+            state: TextInputState {
+                text: "".to_string(),
+                cursor_position: 0,
+            },
         }
     }
     pub fn with_input_hint(mut self, input_hint: String) -> Self {
@@ -47,7 +55,7 @@ impl TextInput {
         self
     }
     pub fn with_text(mut self, text: String) -> Self {
-        self.text = text;
+        self.state.text = text;
         self
     }
     pub fn with_foreground_color(mut self, color: Color) -> Self {
@@ -55,33 +63,43 @@ impl TextInput {
         self
     }
     pub fn set_text(&mut self, text: String) {
-        self.text = text;
+        self.state.text = text;
         self.text_changed = true;
     }
 
     pub fn clear(&mut self) {
         self.set_text("".to_string());
         self.cursor_home();
+        self.cursor_anim.set_target(0, None);
     }
 
     pub fn insert_at_cursor(&mut self, text: String) {
-        let char_boundary = match self.text.char_indices().nth(self.cursor_position) {
+        let char_boundary = match self
+            .state
+            .text
+            .char_indices()
+            .nth(self.state.cursor_position)
+        {
             Some((cb, _)) => cb,
-            None => self.text.char_indices().count(),
+            None => self.state.text.char_indices().count(),
         };
-        let lhs: String = self.text.get(..char_boundary).unwrap().into();
-        let rhs: String = self.text.get(char_boundary..).unwrap().into();
+        let lhs: String = self.state.text.get(..char_boundary).unwrap().into();
+        let rhs: String = self.state.text.get(char_boundary..).unwrap().into();
         dbg!(char_boundary, &lhs, &rhs);
         self.set_text(lhs + &text + &rhs);
-        self.cursor_position += 1;
+        self.state.cursor_position += 1;
     }
 
     pub fn delete_before_cursor(&mut self) {
-        if !self.text.is_empty() && self.cursor_position > 0 {
-            if let Some((char_boundary, _)) = self.text.char_indices().nth(self.cursor_position - 1)
+        if !self.state.text.is_empty() && self.state.cursor_position > 0 {
+            if let Some((char_boundary, _)) = self
+                .state
+                .text
+                .char_indices()
+                .nth(self.state.cursor_position - 1)
             {
-                let lhs: String = self.text.get(..char_boundary).unwrap().into();
-                let rhs: String = self.text.get(char_boundary + 1..).unwrap().into();
+                let lhs: String = self.state.text.get(..char_boundary).unwrap().into();
+                let rhs: String = self.state.text.get(char_boundary + 1..).unwrap().into();
                 self.set_text(lhs + &rhs);
                 self.cursor_left();
             };
@@ -89,50 +107,61 @@ impl TextInput {
     }
 
     pub fn delete_at_cursor(&mut self) {
-        if !self.text.is_empty() {
-            if let Some((char_boundary, _)) = self.text.char_indices().nth(self.cursor_position) {
-                let lhs: String = self.text.get(..char_boundary).unwrap().into();
-                let rhs: String = self.text.get(char_boundary + 1..).unwrap().into();
+        if !self.state.text.is_empty() {
+            if let Some((char_boundary, _)) = self
+                .state
+                .text
+                .char_indices()
+                .nth(self.state.cursor_position)
+            {
+                let lhs: String = self.state.text.get(..char_boundary).unwrap().into();
+                let rhs: String = self.state.text.get(char_boundary + 1..).unwrap().into();
                 self.set_text(lhs + &rhs);
             };
         }
     }
 
     pub fn cursor_left(&mut self) {
-        if self.cursor_position > 0 {
-            self.cursor_position -= 1;
+        if self.state.cursor_position > 0 {
+            self.state.cursor_position -= 1;
             self.text_changed = true;
         }
     }
     pub fn cursor_right(&mut self) {
-        if self.cursor_position < self.text.char_indices().count() {
-            self.cursor_position += 1;
+        if self.state.cursor_position < self.state.text.char_indices().count() {
+            self.state.cursor_position += 1;
             self.text_changed = true;
         }
     }
     pub fn cursor_home(&mut self) {
-        self.cursor_position = 0;
+        self.state.cursor_position = 0;
         self.text_changed = true;
     }
     pub fn cursor_end(&mut self) {
         dbg!("end");
-        self.cursor_position = self.text.char_indices().count();
+        self.state.cursor_position = self.state.text.char_indices().count();
         self.text_changed = true;
     }
 }
 
 impl UIComponent for TextInput {
     fn get_state(&self) -> &dyn std::any::Any {
-        &self.text
+        &self.state
     }
 
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
-        self.text = state.downcast_ref::<String>().unwrap().to_string();
+        self.state = *state.downcast::<TextInputState>().unwrap();
     }
     fn id(&self) -> String {
         self.id.clone()
     }
 
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
     fn render(
         &mut self,
         texture_creator: &TextureCreator<WindowContext>,
@@ -155,8 +184,8 @@ impl UIComponent for TextInput {
         let font = cache.fonts.get_font("normal-24");
         let (_fw, fh) = font.size_of(" ").unwrap();
 
-        let draw_cursor = !self.text.is_empty() || self.input_hint.is_none();
-        let texture = match (self.text.len(), &self.input_hint) {
+        let draw_cursor = !self.state.text.is_empty() || self.input_hint.is_none();
+        let texture = match (self.state.text.len(), &self.input_hint) {
             (0, Some(hint)) => Some(draw_string_texture(
                 hint.to_string(),
                 texture_creator,
@@ -165,7 +194,7 @@ impl UIComponent for TextInput {
             )),
             (0, None) => None,
             _ => Some(draw_string_texture(
-                self.text.clone(),
+                self.state.text.clone(),
                 texture_creator,
                 font,
                 self.foreground_color,
@@ -182,9 +211,9 @@ impl UIComponent for TextInput {
                 let query = tex.query();
                 let (w, h) = (query.width as i32, query.height as i32);
                 if self.text_changed {
-                    //self.cursor_anim.set_target(w as u32, None);
                     self.cursor_anim.set_target(
-                        (w as u32 / self.text.len() as u32) * self.cursor_position as u32,
+                        (w as u32 / self.state.text.len() as u32)
+                            * self.state.cursor_position as u32,
                         None,
                     );
                     self.text_changed = false;
@@ -219,8 +248,8 @@ impl UIComponent for TextInput {
                 keycode: Some(Keycode::Return),
                 ..
             } => {
-                if self.text.starts_with("!") {
-                    let t = self.text.replace("!", "");
+                if self.state.text.starts_with("!") {
+                    let t = self.state.text.replace("!", "");
                     let args = vec!["-c", &t];
                     let _cmd = Command::new("sh").args(args).spawn();
                     ctx.should_hide = true;

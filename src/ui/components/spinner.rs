@@ -1,4 +1,4 @@
-use std::{ops::Rem, usize};
+use std::{any::Any, ops::Rem, usize};
 
 use sdl2::{pixels::PixelFormatEnum, rect::Rect};
 
@@ -24,6 +24,12 @@ impl Spinner {
 impl UIComponent for Spinner {
     fn id(&self) -> String {
         self.id.clone()
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
     fn render(
         &mut self,
@@ -96,5 +102,5 @@ impl UIComponent for Spinner {
     fn set_state(&mut self, state: Box<dyn std::any::Any>) {
         self.running = *state.downcast_ref::<bool>().unwrap();
     }
-    fn update(&mut self, app: &mut App, elapsed: u128) {}
+    fn update(&mut self, _: &mut App, _: u128) {}
 }

@@ -17,7 +17,7 @@ use crate::{
             clock::Clock,
             list::{SelectList, SelectListState},
             spinner::Spinner,
-            text::TextInput,
+            text::{TextInput, TextInputState},
             tray::Tray,
             workspaces::Workspaces,
         },
@@ -69,11 +69,11 @@ impl MainScreen {
 
 impl Screen for MainScreen {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
-        let ps: String = self
+        let ps = self
             .layout
             .by_name("prompt".to_string())
             .get_state()
-            .downcast_ref::<String>()
+            .downcast_ref::<TextInputState>()
             .unwrap()
             .clone();
 
@@ -81,8 +81,9 @@ impl Screen for MainScreen {
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
-                prompt: ps,
+                prompt: ps.text.clone(),
             }));
+
         for event in events.iter() {
             // If it's a mouse event then we need to localize it and send it to the apropriate
             // component
@@ -147,12 +148,15 @@ impl Screen for MainScreen {
         }
     }
     fn reset(&mut self) {
-        //self.layout.by_name_2::<TextInput>("prompt").clear();
+        self.layout.by_name_2::<TextInput>("prompt").clear();
 
         // Clear both prompt and select list search
-        //self.layout
-        //    .by_name("prompt".to_string())
-        //    .set_state(Box::new("".to_string()));
+        // self.layout
+        //     .by_name("prompt".to_string())
+        //     .set_state(Box::new(TextInputState {
+        //         text: "".to_string(),
+        //         cursor_position: 0,
+        //     }));
         self.layout
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {
