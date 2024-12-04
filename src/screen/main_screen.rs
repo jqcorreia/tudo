@@ -71,14 +71,14 @@ impl Screen for MainScreen {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
         let ps = self
             .layout
-            .by_name("prompt".to_string())
+            .by_name("prompt")
             .get_state()
             .downcast_ref::<TextInputState>()
             .unwrap()
             .clone();
 
         self.layout
-            .by_name("list".to_string())
+            .by_name("list")
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
                 prompt: ps.text.clone(),
@@ -111,7 +111,7 @@ impl Screen for MainScreen {
         }
 
         self.layout
-            .by_name("spinner".to_string())
+            .by_name("spinner")
             .set_state(Box::new(app.loading));
 
         // Hide spinner if not loading
@@ -158,7 +158,7 @@ impl Screen for MainScreen {
         //         cursor_position: 0,
         //     }));
         self.layout
-            .by_name("list".to_string())
+            .by_name("list")
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
                 prompt: "".to_string(),

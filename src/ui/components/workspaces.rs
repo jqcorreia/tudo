@@ -122,7 +122,7 @@ impl UIComponent for Workspaces {
         if let Ok(msg) = app.hyprland.as_mut().unwrap().rx().try_recv() {
             if msg.starts_with("createworkspace>") {
                 let wid = msg.split(">>").nth(1).unwrap();
-                let btn = self.builder.by_name(wid.to_string());
+                let btn = self.builder.by_name(wid);
 
                 let mut btn_state = btn
                     .get_state()
@@ -134,7 +134,7 @@ impl UIComponent for Workspaces {
             }
             if msg.starts_with("destroyworkspace>") {
                 let wid = msg.split(">>").nth(1).unwrap();
-                let btn = self.builder.by_name(wid.to_string());
+                let btn = self.builder.by_name(wid);
 
                 let mut btn_state = btn
                     .get_state()

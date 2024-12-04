@@ -372,7 +372,7 @@ mod tests {
         dbg!(&builder);
         builder.generate(1000, 1000);
         dbg!(&builder);
-        dbg!(builder.by_name("spin1".to_string()));
+        dbg!(builder.by_name("spin1"));
         dbg!(builder.components());
         dbg!(builder.components_with_rect());
         assert!(builder.components().len() == 2);

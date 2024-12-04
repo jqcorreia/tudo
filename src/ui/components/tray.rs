@@ -70,7 +70,7 @@ impl Tray {
             "RegisteredStatusNotifierItems",
         );
 
-        if !sni.is_ok() {
+        if sni.is_err() {
             return;
         }
         let icon_finder = IconFinder::new();

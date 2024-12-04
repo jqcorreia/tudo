@@ -417,7 +417,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                 if item.icon.is_some() {
                     let icon_texture = cache
                         .images
-                        .get_image(item.icon.as_ref().unwrap().to_string());
+                        .get_image(item.icon.as_ref().unwrap());
                     canvas
                         .copy(
                             icon_texture,
