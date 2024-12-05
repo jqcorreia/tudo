@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::thread;
+use std::thread::sleep;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -218,7 +219,7 @@ fn main() {
         drop(ct);
 
         if app.hidden {
-            if let Ok(sig) = rx.recv() {
+            if let Ok(sig) = rx.try_recv() {
                 match sig {
                     SIGINT => app.running = false, // This will stop the main thread when hidden
                     // and receiving a Ctrl-C
@@ -229,6 +230,7 @@ fn main() {
                     _ => (),
                 }
             }
+            sleep(Duration::from_millis(10));
         }
 
         // Sometime elapsed time is 0 and we need to account for that
