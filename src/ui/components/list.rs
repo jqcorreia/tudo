@@ -415,9 +415,7 @@ impl RenderItem<SourceItem> for SelectList<SourceItem> {
                 // Draw icon
                 let icon_height: u32 = 32;
                 if item.icon.is_some() {
-                    let icon_texture = cache
-                        .images
-                        .get_image(item.icon.as_ref().unwrap());
+                    let icon_texture = cache.images.get_image(item.icon.as_ref().unwrap());
                     canvas
                         .copy(
                             icon_texture,

@@ -4,7 +4,7 @@ use std::fmt::Debug;
 use crate::app::App;
 use crate::utils::cache::TextureCache;
 use sdl2::event::Event;
-use sdl2::pixels::PixelFormatEnum;
+use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Canvas, TextureCreator};
 use sdl2::video::{Window, WindowContext};
@@ -35,6 +35,7 @@ pub trait UIComponent {
         elapsed: u128,
     ) {
         if app.layout_debug {
+            main_canvas.set_draw_color(Color::GREEN);
             main_canvas.draw_rect(component_rect).unwrap();
         }
 

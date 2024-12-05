@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use sdl2::{
     event::Event,
+    keyboard::Keycode,
     pixels::Color,
     render::{Canvas, TextureCreator},
     video::{Window, WindowContext},
@@ -15,13 +16,14 @@ use crate::{
     ui::{
         components::{
             clock::Clock,
+            label::Label,
             list::{SelectList, SelectListState},
             spinner::Spinner,
-            text::{TextInput, TextInputState},
+            text::TextInput,
             tray::Tray,
             workspaces::Workspaces,
         },
-        layout::{Container, ContainerSize, LayoutBuilder, SplitType},
+        layout::{ContainerSize, LayoutBuilder, SplitType},
     },
     utils::{cache::TextureCache, misc::localize_mouse_event},
 };
@@ -45,7 +47,8 @@ impl MainScreen {
         let spinner = Spinner::new("spinner".to_string());
         let clock = Clock::new("clock".to_string());
         let workspaces = Workspaces::new("workspaces".to_string());
-        let tray = Tray::new("workspaces");
+        let tray = Tray::new("tray");
+        let result = Label::new("result", "ss");
 
         let mut builder = LayoutBuilder::new().with_gap(2);
         let main_split = builder.add_split(SplitType::Vertical, ContainerSize::Percent(100));
@@ -53,11 +56,15 @@ impl MainScreen {
 
         builder.add(Box::new(prompt), ContainerSize::Percent(100));
         builder.add(Box::new(spinner), ContainerSize::Fixed(64));
+
         builder.set_cur_split(main_split);
         builder.add(Box::new(select_list), ContainerSize::Percent(100));
+        builder.add(Box::new(result), ContainerSize::Percent(100));
         builder.add(Box::new(clock), ContainerSize::Fixed(32));
         builder.add(Box::new(workspaces), ContainerSize::Fixed(32));
         builder.add(Box::new(tray), ContainerSize::Fixed(32));
+        builder.by_name_container("result").hidden = true;
+
         builder.generate(width, height);
 
         MainScreen {
@@ -69,19 +76,18 @@ impl MainScreen {
 
 impl Screen for MainScreen {
     fn update(&mut self, app: &mut App, events: &Vec<Event>, elapsed: u128) {
-        let ps = self
+        let prompt_text = self
             .layout
-            .by_name("prompt".to_string())
-            .get_state()
-            .downcast_ref::<TextInputState>()
-            .unwrap()
+            .by_name_typed::<TextInput>("prompt")
+            .state
+            .text
             .clone();
 
         self.layout
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
-                prompt: ps.text.clone(),
+                prompt: prompt_text,
             }));
 
         for event in events.iter() {
@@ -98,6 +104,12 @@ impl Screen for MainScreen {
                             component.handle_event(&_event, app, elapsed);
                         }
                     }
+                }
+                sdl2::event::Event::KeyUp {
+                    keycode: Some(Keycode::F5),
+                    ..
+                } => {
+                    self.layout.by_name_container("tray").hidden ^= true; // Toggle
                 }
                 _ => {
                     for component in self.layout.components() {
@@ -120,9 +132,7 @@ impl Screen for MainScreen {
                 .layout
                 .container_by_name("spinner".to_string())
                 .unwrap();
-            match container {
-                Container { ref mut size, .. } => *size = ContainerSize::Fixed(0),
-            }
+            container.hidden = true;
         }
     }
 
@@ -149,7 +159,6 @@ impl Screen for MainScreen {
     }
     fn reset(&mut self) {
         self.layout.by_name_typed::<TextInput>("prompt").clear();
-
         self.layout
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {

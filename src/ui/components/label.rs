@@ -13,10 +13,10 @@ pub struct Label {
 }
 
 impl Label {
-    pub fn new(id: String, text: String) -> Label {
+    pub fn new(id: impl AsRef<str>, text: impl AsRef<str>) -> Label {
         Label {
-            id,
-            text,
+            id: id.as_ref().to_string(),
+            text: text.as_ref().to_string(),
             font_name: None,
         }
     }

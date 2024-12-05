@@ -1,6 +1,5 @@
 use log::info;
 use sdl2::event::Event;
-use sdl2::event::WindowEvent;
 use sdl2::keyboard::Keycode;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
@@ -132,10 +131,10 @@ impl App {
                     keycode: Some(Keycode::F4),
                     ..
                 } => self.current_screen_id = "info".to_string(),
-                sdl2::event::Event::Window {
-                    win_event: WindowEvent::FocusLost,
+                sdl2::event::Event::KeyDown {
+                    keycode: Some(Keycode::F12),
                     ..
-                } => self.should_hide = true,
+                } => self.layout_debug ^= true,
                 sdl2::event::Event::Quit { .. } => self.running = false,
                 _ => (),
             }

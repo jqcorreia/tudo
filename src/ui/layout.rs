@@ -20,6 +20,7 @@ pub enum ContainerSize {
 pub struct Container {
     pub size: ContainerSize,
     pub container_type: ContainerType,
+    pub hidden: bool,
 }
 
 #[derive(Debug)]
@@ -91,6 +92,7 @@ impl LayoutBuilder {
                         component: comp,
                         rect: None,
                     }),
+                    hidden: false,
                 });
             }
             Some(_) => {
@@ -101,6 +103,7 @@ impl LayoutBuilder {
                         component: comp,
                         rect: None,
                     }),
+                    hidden: false,
                 };
                 match target_split.unwrap() {
                     Container {
@@ -130,6 +133,7 @@ impl LayoutBuilder {
                 SplitType::Horizontal => ContainerType::HSplit(split),
                 SplitType::Vertical => ContainerType::VSplit(split),
             },
+            hidden: false,
         };
 
         match &mut self.root {
@@ -161,6 +165,9 @@ impl LayoutBuilder {
         w: usize,
         h: usize,
     ) -> Vec<(LayoutIndex, Rect)> {
+        // Right now the 'hidden' property must be checked a lot
+        // The other way of implementing this is setting size 0 but it has it's
+        // drawbacks also such as checking for it in rectangle fetching in component_with_rect().
         let mut vec: Vec<(LayoutIndex, Rect)> = Vec::new();
         let container = self.arena.get(node).unwrap();
         match &container.container_type {
@@ -185,6 +192,9 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
+                    if container.hidden {
+                        continue;
+                    }
                     if let ContainerSize::Fixed(size) = container.size {
                         sum_fixed_size += size
                     };
@@ -193,6 +203,9 @@ impl LayoutBuilder {
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
+                    if container.hidden {
+                        continue;
+                    }
                     let w_step = match container.size {
                         ContainerSize::Fixed(size) => size,
                         ContainerSize::Percent(size) => {
@@ -211,6 +224,9 @@ impl LayoutBuilder {
                 let mut sum_fixed_size: usize = 0;
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
+                    if container.hidden {
+                        continue;
+                    }
                     if let ContainerSize::Fixed(size) = container.size {
                         sum_fixed_size += size
                     };
@@ -219,6 +235,9 @@ impl LayoutBuilder {
 
                 for child_idx in split.children.clone() {
                     let container = self.arena.get(child_idx).unwrap();
+                    if container.hidden {
+                        continue;
+                    }
                     let h_step = match container.size {
                         ContainerSize::Fixed(size) => size,
                         ContainerSize::Percent(size) => {
@@ -270,6 +289,24 @@ impl LayoutBuilder {
         panic!("Component not found")
     }
 
+    pub fn by_name_container(&mut self, name: impl AsRef<str>) -> &mut Container {
+        for cell in self.arena.iter_mut() {
+            if let Container {
+                container_type:
+                    ContainerType::Leaf(Leaf {
+                        component: comp, ..
+                    }),
+                ..
+            } = cell
+            {
+                if comp.id() == name.as_ref() {
+                    return cell;
+                }
+            }
+        }
+        panic!("Component not found")
+    }
+
     pub fn by_name_typed<T>(&mut self, name: impl AsRef<str>) -> &mut T
     where
         T: UIComponent + 'static,
@@ -289,6 +326,7 @@ impl LayoutBuilder {
 
             if let Container {
                 container_type: ContainerType::Leaf(leaf),
+                hidden: false,
                 ..
             } = container
             {
@@ -303,6 +341,7 @@ impl LayoutBuilder {
             .filter_map(|container| match container {
                 Container {
                     container_type: ContainerType::Leaf(Leaf { component, rect }),
+                    hidden: false,
                     ..
                 } => Some((rect.unwrap(), component)),
                 _ => None,
@@ -316,6 +355,7 @@ impl LayoutBuilder {
             .filter_map(|container| match container {
                 Container {
                     container_type: ContainerType::Leaf(Leaf { component, .. }),
+                    hidden: false,
                     ..
                 } => Some(component),
                 _ => None,
@@ -328,7 +368,10 @@ impl LayoutBuilder {
             .iter_mut()
             .filter_map(|container| match container {
                 Container {
-                    container_type: ContainerType::Leaf(Leaf { component, rect }),
+                    container_type:
+                        ContainerType::Leaf(Leaf {
+                            component, rect, ..
+                        }),
                     ..
                 } => Some((rect.unwrap(), component)),
                 _ => None,
