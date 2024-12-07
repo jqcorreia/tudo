@@ -22,7 +22,7 @@
           dbus
         ];
         shellHook = "zsh";
-        name = "Backstage dev shell";
+        name = "TUDO dev shell";
       };
     };
 }
