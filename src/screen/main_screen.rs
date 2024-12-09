@@ -1,5 +1,6 @@
 use std::sync::{Arc, Mutex};
 
+use mlua::Lua;
 use sdl2::{
     event::Event,
     keyboard::Keycode,
@@ -20,6 +21,7 @@ use crate::{
             list::{SelectList, SelectListState},
             spinner::Spinner,
             text::TextInput,
+            traits::UIComponent,
             tray::Tray,
             workspaces::Workspaces,
         },
@@ -33,6 +35,20 @@ use super::Screen;
 pub struct MainScreen {
     layout: LayoutBuilder,
     source_items: Arc<Mutex<Vec<SourceItem>>>,
+}
+
+fn calc(script: impl AsRef<str>) -> Result<f32, String> {
+    let lua = Lua::new();
+    let preamble = "
+    local sin = math.sin
+    local cos = math.cos
+    local sqrt = math.sqrt
+    return  
+    ";
+
+    lua.load(preamble.to_string() + script.as_ref())
+        .eval::<f32>()
+        .map_err(|_| "Lua error".to_string())
 }
 
 impl MainScreen {
@@ -87,7 +103,7 @@ impl Screen for MainScreen {
             .by_name("list".to_string())
             .set_state(Box::new(SelectListState {
                 items: self.source_items.lock().unwrap().clone(),
-                prompt: prompt_text,
+                prompt: prompt_text.clone(),
             }));
 
         for event in events.iter() {
@@ -109,7 +125,13 @@ impl Screen for MainScreen {
                     keycode: Some(Keycode::F5),
                     ..
                 } => {
-                    self.layout.by_name_container("tray").hidden ^= true; // Toggle
+                    let result = self.layout.by_name_typed::<Label>("result");
+
+                    if let Ok(res) = calc(&prompt_text) {
+                        result.text = res.to_string();
+                        self.layout.by_name_container("list").hidden = true; // Toggle
+                        self.layout.by_name_container("result").hidden = false;
+                    }
                 }
                 _ => {
                     for component in self.layout.components() {
