@@ -91,6 +91,7 @@ impl UIComponent for Workspaces {
         if !self.initialized {
             // dbg!(app.hyprland.as_mut().unwrap().get_active_workspace());
             // dbg!(Hyprland::new().unwrap().get_active_workspace());
+            let active_workspace = app.hyprland.as_mut().unwrap().get_active_workspace();
             let workspaces = app
                 .hyprland
                 .as_mut()
@@ -114,10 +115,15 @@ impl UIComponent for Workspaces {
                 if !workspaces.contains(&x) {
                     btn.state.active = false
                 }
+
+                if x == active_workspace.id {
+                    btn.set_focus(true)
+                }
                 self.builder.add(Box::new(btn), ContainerSize::Fixed(40));
             }
             self.initialized = true
         }
+
         // Check for hyprland messages
         if let Ok(msg) = app.hyprland.as_mut().unwrap().rx().try_recv() {
             if msg.starts_with("createworkspace>") {
