@@ -78,11 +78,14 @@ impl Source for DesktopApplications {
                 };
 
                 if title.is_some() && action.is_some() {
+                    // Discard %U in this context since we don't have anything to interpolate
+                    let sanitized_action = action.unwrap().to_string().replace("%U", "");
+
                     res.push(SourceItem {
                         icon,
                         title: title.unwrap().to_string(),
                         action: Box::new(RunAction {
-                            path: action.unwrap().to_string(),
+                            path: sanitized_action,
                             exit_after: true,
                             clip_output: false,
                         }),
